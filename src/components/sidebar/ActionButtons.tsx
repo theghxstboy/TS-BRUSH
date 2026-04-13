@@ -1,14 +1,12 @@
 import { useRef } from 'react'
 import { Download, Upload, Printer, RotateCcw } from 'lucide-react'
 import { useBrandStore } from '../../store/useBrandStore'
-import { toast } from 'sonner'
 
 export function ActionButtons() {
   const { exportJson, importJson, reset } = useBrandStore()
   const importRef = useRef<HTMLInputElement>(null)
 
   const handlePrint = () => {
-    toast('Abrindo diálogo de impressão…')
     setTimeout(() => window.print(), 200)
   }
 

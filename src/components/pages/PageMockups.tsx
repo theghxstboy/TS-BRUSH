@@ -1,4 +1,5 @@
 import { useBrandStore } from '../../store/useBrandStore'
+import { usePageColors } from '../../hooks/usePageColors'
 import { HUD } from '../canvas/HUD'
 
 interface PageMockupsProps { pageNumber: number }
@@ -12,12 +13,10 @@ function getMockupGridStyle(count: number): React.CSSProperties {
 }
 
 export function PageMockups({ pageNumber }: PageMockupsProps) {
-  const { projeto, cores, assets_base64 } = useBrandStore()
+  const { projeto, assets_base64 } = useBrandStore()
+  const { primaryColor, darkColor } = usePageColors()
   const mockups = assets_base64.mockups
   if (mockups.length === 0) return null
-
-  const primaryColor = cores[0]?.hex ?? '#F97316'
-  const darkColor = cores[1]?.hex ?? '#0C0C0C'
   const displayMockups = mockups.slice(0, 6)
 
   return (

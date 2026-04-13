@@ -2,18 +2,29 @@ import { ImageIcon, X } from 'lucide-react'
 import { useBrandStore } from '../../store/useBrandStore'
 import { CollapsibleSection } from './CollapsibleSection'
 import { UploadZone } from './UploadZone'
-import { fileToBase64 } from '../../lib/imageUtils'
+import { extractColorsFromDataUrl, fileToBase64 } from '../../lib/imageUtils'
 import { toast } from 'sonner'
 import { useRef } from 'react'
 
-// SVG + PNG + common raster formats accepted for logos
 const LOGO_ACCEPT = 'image/svg+xml,image/png,image/webp,image/jpeg,.svg,.png,.webp,.jpg,.jpeg'
-// Photos only for mockups (SVG rarely used as mockup)
 const MOCKUP_ACCEPT = 'image/*'
 
 export function SectionAssets() {
-  const { assets_base64, setAsset, addMockup, removeMockup } = useBrandStore()
+  const { assets_base64, setAsset, addMockup, removeMockup, replaceCores } = useBrandStore()
   const mockupRef = useRef<HTMLInputElement>(null)
+
+  const handleLogoPrincipalChange = async (value: string | null) => {
+    setAsset('logo_principal', value)
+
+    if (!value) return
+
+    const extracted = await extractColorsFromDataUrl(value, 4)
+    if (extracted.length > 0) {
+      replaceCores('logo', extracted)
+      replaceCores('apresentacao', extracted)
+      toast.success('Cores da logo atualizadas automaticamente.')
+    }
+  }
 
   const handleMockup = async (file: File) => {
     try {
@@ -26,48 +37,60 @@ export function SectionAssets() {
   }
 
   return (
-    <CollapsibleSection icon={<ImageIcon size={14} />} label="Logos & Assets" defaultOpen>
-      {/* ── Logos (SVG ou PNG transparente) ──────────────────── */}
-      <div style={{ background: 'rgba(249,115,22,0.04)', border: '1px solid rgba(249,115,22,0.12)', borderRadius: 8, padding: '10px 12px', marginBottom: 4 }}>
-        <p style={{ fontSize: 11, color: '#fb923c', fontWeight: 600, marginBottom: 2 }}>💡 Recomendado: SVG ou PNG com fundo transparente</p>
-        <p style={{ fontSize: 10, color: '#a1a1aa', lineHeight: 1.5 }}>Logos SVG são exibidas em tamanho perfeito sem distorção. PNGs com canal alpha também funcionam.</p>
+    <CollapsibleSection icon={<ImageIcon size={14} />} label="Logos & Assets" defaultOpen sectionId="assets">
+      <div
+        style={{
+          background: 'rgba(249,115,22,0.04)',
+          border: '1px solid rgba(249,115,22,0.12)',
+          borderRadius: 8,
+          padding: '10px 12px',
+          marginBottom: 4,
+        }}
+      >
+        <p style={{ fontSize: 11, color: '#fb923c', fontWeight: 600, marginBottom: 2 }}>
+          Logo principal atualiza a paleta automaticamente
+        </p>
+        <p style={{ fontSize: 10, color: '#a1a1aa', lineHeight: 1.5 }}>
+          SVG ou PNG com fundo transparente funcionam melhor para preview e extração das cores da marca.
+        </p>
       </div>
 
       <div className="form-group">
         <label className="form-label">Logo Principal</label>
         <UploadZone
+          inputId="input-logo-principal"
           label="Upload Logo Principal"
           hint="SVG recomendado · PNG com transparência"
           accept={LOGO_ACCEPT}
           value={assets_base64.logo_principal}
-          onChange={(v) => setAsset('logo_principal', v)}
+          onChange={handleLogoPrincipalChange}
         />
       </div>
 
       <div className="form-group">
         <label className="form-label">Logo Monocromática</label>
         <UploadZone
+          inputId="input-logo-monocromatica"
           label="Upload Logo Mono"
           hint="SVG recomendado · versão preta ou branca"
           accept={LOGO_ACCEPT}
           value={assets_base64.logo_monocromatica}
-          onChange={(v) => setAsset('logo_monocromatica', v)}
+          onChange={(value) => setAsset('logo_monocromatica', value)}
         />
       </div>
 
       <div className="form-group">
         <label className="form-label">Símbolo / Ícone</label>
         <UploadZone
+          inputId="input-logo-simbolo"
           label="Upload Símbolo"
           hint="SVG recomendado · só o ícone, sem texto"
           accept={LOGO_ACCEPT}
           value={assets_base64.logo_simbolo}
-          onChange={(v) => setAsset('logo_simbolo', v)}
+          onChange={(value) => setAsset('logo_simbolo', value)}
         />
       </div>
 
-
-      {/* ── Mockups (1 por página) ───────────────────────────── */}
       <div className="form-group">
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
           <label className="form-label" style={{ margin: 0 }}>
@@ -85,13 +108,20 @@ export function SectionAssets() {
                   alt={`Mockup ${i + 1}`}
                   style={{ width: '100%', height: 60, objectFit: 'cover', display: 'block' }}
                 />
-                {/* Index badge */}
-                <div style={{
-                  position: 'absolute', top: 6, left: 8,
-                  background: 'rgba(0,0,0,0.65)', color: '#fff',
-                  fontSize: 10, fontWeight: 700, padding: '2px 7px',
-                  borderRadius: 4, fontFamily: "'Geist Mono', monospace"
-                }}>
+                <div
+                  style={{
+                    position: 'absolute',
+                    top: 6,
+                    left: 8,
+                    background: 'rgba(0,0,0,0.65)',
+                    color: '#fff',
+                    fontSize: 10,
+                    fontWeight: 700,
+                    padding: '2px 7px',
+                    borderRadius: 4,
+                    fontFamily: "'Geist Mono', monospace",
+                  }}
+                >
                   Pág. {i + 1}
                 </div>
                 <button
@@ -115,7 +145,7 @@ export function SectionAssets() {
           style={{ display: 'none' }}
           onChange={async (e) => {
             const files = Array.from(e.target.files ?? [])
-            for (const f of files) await handleMockup(f)
+            for (const file of files) await handleMockup(file)
             e.target.value = ''
           }}
         />

@@ -4,22 +4,16 @@ import { HexColorPicker } from 'react-colorful'
 import { useBrandStore } from '../../store/useBrandStore'
 import { CollapsibleSection } from './CollapsibleSection'
 import type { BrandColor } from '../../store/useBrandStore'
-
-function hexToRgb(hex: string): string {
-  const r = parseInt(hex.slice(1, 3), 16)
-  const g = parseInt(hex.slice(3, 5), 16)
-  const b = parseInt(hex.slice(5, 7), 16)
-  if (isNaN(r) || isNaN(g) || isNaN(b)) return ''
-  return `${r}, ${g}, ${b}`
-}
+import { hexToHsl, hexToRgb } from '../../lib/colorUtils'
 
 interface ColorItemProps {
   color: BrandColor
+  inputIdPrefix?: string
   onChange: (fields: Partial<BrandColor>) => void
   onRemove: () => void
 }
 
-function ColorItem({ color, onChange, onRemove }: ColorItemProps) {
+function ColorItem({ color, inputIdPrefix, onChange, onRemove }: ColorItemProps) {
   const [open, setOpen] = useState(false)
   const popoverRef = useRef<HTMLDivElement>(null)
 
@@ -33,7 +27,7 @@ function ColorItem({ color, onChange, onRemove }: ColorItemProps) {
   }, [open])
 
   const handleHexChange = (hex: string) => {
-    onChange({ hex, rgb: hexToRgb(hex) })
+    onChange({ hex, rgb: hexToRgb(hex), hsl: hexToHsl(hex) })
   }
 
   return (
@@ -55,6 +49,7 @@ function ColorItem({ color, onChange, onRemove }: ColorItemProps) {
       <div className="color-inputs">
         <input
           className="form-input"
+          id={inputIdPrefix ? `${inputIdPrefix}-${color.id}-hex` : undefined}
           style={{ height: 28, padding: '0 8px', fontSize: 12, fontFamily: "'Geist Mono', monospace" }}
           value={color.hex}
           onChange={(e) => handleHexChange(e.target.value)}
@@ -65,6 +60,12 @@ function ColorItem({ color, onChange, onRemove }: ColorItemProps) {
           value={color.rgb}
           onChange={(e) => onChange({ rgb: e.target.value })}
           placeholder="RGB: 255, 255, 255"
+        />
+        <input
+          className="color-meta-input"
+          value={color.hsl}
+          onChange={(e) => onChange({ hsl: e.target.value })}
+          placeholder="HSL: 0°, 0%, 0%"
         />
         <input
           className="color-meta-input"
@@ -81,24 +82,75 @@ function ColorItem({ color, onChange, onRemove }: ColorItemProps) {
   )
 }
 
-export function SectionCores() {
-  const { cores, setCor, addCor, removeCor } = useBrandStore()
+interface PaletteBlockProps {
+  title: string
+  description: string
+  colors: BrandColor[]
+  inputIdPrefix: string
+  onAdd: () => void
+  onChange: (id: number, fields: Partial<BrandColor>) => void
+  onRemove: (id: number) => void
+}
 
+function PaletteBlock({ title, description, colors, inputIdPrefix, onAdd, onChange, onRemove }: PaletteBlockProps) {
   return (
-    <CollapsibleSection icon={<Palette size={14} />} label="Paleta de Cores" defaultOpen>
+    <div style={{ display: 'grid', gap: 10 }}>
+      <div>
+        <p className="form-label" style={{ marginBottom: 4, color: 'var(--accent)' }}>{title}</p>
+        <p style={{ fontSize: 11, lineHeight: 1.5, color: '#71717a' }}>{description}</p>
+      </div>
+
       <div className="color-list">
-        {cores.map((c) => (
+        {colors.map((color) => (
           <ColorItem
-            key={c.id}
-            color={c}
-            onChange={(fields) => setCor(c.id, fields)}
-            onRemove={() => removeCor(c.id)}
+            key={color.id}
+            color={color}
+            inputIdPrefix={inputIdPrefix}
+            onChange={(fields) => onChange(color.id, fields)}
+            onRemove={() => onRemove(color.id)}
           />
         ))}
       </div>
-      <button className="btn-add" onClick={addCor}>
+
+      <button className="btn-add" onClick={onAdd}>
         <Plus size={13} /> Adicionar Cor
       </button>
+    </div>
+  )
+}
+
+export function SectionCores() {
+  const {
+    cores_logo,
+    cores_apresentacao,
+    setCor,
+    addCor,
+    removeCor,
+  } = useBrandStore()
+
+  return (
+    <CollapsibleSection icon={<Palette size={14} />} label="Cores" defaultOpen sectionId="cores">
+      <PaletteBlock
+        title="Cores da Logo"
+        description="Essas cores aparecem na página de padrão cromático. Ao subir a logo principal, tentamos preencher automaticamente."
+        colors={cores_logo}
+        inputIdPrefix="input-cor-logo"
+        onAdd={() => addCor('logo')}
+        onChange={(id, fields) => setCor('logo', id, fields)}
+        onRemove={(id) => removeCor('logo', id)}
+      />
+
+      <div style={{ height: 1, background: 'var(--border)', margin: '2px 0' }} />
+
+      <PaletteBlock
+        title="Cores da Apresentação"
+        description="Essas cores controlam capas, destaques e a identidade visual dos slides."
+        colors={cores_apresentacao}
+        inputIdPrefix="input-cor-apresentacao"
+        onAdd={() => addCor('apresentacao')}
+        onChange={(id, fields) => setCor('apresentacao', id, fields)}
+        onRemove={(id) => removeCor('apresentacao', id)}
+      />
     </CollapsibleSection>
   )
 }

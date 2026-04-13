@@ -187,6 +187,7 @@ html, body, #root {
 }
 
 .form-textarea { resize: vertical; min-height: 72px; line-height: 1.5; }
+select.form-input { appearance: none; }
 
 /* ─── Upload Zone ─────────────────────────────────────────── */
 .upload-zone {
@@ -418,7 +419,21 @@ html, body, #root {
   box-shadow: 0 8px 48px rgba(0,0,0,0.5);
   flex-shrink: 0;
   border-radius: 2px;
-  font-family: 'Geist', system-ui, sans-serif;
+  font-family: var(--presentation-body-font, 'Geist', system-ui, sans-serif);
+  text-align: var(--presentation-text-align, left);
+}
+
+.pagina-pdf::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: var(--presentation-bg-image, none);
+  background-size: cover;
+  background-position: center;
+  opacity: var(--presentation-bg-opacity, 0);
+  mix-blend-mode: luminosity;
+  pointer-events: none;
+  z-index: 1;
 }
 
 /* Layers */
@@ -597,6 +612,14 @@ html, body, #root {
   gap: 24px;
 }
 .tipo-title { font-size: 40px; font-weight: 900; line-height: 1.1; margin-top: 8px; }
+.capa-nome,
+.sumario-title,
+.logo-info-value,
+.cores-title,
+.tipo-title,
+.tipo-block-name {
+  font-family: var(--presentation-title-font, var(--presentation-body-font, 'Geist', system-ui, sans-serif));
+}
 .tipo-block { }
 .tipo-block-name { font-size: 22px; font-weight: 800; margin-bottom: 4px; }
 .tipo-block-styles { font-size: 12px; opacity: 0.55; margin-bottom: 12px; }
@@ -636,6 +659,20 @@ html, body, #root {
   text-transform: uppercase;
 }
 
+.pagina-pdf-wrapper {
+  margin: 0 !important;
+}
+
+.pagina-pdf-clickable {
+  cursor: pointer;
+  transition: transform 0.16s ease, box-shadow 0.16s ease;
+}
+
+.pagina-pdf-clickable:hover .pagina-pdf {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 54px rgba(0,0,0,0.45);
+}
+
 /* ─── @media print ───────────────────────────────────────── */
 @media print {
   @page { size: A4 landscape; margin: 0; }
@@ -666,11 +703,6 @@ html, body, #root {
     overflow: visible !important;
     display: block !important;
   }
-
-  .pagina-pdf-wrapper {
-    margin: 0 !important;
-  }
-
   .pagina-pdf {
     width: 297mm !important;
     height: 210mm !important;

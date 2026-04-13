@@ -1,4 +1,5 @@
 import { useBrandStore } from '../../store/useBrandStore'
+import { usePageColors } from '../../hooks/usePageColors'
 import { HUD } from '../canvas/HUD'
 
 interface PageMockupProps {
@@ -11,12 +12,10 @@ interface PageMockupProps {
 }
 
 export function PageMockup({ mockupIndex, pageNumber, totalMockups }: PageMockupProps) {
-  const { projeto, cores, assets_base64 } = useBrandStore()
+  const { projeto, assets_base64 } = useBrandStore()
+  const { primaryColor, darkColor } = usePageColors()
   const src = assets_base64.mockups[mockupIndex]
   if (!src) return null
-
-  const primaryColor = cores[0]?.hex ?? '#F97316'
-  const darkColor = cores[1]?.hex ?? '#0C0C0C'
   const isLast = mockupIndex === totalMockups - 1
 
   return (

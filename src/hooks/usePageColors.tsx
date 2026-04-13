@@ -6,9 +6,9 @@ import { useBrandStore } from '../store/useBrandStore'
  * used across all PDF pages.
  */
 export function usePageColors() {
-  const { cores, aparencia } = useBrandStore()
+  const { cores_apresentacao, aparencia } = useBrandStore()
 
-  const primaryColor = cores[0]?.hex ?? '#F97316'
+  const primaryColor = cores_apresentacao[0]?.hex ?? '#F97316'
   const darkColor    = aparencia.cor_fundo   // comes from aparencia, NOT cores[1]
 
   /**

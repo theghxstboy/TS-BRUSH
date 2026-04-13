@@ -4,8 +4,15 @@ import { HUD } from '../canvas/HUD'
 
 interface PageCoresProps { pageNumber: number }
 
+function getSwatchBorder(hex: string) {
+  const normalized = hex.toUpperCase()
+  if (normalized === '#FFFFFF') return '1px solid rgba(0,0,0,0.16)'
+  if (normalized === '#000000') return '1px solid rgba(255,255,255,0.18)'
+  return '1px solid rgba(0,0,0,0.06)'
+}
+
 export function PageCores({ pageNumber }: PageCoresProps) {
-  const { cores } = useBrandStore()
+  const { cores_logo } = useBrandStore()
   const { primaryColor, darkColor, BgOverlay } = usePageColors()
 
   return (
@@ -13,7 +20,7 @@ export function PageCores({ pageNumber }: PageCoresProps) {
       {/* Fundo */}
       <div className="fundo" style={{ zIndex: 0 }}>
         {/* Rainbow top strip */}
-        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 8, background: `linear-gradient(to right, ${cores.map(c => c.hex).join(', ')})` }} />
+        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 8, background: `linear-gradient(to right, ${cores_logo.map(c => c.hex).join(', ')})` }} />
         {/* Dark left panel */}
         <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: '32%', background: darkColor, overflow: 'hidden' }}>
           {BgOverlay && <BgOverlay />}
@@ -35,7 +42,7 @@ export function PageCores({ pageNumber }: PageCoresProps) {
 
           {/* Mini color strip */}
           <div style={{ display: 'flex', gap: 4, marginBottom: 8 }}>
-            {cores.slice(0, 5).map((c) => (
+            {cores_logo.slice(0, 5).map((c) => (
               <div key={c.id} style={{ width: 20, height: 20, background: c.hex, borderRadius: 4, border: '1px solid rgba(255,255,255,0.1)' }} />
             ))}
           </div>
@@ -43,12 +50,13 @@ export function PageCores({ pageNumber }: PageCoresProps) {
 
         {/* Right: color cards — on white bg, dark text */}
         <div className="cores-right">
-          {cores.map((cor) => (
+          {cores_logo.map((cor) => (
             <div key={cor.id} className="cor-card" style={{ background: '#fff', boxShadow: '0 1px 8px rgba(0,0,0,0.06)' }}>
-              <div className="cor-swatch" style={{ background: cor.hex, boxShadow: `0 4px 14px ${cor.hex}55` }} />
+              <div className="cor-swatch" style={{ background: cor.hex, boxShadow: `0 4px 14px ${cor.hex}55`, border: getSwatchBorder(cor.hex) }} />
               <div className="cor-details">
                 <div className="cor-hex" style={{ color: '#1a1a1a' }}>{cor.hex.toUpperCase()}</div>
                 {cor.rgb  && <div className="cor-rgb"  style={{ color: '#52525b' }}>RGB {cor.rgb}</div>}
+                {cor.hsl  && <div className="cor-rgb"  style={{ color: '#52525b' }}>HSL {cor.hsl}</div>}
                 {cor.cmyk && <div className="cor-cmyk" style={{ color: '#71717a' }}>CMYK {cor.cmyk}</div>}
               </div>
               <div style={{ width: 4, alignSelf: 'stretch', background: cor.hex, borderRadius: 2 }} />

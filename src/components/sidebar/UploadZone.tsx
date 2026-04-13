@@ -4,6 +4,7 @@ import { toast } from 'sonner'
 import { fileToBase64 } from '../../lib/imageUtils'
 
 interface UploadZoneProps {
+  inputId?: string
   label: string
   hint?: string
   value: string | null
@@ -12,7 +13,7 @@ interface UploadZoneProps {
   hint2?: string
 }
 
-export function UploadZone({ label, hint, value, onChange, accept = 'image/*' }: UploadZoneProps) {
+export function UploadZone({ inputId, label, hint, value, onChange, accept = 'image/*' }: UploadZoneProps) {
   const inputRef = useRef<HTMLInputElement>(null)
 
   const handleFile = async (file: File) => {
@@ -39,6 +40,7 @@ export function UploadZone({ label, hint, value, onChange, accept = 'image/*' }:
       onDrop={handleDrop}
     >
       <input
+        id={inputId}
         ref={inputRef}
         type="file"
         accept={accept}

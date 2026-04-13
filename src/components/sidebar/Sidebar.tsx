@@ -1,3 +1,4 @@
+import { SectionTemplate } from './SectionTemplate'
 import { SectionProjeto } from './SectionProjeto'
 import { SectionAssets } from './SectionAssets'
 import { SectionCores } from './SectionCores'
@@ -15,6 +16,7 @@ export function Sidebar() {
       </div>
 
       <div className="sidebar-body">
+        <SectionTemplate />
         <SectionProjeto />
         <SectionAssets />
         <SectionCores />

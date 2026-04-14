@@ -4,14 +4,14 @@ import { usePageColors } from '../../../hooks/usePageColors'
 interface TplBemVindoProps { pageNumber: number }
 
 export function TplBemVindo({ pageNumber }: TplBemVindoProps) {
-  const { projeto, assets_base64 } = useBrandStore()
-  const { primaryColor, darkColor } = usePageColors()
+  const { projeto, assets_base64, conteudo_pdf } = useBrandStore()
+  const { primaryColor, darkColor, contentTitleColor, textColor, pageColor } = usePageColors('bem-vindo')
   const nomeMarca = projeto.nome_marca || 'TRAJETÓRIA DO SUCESSO'
 
   return (
     <div
       className="pagina-pdf"
-      style={{ background: '#fff', position: 'relative', overflow: 'hidden' }}
+      style={{ background: pageColor, position: 'relative', overflow: 'hidden', color: textColor }}
     >
       {/* Conteúdo esquerdo */}
       <div style={{
@@ -24,28 +24,20 @@ export function TplBemVindo({ pageNumber }: TplBemVindoProps) {
       }}>
         {/* Coluna esquerda */}
         <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 18, paddingRight: 24 }}>
-          <h1 style={{ fontSize: 38, fontWeight: 900, color: darkColor, margin: 0, lineHeight: 1.1 }}>
-            Bem Vindo!
+          <h1 style={{ fontSize: 38, fontWeight: 900, color: contentTitleColor, margin: 0, lineHeight: 1.1 }}>
+            {conteudo_pdf.boas_vindas_titulo || 'Bem Vindo!'}
           </h1>
 
           <p style={{ fontSize: 13.5, color: '#222', lineHeight: 1.7, margin: 0 }}>
-            &nbsp;&nbsp;Este manual foi criado para garantir a consistência e a
-            autenticidade da identidade visual de sua marca. Aqui, você
-            encontrará diretrizes essenciais para o uso correto do logo, cores,
-            tipografia e outros elementos gráficos que representam a essência
-            do seu negócio.
+            &nbsp;&nbsp;{conteudo_pdf.boas_vindas_texto_1}
           </p>
 
           <p style={{ fontSize: 13.5, color: '#222', lineHeight: 1.7, margin: 0 }}>
-            &nbsp;&nbsp;Na <strong>{nomeMarca}</strong>, acreditamos que uma identidade
-            visual forte é a base para uma comunicação impactante e
-            memorável. Com este material, sua marca estará preparada para se
-            destacar e construir conexões sólidas com seu público.
+            &nbsp;&nbsp;{conteudo_pdf.boas_vindas_texto_2.replace('Na marca', `Na ${nomeMarca}`)}
           </p>
 
           <p style={{ fontSize: 13.5, color: '#222', lineHeight: 1.7, margin: 0 }}>
-            &nbsp;&nbsp;Siga as orientações deste guia e mantenha a coerência em todas
-            as aplicações. Juntos, estamos construindo uma marca de sucesso!
+            &nbsp;&nbsp;{conteudo_pdf.boas_vindas_texto_3}
           </p>
         </div>
 

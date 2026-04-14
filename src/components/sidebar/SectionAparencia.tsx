@@ -1,101 +1,64 @@
-import { useState, useRef, useEffect } from 'react'
 import { Layers } from 'lucide-react'
-import { HexColorPicker } from 'react-colorful'
 import { useBrandStore } from '../../store/useBrandStore'
 import { CollapsibleSection } from './CollapsibleSection'
 import { UploadZone } from './UploadZone'
 
 const PRESETS = [
-  { label: 'Preto', hex: '#0C0C0C' },
-  { label: 'Carvão', hex: '#1a1a1a' },
-  { label: 'Marinho', hex: '#0f1729' },
-  { label: 'Verde', hex: '#0d1f1a' },
-  { label: 'Vinho', hex: '#1a0a10' },
-  { label: 'Sépia', hex: '#1c1510' },
+  '#F97316',
+  '#0C0C0C',
+  '#FFFFFF',
+  '#1F3A5F',
+  '#8B1E3F',
+  '#0F766E',
+  '#E5E7EB',
+  '#111827',
 ]
 
-function ColorPickerPopover({
+function ColorField({
+  label,
+  description,
   color,
   onChange,
 }: {
+  label: string
+  description: string
   color: string
   onChange: (hex: string) => void
 }) {
-  const [open, setOpen] = useState(false)
-  const ref = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    if (!open) return
-    const handler = (e: MouseEvent) => {
-      if (!ref.current?.contains(e.target as Node)) setOpen(false)
-    }
-    document.addEventListener('mousedown', handler)
-    return () => document.removeEventListener('mousedown', handler)
-  }, [open])
-
   return (
-    <div style={{ position: 'relative' }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-        <div
-          style={{
-            width: 36,
-            height: 36,
-            borderRadius: 8,
-            background: color,
-            border: '2px solid rgba(255,255,255,0.12)',
-            cursor: 'pointer',
-            flexShrink: 0,
-          }}
-          onClick={() => setOpen(!open)}
-        />
+    <div className="form-group">
+      <label className="form-label">{label}</label>
+      <p style={{ fontSize: 11, color: 'var(--text-secondary)', marginBottom: 6, lineHeight: 1.5 }}>
+        {description}
+      </p>
+
+      <div className="semantic-color-field">
         <input
-          className="form-input"
-          style={{ fontFamily: "'Geist Mono', monospace", fontSize: 13 }}
+          className="semantic-color-native"
+          type="color"
+          value={color}
+          onChange={(e) => onChange(e.target.value.toUpperCase())}
+        />
+        <span className="semantic-color-label">Livre</span>
+        <input
+          className="form-input semantic-color-input"
           value={color}
           onChange={(e) => onChange(e.target.value)}
-          placeholder="#0C0C0C"
+          placeholder="#FFFFFF"
         />
       </div>
 
-      {open && (
-        <div
-          ref={ref}
-          style={{
-            position: 'absolute',
-            top: '100%',
-            left: 0,
-            marginTop: 8,
-            zIndex: 200,
-            borderRadius: 10,
-            overflow: 'hidden',
-            boxShadow: '0 16px 40px rgba(0,0,0,0.7)',
-            border: '1px solid var(--border)',
-          }}
-        >
-          <HexColorPicker color={color} onChange={onChange} />
-        </div>
-      )}
-
-      <div style={{ display: 'flex', gap: 6, marginTop: 8, flexWrap: 'wrap' }}>
+      <div className="semantic-color-presets">
         {PRESETS.map((preset) => (
           <button
-            key={preset.hex}
-            title={preset.label}
-            onClick={() => { onChange(preset.hex); setOpen(false) }}
+            key={`${label}-${preset}`}
+            type="button"
+            className="semantic-color-preset"
+            title={preset}
+            onClick={() => onChange(preset)}
             style={{
-              width: 22,
-              height: 22,
-              borderRadius: 5,
-              background: preset.hex,
-              border: color.toLowerCase() === preset.hex.toLowerCase()
-                ? '2px solid var(--accent)'
-                : '2px solid rgba(255,255,255,0.1)',
-              cursor: 'pointer',
-              padding: 0,
-              boxShadow: color.toLowerCase() === preset.hex.toLowerCase()
-                ? '0 0 0 2px rgba(249,115,22,0.4)'
-                : 'none',
-              transition: 'border-color 0.15s, box-shadow 0.15s',
+              background: preset,
+              outline: preset.toLowerCase() === color.toLowerCase() ? '2px solid var(--accent)' : 'none',
             }}
           />
         ))}
@@ -109,13 +72,47 @@ export function SectionAparencia() {
 
   return (
     <CollapsibleSection icon={<Layers size={14} />} label="Aparência das Páginas" defaultOpen={false} sectionId="aparencia">
-      <div className="form-group">
-        <label className="form-label">Cor de Fundo dos Painéis</label>
-        <p style={{ fontSize: 11, color: 'var(--text-secondary)', marginBottom: 6, lineHeight: 1.5 }}>
-          Usada nos painéis laterais escuros de cada página, como capas, seções e áreas de apoio visual.
-        </p>
-        <ColorPickerPopover color={aparencia.cor_fundo} onChange={(hex) => setAparencia({ cor_fundo: hex })} />
-      </div>
+      <ColorField
+        label="Cor de Destaque"
+        description="Usada em barras, badges, linhas de destaque e elementos visuais principais."
+        color={aparencia.cor_destaque}
+        onChange={(hex) => setAparencia({ cor_destaque: hex })}
+      />
+
+      <ColorField
+        label="Cor dos Painéis"
+        description="Usada nos blocos escuros, capas, seções laterais e áreas estruturais da apresentação."
+        color={aparencia.cor_paineis}
+        onChange={(hex) => setAparencia({ cor_paineis: hex })}
+      />
+
+      <ColorField
+        label="Cor dos Títulos das Divisórias"
+        description="Usada nas páginas de capítulo e divisórias, como 01 — Logo."
+        color={aparencia.cor_titulos_divisoria}
+        onChange={(hex) => setAparencia({ cor_titulos_divisoria: hex })}
+      />
+
+      <ColorField
+        label="Cor dos Títulos de Conteúdo"
+        description="Usada nas páginas explicativas em geral, como conceito, elementos, tipografia e similares."
+        color={aparencia.cor_titulos_conteudo}
+        onChange={(hex) => setAparencia({ cor_titulos_conteudo: hex })}
+      />
+
+      <ColorField
+        label="Cor do Fundo da Página"
+        description="Cor base geral das páginas claras do manual."
+        color={aparencia.cor_fundo_pagina}
+        onChange={(hex) => setAparencia({ cor_fundo_pagina: hex })}
+      />
+
+      <ColorField
+        label="Cor do Fundo atrás da Logo"
+        description="Usada em áreas de apoio e fundos claros para exibir logos e composições com mais contraste."
+        color={aparencia.cor_fundo_logo}
+        onChange={(hex) => setAparencia({ cor_fundo_logo: hex })}
+      />
 
       <div className="form-group">
         <label className="form-label">Imagem / Textura de Fundo</label>
@@ -125,40 +122,30 @@ export function SectionAparencia() {
         <UploadZone
           inputId="input-imagem-fundo"
           label="Upload Imagem de Fundo"
-          hint="JPG, PNG ou WebP · aplicada em toda a apresentação"
+          hint="JPG, PNG ou WebP · aplicada nos painéis da apresentação"
           accept="image/*"
           value={aparencia.imagem_fundo}
           onChange={(value) => setAparencia({ imagem_fundo: value })}
         />
       </div>
 
-      {(aparencia.imagem_fundo || aparencia.cor_fundo !== '#0C0C0C') && (
-        <div
-          style={{
-            height: 52,
-            borderRadius: 8,
-            overflow: 'hidden',
-            position: 'relative',
-            border: '1px solid var(--border)',
-          }}
-        >
-          <div style={{ position: 'absolute', inset: 0, background: aparencia.cor_fundo }} />
-          {aparencia.imagem_fundo && (
-            <img
-              src={aparencia.imagem_fundo}
-              alt="preview fundo"
-              style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', opacity: 0.55 }}
-            />
-          )}
-          <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
-            <div style={{ width: 28, height: 3, background: '#fff', opacity: 0.5, borderRadius: 2 }} />
-            <span style={{ color: '#fff', fontSize: 10, fontWeight: 700, opacity: 0.7, letterSpacing: '0.1em', textTransform: 'uppercase' }}>
-              Preview do fundo
-            </span>
-            <div style={{ width: 28, height: 3, background: '#fff', opacity: 0.5, borderRadius: 2 }} />
+      <div className="appearance-preview-strip">
+        <div className="appearance-preview-page" style={{ background: aparencia.cor_fundo_pagina }}>
+          <div className="appearance-preview-panel" style={{ background: aparencia.cor_paineis }}>
+            {aparencia.imagem_fundo && (
+              <img
+                src={aparencia.imagem_fundo}
+                alt="preview fundo"
+                style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', opacity: 0.45 }}
+              />
+            )}
+            <div className="appearance-preview-title" style={{ color: aparencia.cor_destaque }}>Divisória</div>
+          </div>
+          <div className="appearance-preview-logo" style={{ background: aparencia.cor_fundo_logo }}>
+            <div style={{ width: 32, height: 8, background: aparencia.cor_titulos_conteudo, borderRadius: 999 }} />
           </div>
         </div>
-      )}
+      </div>
     </CollapsibleSection>
   )
 }

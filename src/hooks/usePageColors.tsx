@@ -1,15 +1,22 @@
 import React from 'react'
 import { useBrandStore } from '../store/useBrandStore'
+import type { SlideAppearanceKey } from '../store/useBrandStore'
 
 /**
  * Returns the two key colors and the aparencia-based background helpers
  * used across all PDF pages.
  */
-export function usePageColors() {
-  const { cores_apresentacao, aparencia } = useBrandStore()
+export function usePageColors(slideType?: SlideAppearanceKey) {
+  const { cores_apresentacao, aparencia, page_appearance } = useBrandStore()
+  const pageAppearance = slideType ? page_appearance[slideType] : null
 
-  const primaryColor = cores_apresentacao[0]?.hex ?? '#F97316'
-  const darkColor    = aparencia.cor_fundo   // comes from aparencia, NOT cores[1]
+  const primaryColor = pageAppearance?.cor_destaque || aparencia.cor_destaque || cores_apresentacao[0]?.hex || '#F97316'
+  const darkColor = pageAppearance?.cor_paineis || aparencia.cor_paineis || cores_apresentacao[1]?.hex || '#0C0C0C'
+  const dividerTitleColor = pageAppearance?.cor_titulo || aparencia.cor_titulos_divisoria || darkColor
+  const contentTitleColor = pageAppearance?.cor_titulo || aparencia.cor_titulos_conteudo || darkColor
+  const textColor = pageAppearance?.cor_texto || '#1A1A1A'
+  const pageColor = pageAppearance?.cor_fundo_pagina || aparencia.cor_fundo_pagina || '#FFFFFF'
+  const logoBackdropColor = pageAppearance?.cor_fundo_logo || aparencia.cor_fundo_logo || '#F4F4F5'
 
   /**
    * Returns the CSS style for a "dark panel" element.
@@ -43,5 +50,5 @@ export function usePageColors() {
       )
     : null
 
-  return { primaryColor, darkColor, darkPanelStyle, BgOverlay, aparencia }
+  return { primaryColor, darkColor, dividerTitleColor, contentTitleColor, textColor, pageColor, logoBackdropColor, darkPanelStyle, BgOverlay, aparencia }
 }

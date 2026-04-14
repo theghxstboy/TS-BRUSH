@@ -35,7 +35,7 @@ export function UploadZone({ inputId, label, hint, value, onChange, accept = 'im
   return (
     <div
       className={`upload-zone ${value ? 'has-file' : ''}`}
-      onClick={() => !value && inputRef.current?.click()}
+      onClick={() => inputRef.current?.click()}
       onDragOver={(e) => e.preventDefault()}
       onDrop={handleDrop}
     >

@@ -9,7 +9,19 @@ interface TplSecaoProps {
 }
 
 export function TplSecao({ numero, titulo, subtitulo }: TplSecaoProps) {
-  const { primaryColor, darkColor } = usePageColors()
+  const sectionSlideType =
+    titulo === 'Logo'
+      ? 'secao-logo'
+      : titulo === 'Tipografia'
+        ? 'secao-tipografia'
+        : titulo === 'Cores'
+          ? 'secao-cores'
+          : titulo === 'Construcao'
+            ? 'secao-construcao'
+            : titulo === 'Usos'
+              ? 'secao-usos-incorretos'
+              : 'secao-aplicacoes'
+  const { primaryColor, darkColor, dividerTitleColor, textColor } = usePageColors(sectionSlideType)
   const { assets_base64 } = useBrandStore()
   const { pageTitleStyle } = usePresentationTextStyles()
 
@@ -20,6 +32,7 @@ export function TplSecao({ numero, titulo, subtitulo }: TplSecaoProps) {
         background: primaryColor,
         position: 'relative',
         overflow: 'hidden',
+        color: textColor,
       }}
     >
       {/* Número gigante à esquerda, cortando a borda */}
@@ -30,7 +43,7 @@ export function TplSecao({ numero, titulo, subtitulo }: TplSecaoProps) {
         transform: 'translateY(-50%)',
         fontSize: 260,
         fontWeight: 900,
-        color: darkColor,
+        color: dividerTitleColor,
         lineHeight: 0.85,
         userSelect: 'none',
         zIndex: 2,
@@ -53,7 +66,7 @@ export function TplSecao({ numero, titulo, subtitulo }: TplSecaoProps) {
         <div>
           <div style={{
             fontWeight: 800,
-            color: darkColor,
+            color: dividerTitleColor,
             ...pageTitleStyle(subtitulo ? 36 : 42, { lineHeight: 1.05 }),
           }}>
             {titulo}
@@ -61,7 +74,7 @@ export function TplSecao({ numero, titulo, subtitulo }: TplSecaoProps) {
           {subtitulo && (
             <div style={{
               fontWeight: 800,
-              color: darkColor,
+              color: dividerTitleColor,
               marginTop: 2,
               ...pageTitleStyle(36, { lineHeight: 1.05 }),
             }}>
@@ -96,7 +109,7 @@ export function TplSecao({ numero, titulo, subtitulo }: TplSecaoProps) {
           <div style={{
             fontSize: 140,
             fontWeight: 900,
-            color: darkColor,
+            color: dividerTitleColor,
             lineHeight: 1,
             fontFamily: 'Impact, sans-serif',
             letterSpacing: '-4px',

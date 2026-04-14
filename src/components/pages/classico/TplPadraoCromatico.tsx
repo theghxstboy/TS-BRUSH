@@ -13,14 +13,14 @@ function getCircleBorder(hex: string) {
 
 export function TplPadraoCromatico({ pageNumber }: TplPadraoCromaticoProps) {
   const { projeto, cores_logo } = useBrandStore()
-  const { darkColor } = usePageColors()
+  const { darkColor, contentTitleColor, textColor, pageColor } = usePageColors('padrao-cromatico')
   const { pageTitleStyle, bodyStyle } = usePresentationTextStyles()
   const sensacoes = projeto.sensacoes_cores || 'as sensações e associações que fortalecem a personalidade da marca'
 
   return (
     <div
       className="pagina-pdf"
-      style={{ background: '#fff', position: 'relative', overflow: 'hidden' }}
+      style={{ background: pageColor, position: 'relative', overflow: 'hidden', color: textColor }}
     >
       <div
         style={{
@@ -32,7 +32,7 @@ export function TplPadraoCromatico({ pageNumber }: TplPadraoCromaticoProps) {
           zIndex: 5,
         }}
       >
-        <h2 style={{ fontWeight: 900, color: darkColor, margin: '0 0 16px 0', ...pageTitleStyle(40) }}>
+        <h2 style={{ fontWeight: 900, color: contentTitleColor, margin: '0 0 16px 0', ...pageTitleStyle(40) }}>
           Padrão Cromático
         </h2>
 

@@ -30,7 +30,7 @@ export function SectionProjeto() {
       </div>
 
       <div className="form-group">
-        <label className="form-label">Características da Marca</label>
+        <label className="form-label">Caracteristicas da Marca</label>
         <textarea
           id="input-caracteristicas-marca"
           className="form-textarea"
@@ -45,44 +45,15 @@ export function SectionProjeto() {
         <textarea
           id="input-valores-marca"
           className="form-textarea"
-          placeholder="Ex: inovação, sofisticação, confiança"
+          placeholder="Ex: inovacao, sofisticacao, confianca"
           value={projeto.valores_marca}
           onChange={(e) => setProjeto({ valores_marca: e.target.value })}
         />
       </div>
 
-      <div className="form-group">
-        <label className="form-label">Sensações das Cores da Logo</label>
-        <textarea
-          id="input-sensacoes-cores"
-          className="form-textarea"
-          placeholder="Ex: energia, elegância e proximidade"
-          value={projeto.sensacoes_cores}
-          onChange={(e) => setProjeto({ sensacoes_cores: e.target.value })}
-        />
-      </div>
-
-      <div className="form-group">
-        <label className="form-label">Elementos da Logo</label>
-        <textarea
-          id="input-elementos-logo"
-          className="form-textarea"
-          placeholder={'Um elemento por linha.\nEx:\nSímbolo\nLettering'}
-          value={projeto.elementos_logo}
-          onChange={(e) => setProjeto({ elementos_logo: e.target.value })}
-        />
-      </div>
-
-      <div className="form-group">
-        <label className="form-label">Responsável no Encerramento</label>
-        <input
-          id="input-responsavel-manual"
-          className="form-input"
-          placeholder="Ex: João Gonçalves"
-          value={projeto.responsavel_manual}
-          onChange={(e) => setProjeto({ responsavel_manual: e.target.value })}
-        />
-      </div>
+      <p style={{ fontSize: 11, color: '#71717a', lineHeight: 1.6 }}>
+        Campos contextuais, como narrativa da paleta, elementos da logo e assinatura do encerramento, agora aparecem no drawer da direita ao selecionar o slide correspondente.
+      </p>
     </CollapsibleSection>
   )
 }

@@ -13,10 +13,10 @@ function getSwatchBorder(hex: string) {
 
 export function PageCores({ pageNumber }: PageCoresProps) {
   const { cores_logo } = useBrandStore()
-  const { primaryColor, darkColor, BgOverlay } = usePageColors()
+  const { primaryColor, darkColor, textColor, BgOverlay, pageColor, contentTitleColor } = usePageColors('padrao-cromatico')
 
   return (
-    <div className="pagina-pdf" style={{ background: '#fff' }}>
+    <div className="pagina-pdf" style={{ background: pageColor, color: textColor }}>
       {/* Fundo */}
       <div className="fundo" style={{ zIndex: 0 }}>
         {/* Rainbow top strip */}
@@ -54,7 +54,7 @@ export function PageCores({ pageNumber }: PageCoresProps) {
             <div key={cor.id} className="cor-card" style={{ background: '#fff', boxShadow: '0 1px 8px rgba(0,0,0,0.06)' }}>
               <div className="cor-swatch" style={{ background: cor.hex, boxShadow: `0 4px 14px ${cor.hex}55`, border: getSwatchBorder(cor.hex) }} />
               <div className="cor-details">
-                <div className="cor-hex" style={{ color: '#1a1a1a' }}>{cor.hex.toUpperCase()}</div>
+                <div className="cor-hex" style={{ color: contentTitleColor }}>{cor.hex.toUpperCase()}</div>
                 {cor.rgb  && <div className="cor-rgb"  style={{ color: '#52525b' }}>RGB {cor.rgb}</div>}
                 {cor.hsl  && <div className="cor-rgb"  style={{ color: '#52525b' }}>HSL {cor.hsl}</div>}
                 {cor.cmyk && <div className="cor-cmyk" style={{ color: '#71717a' }}>CMYK {cor.cmyk}</div>}

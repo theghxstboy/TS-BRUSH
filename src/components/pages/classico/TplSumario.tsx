@@ -11,11 +11,11 @@ interface TplSumarioProps {
 }
 
 export function TplSumario({ pageNumber, grupos }: TplSumarioProps) {
-  const { primaryColor, darkColor } = usePageColors()
+  const { primaryColor, darkColor, textColor } = usePageColors('sumario')
   const { pageTitleStyle, bodyStyle, metaStyle } = usePresentationTextStyles()
 
   return (
-    <div className="pagina-pdf" style={{ background: '#f7f5f1', position: 'relative' }}>
+    <div className="pagina-pdf" style={{ background: '#f7f5f1', position: 'relative', color: textColor }}>
       <div className="fundo" style={{ zIndex: 0 }}>
         <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: '34%', background: darkColor }} />
         <div style={{ position: 'absolute', left: '34%', top: 0, bottom: 0, width: 6, background: primaryColor }} />

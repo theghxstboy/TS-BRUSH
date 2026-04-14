@@ -122,7 +122,6 @@ function PaletteBlock({ title, description, colors, inputIdPrefix, onAdd, onChan
 export function SectionCores() {
   const {
     cores_logo,
-    cores_apresentacao,
     setCor,
     addCor,
     removeCor,
@@ -140,17 +139,6 @@ export function SectionCores() {
         onRemove={(id) => removeCor('logo', id)}
       />
 
-      <div style={{ height: 1, background: 'var(--border)', margin: '2px 0' }} />
-
-      <PaletteBlock
-        title="Cores da Apresentação"
-        description="Essas cores controlam capas, destaques e a identidade visual dos slides."
-        colors={cores_apresentacao}
-        inputIdPrefix="input-cor-apresentacao"
-        onAdd={() => addCor('apresentacao')}
-        onChange={(id, fields) => setCor('apresentacao', id, fields)}
-        onRemove={(id) => removeCor('apresentacao', id)}
-      />
     </CollapsibleSection>
   )
 }

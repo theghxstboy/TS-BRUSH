@@ -9,6 +9,21 @@ export function hexToRgb(hex: string): string {
   return `${r}, ${g}, ${b}`
 }
 
+export function normalizeHex(hex: string): string | null {
+  const raw = hex.trim().replace(/^#/, '')
+
+  if (/^[0-9a-fA-F]{3}$/.test(raw)) {
+    const expanded = raw.split('').map((char) => char + char).join('')
+    return `#${expanded.toUpperCase()}`
+  }
+
+  if (/^[0-9a-fA-F]{6}$/.test(raw)) {
+    return `#${raw.toUpperCase()}`
+  }
+
+  return null
+}
+
 export function hexToHsl(hex: string): string {
   const rgb = hexToRgb(hex).split(',').map((value) => Number(value.trim()) / 255)
   if (rgb.length !== 3 || rgb.some((value) => Number.isNaN(value))) return ''

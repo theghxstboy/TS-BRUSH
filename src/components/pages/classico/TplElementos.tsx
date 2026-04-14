@@ -5,8 +5,8 @@ import { usePresentationTextStyles } from '../../../hooks/usePresentationTextSty
 interface TplElementosProps { pageNumber: number }
 
 export function TplElementos({ pageNumber }: TplElementosProps) {
-  const { projeto, assets_base64 } = useBrandStore()
-  const { darkColor } = usePageColors()
+  const { projeto, assets_base64, conteudo_pdf } = useBrandStore()
+  const { darkColor, contentTitleColor, textColor, pageColor, logoBackdropColor } = usePageColors('elementos')
   const { pageTitleStyle, bodyStyle } = usePresentationTextStyles()
 
   const uploadedAssets = [
@@ -30,7 +30,7 @@ export function TplElementos({ pageNumber }: TplElementosProps) {
   return (
     <div
       className="pagina-pdf"
-      style={{ background: '#fff', position: 'relative', overflow: 'hidden' }}
+      style={{ background: pageColor, position: 'relative', overflow: 'hidden', color: textColor }}
     >
       <div
         style={{
@@ -42,13 +42,12 @@ export function TplElementos({ pageNumber }: TplElementosProps) {
           zIndex: 5,
         }}
       >
-        <h2 style={{ fontWeight: 900, color: darkColor, margin: '0 0 12px 0', ...pageTitleStyle(40) }}>
-          Elementos
+        <h2 style={{ fontWeight: 900, color: contentTitleColor, margin: '0 0 12px 0', ...pageTitleStyle(40) }}>
+          {conteudo_pdf.elementos_titulo || 'Elementos'}
         </h2>
 
         <p style={{ color: '#222', margin: '0 0 24px 0', ...bodyStyle(13.5, { lineHeight: 1.75 }) }}>
-          &nbsp;&nbsp;O logotipo é composto por elementos visuais que trabalham em conjunto para garantir equilíbrio estético,
-          reconhecimento e flexibilidade de aplicação em diferentes formatos.
+          &nbsp;&nbsp;{conteudo_pdf.elementos_descricao}
         </p>
 
         <div
@@ -76,7 +75,7 @@ export function TplElementos({ pageNumber }: TplElementosProps) {
 
               <div
                 style={{
-                  background: '#686868',
+                  background: logoBackdropColor,
                   borderRadius: 4,
                   display: 'flex',
                   alignItems: 'center',

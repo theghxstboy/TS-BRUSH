@@ -9,17 +9,17 @@ const NUMS = '0123456789 !@#$%&'
 
 export function PageTipografia({ pageNumber }: PageTipografiaProps) {
   const { tipografia } = useBrandStore()
-  const { primaryColor, darkColor, BgOverlay } = usePageColors()
+  const { primaryColor, darkColor, contentTitleColor, textColor, pageColor, logoBackdropColor } = usePageColors('tipografia-principal')
 
   const hasPrimary  = !!tipografia.principal_nome
   const hasSecondary = !!tipografia.secundaria_nome
 
   return (
-    <div className="pagina-pdf" style={{ background: '#fff' }}>
+    <div className="pagina-pdf" style={{ background: pageColor, color: textColor }}>
       {/* Fundo */}
       <div className="fundo" style={{ zIndex: 0 }}>
         {/* Light left strip */}
-        <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: '34%', background: '#f4f4f5' }} />
+        <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: '34%', background: logoBackdropColor }} />
         {/* Accent right strip */}
         <div style={{ position: 'absolute', right: 0, top: 0, bottom: 0, width: 6, background: primaryColor }} />
       </div>
@@ -30,12 +30,12 @@ export function PageTipografia({ pageNumber }: PageTipografiaProps) {
         <div className="tipo-left">
           <div>
             <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: primaryColor }}>Sistema de</div>
-            <div className="tipo-title" style={{ color: darkColor }}>Tipo<br />grafia</div>
+            <div className="tipo-title" style={{ color: contentTitleColor }}>Tipo<br />grafia</div>
             <div style={{ width: 36, height: 3, background: primaryColor, marginTop: 12, borderRadius: 2 }} />
           </div>
           {/* Big letter showcase — uses the primary font if set */}
           <div style={{
-            fontSize: 130, fontWeight: 900, color: darkColor, opacity: 0.08,
+            fontSize: 130, fontWeight: 900, color: contentTitleColor, opacity: 0.08,
             lineHeight: 1, userSelect: 'none', marginBottom: -16,
             fontFamily: hasPrimary ? `'${tipografia.principal_nome}', sans-serif` : 'inherit',
           }}>
@@ -103,7 +103,7 @@ export function PageTipografia({ pageNumber }: PageTipografiaProps) {
       </div>
 
       {/* HUD */}
-      <HUD sectionTitle="Tipografia" pageNumber={pageNumber} titleColor={darkColor} lineColor="rgba(0,0,0,0.1)" numColor={primaryColor} />
+      <HUD sectionTitle="Tipografia" pageNumber={pageNumber} titleColor={contentTitleColor} lineColor="rgba(0,0,0,0.1)" numColor={primaryColor} />
     </div>
   )
 }

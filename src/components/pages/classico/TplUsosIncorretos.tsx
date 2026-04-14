@@ -7,7 +7,7 @@ interface TplUsosIncorretosProps { pageNumber: number }
 
 export function TplUsosIncorretos({ pageNumber }: TplUsosIncorretosProps) {
   const { assets_base64 } = useBrandStore()
-  const { darkColor } = usePageColors()
+  const { darkColor, contentTitleColor, textColor, pageColor } = usePageColors('usos-incorretos')
   const { pageTitleStyle, bodyStyle } = usePresentationTextStyles()
   const src = assets_base64.logo_principal
 
@@ -33,7 +33,7 @@ export function TplUsosIncorretos({ pageNumber }: TplUsosIncorretosProps) {
   return (
     <div
       className="pagina-pdf"
-      style={{ background: '#fff', position: 'relative', overflow: 'hidden' }}
+      style={{ background: pageColor, position: 'relative', overflow: 'hidden', color: textColor }}
     >
       <div
         style={{
@@ -45,7 +45,7 @@ export function TplUsosIncorretos({ pageNumber }: TplUsosIncorretosProps) {
           zIndex: 5,
         }}
       >
-        <h2 style={{ fontWeight: 900, color: darkColor, margin: '0 0 8px 0', ...pageTitleStyle(38) }}>
+        <h2 style={{ fontWeight: 900, color: contentTitleColor, margin: '0 0 8px 0', ...pageTitleStyle(38) }}>
           O Que Não Fazer
         </h2>
         <p style={{ color: '#222', margin: '0 0 16px 0', maxWidth: '88%', ...bodyStyle(12.5, { lineHeight: 1.7 }) }}>

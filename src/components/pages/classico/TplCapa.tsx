@@ -5,14 +5,14 @@ interface TplCapaProps { pageNumber: number }
 
 export function TplCapa({ pageNumber: _pageNumber }: TplCapaProps) {
   const { assets_base64 } = useBrandStore()
-  const { primaryColor, darkColor } = usePageColors()
+  const { primaryColor, darkColor, textColor } = usePageColors('capa')
 
   if (!assets_base64.logo_principal) return null
 
   return (
     <div
       className="pagina-pdf"
-      style={{ background: primaryColor, position: 'relative' }}
+      style={{ background: primaryColor, position: 'relative', color: textColor }}
     >
       {/* Badge MANUAL DE MARCA — canto superior esquerdo */}
       <div style={{

@@ -1,6 +1,7 @@
 import type { CSSProperties } from 'react'
 import { Sidebar } from './components/sidebar/Sidebar'
 import { Canvas } from './components/canvas/Canvas'
+import { ContextDrawer } from './components/context/ContextDrawer'
 import { usePresentationTypography } from './hooks/usePresentationTypography'
 import { useBrandStore } from './store/useBrandStore'
 
@@ -19,6 +20,7 @@ export default function App() {
     <div className="app-layout" style={layoutStyle}>
       <Sidebar />
       <Canvas />
+      <ContextDrawer />
     </div>
   )
 }

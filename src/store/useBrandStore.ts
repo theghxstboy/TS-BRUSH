@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { toast } from 'sonner'
-import { hexToHsl, hexToRgb } from '../lib/colorUtils'
+import { hexToHsl, hexToRgb, normalizeHex } from '../lib/colorUtils'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -16,12 +16,55 @@ type ColorTarget = 'logo' | 'apresentacao'
 
 export interface Aparencia {
   /** Cor de fundo dos painéis escuros de cada página */
-  cor_fundo: string
+  cor_destaque: string
+  cor_paineis: string
+  cor_titulos_divisoria: string
+  cor_titulos_conteudo: string
+  cor_fundo_pagina: string
+  cor_fundo_logo: string
   /** Imagem de textura/padrão aplicada sobre os painéis de fundo (opcional) */
   imagem_fundo: string | null
 }
 
+export type SlideAppearanceKey =
+  | 'capa'
+  | 'bem-vindo'
+  | 'sumario'
+  | 'conceito'
+  | 'tipografia-principal'
+  | 'tipografia-secundaria'
+  | 'padrao-cromatico'
+  | 'versao-mono'
+  | 'elementos'
+  | 'aplicacao-fundos'
+  | 'usos-incorretos'
+  | 'mockup'
+  | 'final'
+  | 'logo-principal'
+  | 'simbolo'
+  | 'secao-logo'
+  | 'secao-tipografia'
+  | 'secao-cores'
+  | 'secao-construcao'
+  | 'secao-usos-incorretos'
+  | 'secao-aplicacoes'
+
+export interface SlideAppearance {
+  cor_destaque: string
+  cor_paineis: string
+  cor_titulo: string
+  cor_texto: string
+  cor_fundo_pagina: string
+  cor_fundo_logo: string
+}
+
+export type SlideAppearanceState = Record<SlideAppearanceKey, SlideAppearance>
+
 export type TemplateId = 'moderno' | 'classico'
+export interface PageOrderState {
+  moderno: string[]
+  classico: string[]
+}
 
 export interface BrandStore {
   projeto: {
@@ -32,6 +75,34 @@ export interface BrandStore {
     sensacoes_cores: string
     elementos_logo: string
     responsavel_manual: string
+  }
+  conteudo_pdf: {
+    boas_vindas_titulo: string
+    boas_vindas_texto_1: string
+    boas_vindas_texto_2: string
+    boas_vindas_texto_3: string
+    sumario_descricao: string
+    conceito_titulo: string
+    conceito_texto_1: string
+    conceito_texto_2: string
+    conceito_texto_3: string
+    elementos_titulo: string
+    elementos_descricao: string
+    tipografia_principal_titulo: string
+    tipografia_principal_descricao: string
+    tipografia_secundaria_titulo: string
+    tipografia_secundaria_descricao: string
+    logo_principal_titulo: string
+    logo_principal_compatibilidade: string
+    logo_principal_usos: string
+    logo_principal_protecao: string
+    logo_mono_titulo: string
+    logo_mono_descricao: string
+    simbolo_titulo: string
+    simbolo_descricao: string
+    simbolo_tamanho_minimo: string
+    simbolo_aplicacao: string
+    simbolo_fundo_preferencial: string
   }
   tipografia: {
     principal_nome: string
@@ -50,7 +121,9 @@ export interface BrandStore {
   cores_logo: BrandColor[]
   cores_apresentacao: BrandColor[]
   aparencia: Aparencia
+  page_appearance: SlideAppearanceState
   template: TemplateId
+  page_order: PageOrderState
   assets_base64: {
     logo_principal: string | null
     logo_monocromatica: string | null
@@ -60,6 +133,7 @@ export interface BrandStore {
 
   // Actions
   setProjeto: (fields: Partial<BrandStore['projeto']>) => void
+  setConteudoPdf: (fields: Partial<BrandStore['conteudo_pdf']>) => void
   setTipografia: (fields: Partial<BrandStore['tipografia']>) => void
   setCor: (target: ColorTarget, id: number, fields: Partial<BrandColor>) => void
   addCor: (target: ColorTarget) => void
@@ -67,9 +141,12 @@ export interface BrandStore {
   replaceCores: (target: ColorTarget, colors: Omit<BrandColor, 'id'>[]) => void
   setAsset: (key: keyof Omit<BrandStore['assets_base64'], 'mockups'>, value: string | null) => void
   addMockup: (base64: string) => void
+  replaceMockup: (index: number, base64: string) => void
   removeMockup: (index: number) => void
   setAparencia: (fields: Partial<Aparencia>) => void
+  setPageAppearance: (slide: SlideAppearanceKey, fields: Partial<SlideAppearance>) => void
   setTemplate: (t: TemplateId) => void
+  movePageBlock: (template: TemplateId, blockId: string, direction: 'up' | 'down') => void
   exportJson: () => void
   importJson: (file: File) => void
   reset: () => void
@@ -78,8 +155,50 @@ export interface BrandStore {
 // ─── Default state ────────────────────────────────────────────────────────────
 
 const DEFAULT_APARENCIA: Aparencia = {
-  cor_fundo: '#0C0C0C',
+  cor_destaque: '#F97316',
+  cor_paineis: '#0C0C0C',
+  cor_titulos_divisoria: '#0C0C0C',
+  cor_titulos_conteudo: '#0C0C0C',
+  cor_fundo_pagina: '#FFFFFF',
+  cor_fundo_logo: '#F4F4F5',
   imagem_fundo: null,
+}
+
+const DEFAULT_SLIDE_APPEARANCE: SlideAppearance = {
+  cor_destaque: DEFAULT_APARENCIA.cor_destaque,
+  cor_paineis: DEFAULT_APARENCIA.cor_paineis,
+  cor_titulo: DEFAULT_APARENCIA.cor_titulos_conteudo,
+  cor_texto: '#1A1A1A',
+  cor_fundo_pagina: DEFAULT_APARENCIA.cor_fundo_pagina,
+  cor_fundo_logo: DEFAULT_APARENCIA.cor_fundo_logo,
+}
+
+function buildDefaultPageAppearance(): SlideAppearanceState {
+  const keys: SlideAppearanceKey[] = [
+    'capa',
+    'bem-vindo',
+    'sumario',
+    'conceito',
+    'tipografia-principal',
+    'tipografia-secundaria',
+    'padrao-cromatico',
+    'versao-mono',
+    'elementos',
+    'aplicacao-fundos',
+    'usos-incorretos',
+    'mockup',
+    'final',
+    'logo-principal',
+    'simbolo',
+    'secao-logo',
+    'secao-tipografia',
+    'secao-cores',
+    'secao-construcao',
+    'secao-usos-incorretos',
+    'secao-aplicacoes',
+  ]
+
+  return Object.fromEntries(keys.map((key) => [key, { ...DEFAULT_SLIDE_APPEARANCE }])) as SlideAppearanceState
 }
 
 const DEFAULT_CORES: BrandColor[] = [
@@ -90,8 +209,9 @@ const DEFAULT_CORES: BrandColor[] = [
 
 /** Always freshly cloned → reset never shares references with live state */
 function freshDefault(): Omit<BrandStore,
-  | 'setProjeto' | 'setTipografia' | 'setCor' | 'addCor' | 'removeCor' | 'replaceCores'
-  | 'setAsset' | 'addMockup' | 'removeMockup' | 'setAparencia' | 'setTemplate'
+  | 'setProjeto' | 'setConteudoPdf' | 'setTipografia' | 'setCor' | 'addCor' | 'removeCor' | 'replaceCores'
+  | 'setAsset' | 'addMockup' | 'replaceMockup' | 'removeMockup' | 'setAparencia' | 'setTemplate' | 'movePageBlock'
+  | 'setPageAppearance'
   | 'exportJson' | 'importJson' | 'reset'
 > {
   return {
@@ -103,6 +223,34 @@ function freshDefault(): Omit<BrandStore,
       sensacoes_cores: '',
       elementos_logo: '',
       responsavel_manual: '',
+    },
+    conteudo_pdf: {
+      boas_vindas_titulo: 'Bem Vindo!',
+      boas_vindas_texto_1: 'Este manual foi criado para garantir a consistência e a autenticidade da identidade visual de sua marca. Aqui, você encontrará diretrizes essenciais para o uso correto do logo, cores, tipografia e outros elementos gráficos que representam a essência do seu negócio.',
+      boas_vindas_texto_2: 'Na marca, acreditamos que uma identidade visual forte é a base para uma comunicação impactante e memorável. Com este material, sua marca estará preparada para se destacar e construir conexões sólidas com seu público.',
+      boas_vindas_texto_3: 'Siga as orientações deste guia e mantenha a coerência em todas as aplicações. Juntos, estamos construindo uma marca de sucesso!',
+      sumario_descricao: '',
+      conceito_titulo: 'Conceito',
+      conceito_texto_1: 'O logo da marca foi desenvolvido para representar os principais atributos e diferenciais da marca.',
+      conceito_texto_2: 'Cada elemento foi pensado estrategicamente para comunicar os valores centrais que orientam sua comunicação.',
+      conceito_texto_3: 'A tipografia, cores e ícones foram combinados para criar uma identidade visual forte e memorável.',
+      elementos_titulo: 'Elementos',
+      elementos_descricao: 'O logotipo é composto por elementos visuais que trabalham em conjunto para garantir equilíbrio estético, reconhecimento e flexibilidade de aplicação em diferentes formatos.',
+      tipografia_principal_titulo: 'Principal',
+      tipografia_principal_descricao: '',
+      tipografia_secundaria_titulo: 'Secundária',
+      tipografia_secundaria_descricao: '',
+      logo_principal_titulo: 'Logotipo Principal',
+      logo_principal_compatibilidade: 'Claro, Escuro, Colorido',
+      logo_principal_usos: 'Alta Resolução, Digital & Print, Fundo Transparente',
+      logo_principal_protecao: 'Área livre mínima equivalente à altura da letra "X" do logotipo em todos os lados.',
+      logo_mono_titulo: 'Versão Monocromática',
+      logo_mono_descricao: 'Use a versão branca em fundos escuros e a versão preta em fundos claros. Nunca utilize a versão colorida em contextos de baixo contraste.',
+      simbolo_titulo: 'Símbolo & Ícone',
+      simbolo_descricao: 'O símbolo pode ser utilizado de forma independente do logotipo em aplicações onde o reconhecimento da marca já esteja estabelecido.',
+      simbolo_tamanho_minimo: '24px / 8mm',
+      simbolo_aplicacao: 'Ícones, Favicons, Social Media',
+      simbolo_fundo_preferencial: 'Claro ou Transparente',
     },
     tipografia: {
       principal_nome: '',
@@ -121,7 +269,12 @@ function freshDefault(): Omit<BrandStore,
     cores_logo: DEFAULT_CORES.map((c) => ({ ...c })),
     cores_apresentacao: DEFAULT_CORES.map((c) => ({ ...c })),
     aparencia: { ...DEFAULT_APARENCIA },
+    page_appearance: buildDefaultPageAppearance(),
     template: 'classico' as TemplateId,
+    page_order: {
+      moderno: ['capa', 'sumario', 'cores', 'tipografia', 'logo-principal', 'logo-mono', 'simbolo', 'mockups'],
+      classico: ['capa', 'bem-vindo', 'sumario', 'logo', 'tipografia', 'cores', 'construcao', 'usos-incorretos', 'aplicacoes', 'final'],
+    },
     assets_base64: {
       logo_principal: null,
       logo_monocromatica: null,
@@ -143,6 +296,62 @@ function getColorKey(target: ColorTarget) {
   return target === 'logo' ? 'cores_logo' : 'cores_apresentacao'
 }
 
+type AparenciaColorKey =
+  | 'cor_destaque'
+  | 'cor_paineis'
+  | 'cor_titulos_divisoria'
+  | 'cor_titulos_conteudo'
+  | 'cor_fundo_pagina'
+  | 'cor_fundo_logo'
+
+type SlideAppearanceColorKey =
+  | 'cor_destaque'
+  | 'cor_paineis'
+  | 'cor_titulo'
+  | 'cor_texto'
+  | 'cor_fundo_pagina'
+  | 'cor_fundo_logo'
+
+function sanitizeAparenciaFields(fields: Partial<Aparencia>, current: Aparencia): Partial<Aparencia> {
+  const next: Partial<Aparencia> = { ...fields }
+  const colorKeys: AparenciaColorKey[] = [
+    'cor_destaque',
+    'cor_paineis',
+    'cor_titulos_divisoria',
+    'cor_titulos_conteudo',
+    'cor_fundo_pagina',
+    'cor_fundo_logo',
+  ]
+
+  for (const key of colorKeys) {
+    if (!(key in next) || typeof next[key] !== 'string') continue
+    const normalized = normalizeHex(String(next[key]))
+    next[key] = normalized ?? current[key]
+  }
+
+  return next
+}
+
+function sanitizeSlideAppearanceFields(fields: Partial<SlideAppearance>, current: SlideAppearance): Partial<SlideAppearance> {
+  const next: Partial<SlideAppearance> = { ...fields }
+  const colorKeys: SlideAppearanceColorKey[] = [
+    'cor_destaque',
+    'cor_paineis',
+    'cor_titulo',
+    'cor_texto',
+    'cor_fundo_pagina',
+    'cor_fundo_logo',
+  ]
+
+  for (const key of colorKeys) {
+    if (!(key in next) || typeof next[key] !== 'string') continue
+    const normalized = normalizeHex(String(next[key]))
+    next[key] = normalized ?? current[key]
+  }
+
+  return next
+}
+
 // ─── Store ────────────────────────────────────────────────────────────────────
 
 export const useBrandStore = create<BrandStore>((set, get) => ({
@@ -150,6 +359,9 @@ export const useBrandStore = create<BrandStore>((set, get) => ({
 
   setProjeto: (fields) =>
     set((s) => ({ projeto: { ...s.projeto, ...fields } })),
+
+  setConteudoPdf: (fields) =>
+    set((s) => ({ conteudo_pdf: { ...s.conteudo_pdf, ...fields } })),
 
   setTipografia: (fields) =>
     set((s) => ({ tipografia: { ...s.tipografia, ...fields } })),
@@ -185,6 +397,14 @@ export const useBrandStore = create<BrandStore>((set, get) => ({
       },
     })),
 
+  replaceMockup: (index, base64) =>
+    set((s) => ({
+      assets_base64: {
+        ...s.assets_base64,
+        mockups: s.assets_base64.mockups.map((mockup, currentIndex) => (currentIndex === index ? base64 : mockup)),
+      },
+    })),
+
   removeMockup: (index) =>
     set((s) => ({
       assets_base64: {
@@ -194,19 +414,53 @@ export const useBrandStore = create<BrandStore>((set, get) => ({
     })),
 
   setAparencia: (fields) =>
-    set((s) => ({ aparencia: { ...s.aparencia, ...fields } })),
+    set((s) => ({ aparencia: { ...s.aparencia, ...sanitizeAparenciaFields(fields, s.aparencia) } })),
+
+  setPageAppearance: (slide, fields) =>
+    set((s) => ({
+      page_appearance: {
+        ...s.page_appearance,
+        [slide]: {
+          ...s.page_appearance[slide],
+          ...sanitizeSlideAppearanceFields(fields, s.page_appearance[slide]),
+        },
+      },
+    })),
 
   setTemplate: (t) => set(() => ({ template: t })),
+
+  movePageBlock: (template, blockId, direction) =>
+    set((s) => {
+      const current = [...s.page_order[template]]
+      const index = current.indexOf(blockId)
+      if (index === -1) return s
+      const targetIndex = direction === 'up' ? index - 1 : index + 1
+      if (targetIndex < 0 || targetIndex >= current.length) return s
+
+      const next = [...current]
+      const [item] = next.splice(index, 1)
+      next.splice(targetIndex, 0, item)
+
+      return {
+        page_order: {
+          ...s.page_order,
+          [template]: next,
+        },
+      }
+    }),
 
   exportJson: () => {
     const s = get()
     const stateData = {
       projeto: s.projeto,
+      conteudo_pdf: s.conteudo_pdf,
       tipografia: s.tipografia,
       cores_logo: s.cores_logo,
       cores_apresentacao: s.cores_apresentacao,
       aparencia: s.aparencia,
+      page_appearance: s.page_appearance,
       template: s.template,
+      page_order: s.page_order,
       assets_base64: s.assets_base64,
     }
     const blob = new Blob([JSON.stringify(stateData, null, 2)], { type: 'application/json' })
@@ -239,6 +493,7 @@ export const useBrandStore = create<BrandStore>((set, get) => ({
 
         set(() => ({
           projeto:    { ...fallback.projeto, ...p.projeto },
+          conteudo_pdf: { ...fallback.conteudo_pdf, ...p.conteudo_pdf },
           tipografia: { ...fallback.tipografia, ...p.tipografia },
           cores_logo: assignIds(importedLogoColors.map((c: Omit<BrandColor, 'id'> & Partial<BrandColor>) => ({
             hex: c.hex ?? '#888888',
@@ -252,7 +507,40 @@ export const useBrandStore = create<BrandStore>((set, get) => ({
             hsl: c.hsl ?? hexToHsl(c.hex ?? '#888888'),
             cmyk: c.cmyk ?? '',
           }))),
-          aparencia:  p.aparencia  ? { ...DEFAULT_APARENCIA, ...p.aparencia } : { ...DEFAULT_APARENCIA },
+          page_order: {
+            moderno: Array.isArray(p.page_order?.moderno) ? p.page_order.moderno : fallback.page_order.moderno,
+            classico: Array.isArray(p.page_order?.classico) ? p.page_order.classico : fallback.page_order.classico,
+          },
+          aparencia: p.aparencia
+            ? {
+                ...DEFAULT_APARENCIA,
+                ...p.aparencia,
+                cor_paineis: p.aparencia.cor_paineis ?? p.aparencia.cor_fundo ?? DEFAULT_APARENCIA.cor_paineis,
+                cor_titulos_divisoria: p.aparencia.cor_titulos_divisoria ?? p.aparencia.cor_titulos ?? p.aparencia.cor_fundo ?? DEFAULT_APARENCIA.cor_titulos_divisoria,
+                cor_titulos_conteudo: p.aparencia.cor_titulos_conteudo ?? p.aparencia.cor_titulos ?? p.aparencia.cor_fundo ?? DEFAULT_APARENCIA.cor_titulos_conteudo,
+                cor_destaque: p.aparencia.cor_destaque ?? importedPresentationColors[0]?.hex ?? DEFAULT_APARENCIA.cor_destaque,
+                cor_fundo_logo: p.aparencia.cor_fundo_logo ?? '#F4F4F5',
+                cor_fundo_pagina: p.aparencia.cor_fundo_pagina ?? '#FFFFFF',
+              }
+            : {
+                ...DEFAULT_APARENCIA,
+                cor_destaque: importedPresentationColors[0]?.hex ?? DEFAULT_APARENCIA.cor_destaque,
+                cor_paineis: importedPresentationColors[1]?.hex ?? DEFAULT_APARENCIA.cor_paineis,
+                cor_titulos_divisoria: importedPresentationColors[1]?.hex ?? DEFAULT_APARENCIA.cor_titulos_divisoria,
+                cor_titulos_conteudo: importedPresentationColors[1]?.hex ?? DEFAULT_APARENCIA.cor_titulos_conteudo,
+              },
+          page_appearance: {
+            ...buildDefaultPageAppearance(),
+            ...Object.fromEntries(
+              Object.entries((p.page_appearance ?? {}) as Partial<Record<SlideAppearanceKey, Partial<SlideAppearance>>>).map(([key, value]) => [
+                key,
+                {
+                  ...DEFAULT_SLIDE_APPEARANCE,
+                  ...sanitizeSlideAppearanceFields(value ?? {}, DEFAULT_SLIDE_APPEARANCE),
+                },
+              ]),
+            ),
+          },
           template:   (p.template === 'moderno' || p.template === 'classico') ? p.template : 'classico',
           assets_base64: {
             logo_principal:   p.assets_base64?.logo_principal   ?? null,

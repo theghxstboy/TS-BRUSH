@@ -14,12 +14,12 @@ interface PageSumarioProps {
 }
 
 export function PageSumario({ pageNumber, entries }: PageSumarioProps) {
-  const { projeto, assets_base64 } = useBrandStore()
-  const { primaryColor, darkColor, BgOverlay } = usePageColors()
+  const { projeto, assets_base64, conteudo_pdf } = useBrandStore()
+  const { primaryColor, darkColor, textColor, pageColor, BgOverlay } = usePageColors('sumario')
   const { pageTitleStyle, bodyStyle, metaStyle } = usePresentationTextStyles()
 
   return (
-    <div className="pagina-pdf" style={{ background: '#fff' }}>
+    <div className="pagina-pdf" style={{ background: pageColor, color: textColor }}>
       <div className="fundo" style={{ zIndex: 0 }}>
         <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: '38%', background: darkColor, overflow: 'hidden' }}>
           {BgOverlay && <BgOverlay />}
@@ -40,7 +40,7 @@ export function PageSumario({ pageNumber, entries }: PageSumarioProps) {
             <div className="sumario-title" style={pageTitleStyle(48)}>Con<br />teúdo</div>
           </div>
           <div className="sumario-desc" style={bodyStyle(13)}>
-            {projeto.conceito || 'Este manual define os padrões visuais da marca.'}
+            {conteudo_pdf.sumario_descricao || projeto.conceito || 'Este manual define os padrões visuais da marca.'}
           </div>
         </div>
 

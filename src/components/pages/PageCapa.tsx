@@ -6,14 +6,14 @@ interface PageCapaProps { pageNumber: number }
 
 export function PageCapa({ pageNumber }: PageCapaProps) {
   const { projeto, assets_base64 } = useBrandStore()
-  const { primaryColor, darkColor, BgOverlay, aparencia } = usePageColors()
+  const { primaryColor, darkColor, textColor, BgOverlay, aparencia } = usePageColors('capa')
 
   if (!assets_base64.logo_principal) return null
 
   const hasBg = !!aparencia.imagem_fundo
 
   return (
-    <div className="pagina-pdf" style={{ background: darkColor }}>
+    <div className="pagina-pdf" style={{ background: darkColor, color: textColor }}>
       {/* Fundo */}
       <div className="fundo" style={{ zIndex: 0 }}>
         {hasBg ? (

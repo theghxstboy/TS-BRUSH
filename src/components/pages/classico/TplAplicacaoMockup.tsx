@@ -9,14 +9,14 @@ interface TplAplicacaoMockupProps {
 
 export function TplAplicacaoMockup({ mockupIndex, pageNumber, totalMockups }: TplAplicacaoMockupProps) {
   const { assets_base64 } = useBrandStore()
-  const { primaryColor, darkColor } = usePageColors()
+  const { primaryColor, darkColor, textColor } = usePageColors('mockup')
   const src = assets_base64.mockups[mockupIndex]
   if (!src) return null
 
   return (
     <div
       className="pagina-pdf"
-      style={{ background: darkColor, position: 'relative', overflow: 'hidden' }}
+      style={{ background: darkColor, position: 'relative', overflow: 'hidden', color: textColor }}
     >
       {/* Imagem fullscreen */}
       <img

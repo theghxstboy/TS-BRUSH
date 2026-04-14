@@ -14,13 +14,13 @@ function getMockupGridStyle(count: number): React.CSSProperties {
 
 export function PageMockups({ pageNumber }: PageMockupsProps) {
   const { projeto, assets_base64 } = useBrandStore()
-  const { primaryColor, darkColor } = usePageColors()
+  const { primaryColor, darkColor, textColor, pageColor } = usePageColors('mockup')
   const mockups = assets_base64.mockups
   if (mockups.length === 0) return null
   const displayMockups = mockups.slice(0, 6)
 
   return (
-    <div className="pagina-pdf" style={{ background: '#f9f9f9' }}>
+    <div className="pagina-pdf" style={{ background: pageColor, color: textColor }}>
       {/* Fundo */}
       <div className="fundo" style={{ zIndex: 0 }}>
         <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 70, background: darkColor }} />

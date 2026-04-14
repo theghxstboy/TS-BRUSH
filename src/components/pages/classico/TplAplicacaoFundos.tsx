@@ -5,7 +5,7 @@ interface TplAplicacaoFundosProps { pageNumber: number }
 
 export function TplAplicacaoFundos({ pageNumber }: TplAplicacaoFundosProps) {
   const { assets_base64 } = useBrandStore()
-  const { darkColor } = usePageColors()
+  const { darkColor, contentTitleColor, textColor, pageColor } = usePageColors('aplicacao-fundos')
   const src = assets_base64.logo_principal
 
   const fundos = [
@@ -16,7 +16,7 @@ export function TplAplicacaoFundos({ pageNumber }: TplAplicacaoFundosProps) {
   return (
     <div
       className="pagina-pdf"
-      style={{ background: '#fff', position: 'relative', overflow: 'hidden' }}
+      style={{ background: pageColor, position: 'relative', overflow: 'hidden', color: textColor }}
     >
       <div style={{
         position: 'absolute',
@@ -26,7 +26,7 @@ export function TplAplicacaoFundos({ pageNumber }: TplAplicacaoFundosProps) {
         flexDirection: 'column',
         zIndex: 5,
       }}>
-        <h2 style={{ fontSize: 40, fontWeight: 900, color: darkColor, margin: '0 0 12px 0' }}>
+        <h2 style={{ fontSize: 40, fontWeight: 900, color: contentTitleColor, margin: '0 0 12px 0' }}>
           Aplicação Sobre Fundos
         </h2>
 

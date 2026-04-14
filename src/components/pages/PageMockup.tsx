@@ -13,13 +13,13 @@ interface PageMockupProps {
 
 export function PageMockup({ mockupIndex, pageNumber, totalMockups }: PageMockupProps) {
   const { projeto, assets_base64 } = useBrandStore()
-  const { primaryColor, darkColor } = usePageColors()
+  const { primaryColor, darkColor, textColor } = usePageColors('mockup')
   const src = assets_base64.mockups[mockupIndex]
   if (!src) return null
   const isLast = mockupIndex === totalMockups - 1
 
   return (
-    <div className="pagina-pdf" style={{ background: '#111' }}>
+    <div className="pagina-pdf" style={{ background: '#111', color: textColor }}>
       {/* Fundo: mockup em tela cheia */}
       <div className="fundo" style={{ zIndex: 0 }}>
         <img

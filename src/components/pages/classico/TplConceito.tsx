@@ -5,17 +5,20 @@ import { usePresentationTextStyles } from '../../../hooks/usePresentationTextSty
 interface TplConceitoProps { pageNumber: number }
 
 export function TplConceito({ pageNumber }: TplConceitoProps) {
-  const { projeto, assets_base64 } = useBrandStore()
-  const { darkColor } = usePageColors()
+  const { projeto, assets_base64, conteudo_pdf } = useBrandStore()
+  const { darkColor, contentTitleColor, textColor, pageColor } = usePageColors('conceito')
   const { pageTitleStyle, bodyStyle } = usePresentationTextStyles()
 
   const caracteristicas = projeto.caracteristicas_marca || 'os principais atributos e diferenciais da marca'
   const valores = projeto.valores_marca || 'os valores centrais que orientam sua comunicação'
+  const texto1 = (conteudo_pdf.conceito_texto_1 || '').replace('da marca', `da ${projeto.nome_marca || 'marca'}`).replace('os principais atributos e diferenciais da marca', caracteristicas)
+  const texto2 = (conteudo_pdf.conceito_texto_2 || '').replace('os valores centrais que orientam sua comunicação', valores)
+  const texto3 = conteudo_pdf.conceito_texto_3
 
   return (
     <div
       className="pagina-pdf"
-      style={{ background: '#fff', position: 'relative', overflow: 'hidden' }}
+      style={{ background: pageColor, position: 'relative', overflow: 'hidden', color: textColor }}
     >
       <div
         style={{
@@ -28,22 +31,20 @@ export function TplConceito({ pageNumber }: TplConceitoProps) {
         }}
       >
         <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 20, paddingRight: 28 }}>
-          <h2 style={{ fontWeight: 900, color: darkColor, margin: 0, ...pageTitleStyle(40) }}>
-            Conceito
+          <h2 style={{ fontWeight: 900, color: contentTitleColor, margin: 0, ...pageTitleStyle(40) }}>
+            {conteudo_pdf.conceito_titulo || 'Conceito'}
           </h2>
 
           <p style={{ color: '#222', margin: 0, ...bodyStyle(13.5, { lineHeight: 1.75 }) }}>
-            &nbsp;&nbsp;O logo da <span style={{ color: darkColor, fontWeight: 700 }}>{projeto.nome_marca || 'Nome da Marca'}</span> foi
-            desenvolvido para representar <span style={{ color: darkColor, fontWeight: 600 }}>{caracteristicas}</span>.
+            &nbsp;&nbsp;{texto1}
           </p>
 
           <p style={{ color: '#222', margin: 0, ...bodyStyle(13.5, { lineHeight: 1.75 }) }}>
-            &nbsp;&nbsp;Cada elemento foi pensado estrategicamente para comunicar{' '}
-            <span style={{ color: darkColor, fontWeight: 600 }}>{valores}</span>.
+            &nbsp;&nbsp;{texto2}
           </p>
 
           <p style={{ color: '#222', margin: 0, ...bodyStyle(13.5, { lineHeight: 1.75 }) }}>
-            &nbsp;&nbsp;A tipografia, cores e ícones foram combinados para criar uma identidade visual forte e memorável.
+            &nbsp;&nbsp;{texto3}
           </p>
         </div>
 

@@ -6,7 +6,7 @@ interface TplConceitoProps { pageNumber: number }
 
 export function TplConceito({ pageNumber }: TplConceitoProps) {
   const { projeto, assets_base64, conteudo_pdf } = useBrandStore()
-  const { darkColor, contentTitleColor, textColor, pageColor } = usePageColors('conceito')
+  const { darkColor, contentTitleColor, textColor, pageColor, pageBackgroundStyle } = usePageColors('conceito')
   const { pageTitleStyle, bodyStyle } = usePresentationTextStyles()
 
   const caracteristicas = projeto.caracteristicas_marca || 'os principais atributos e diferenciais da marca'
@@ -18,7 +18,7 @@ export function TplConceito({ pageNumber }: TplConceitoProps) {
   return (
     <div
       className="pagina-pdf"
-      style={{ background: pageColor, position: 'relative', overflow: 'hidden', color: textColor }}
+      style={{ background: pageColor, position: 'relative', overflow: 'hidden', color: textColor, ...pageBackgroundStyle }}
     >
       <div
         style={{

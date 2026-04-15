@@ -1,5 +1,6 @@
 import { ArrowDown, ArrowUp, ListOrdered } from 'lucide-react'
 import { useBrandStore } from '../../store/useBrandStore'
+import { resolveFontName } from '../../lib/fontUtils'
 import { CollapsibleSection } from './CollapsibleSection'
 
 const LABELS: Record<string, string> = {
@@ -35,7 +36,7 @@ function getAvailability(blockId: string, hasLogo: boolean, hasMono: boolean, ha
     case 'aplicacoes':
       return mockupCount > 0
     case 'tipografia':
-      return hasPrimary || hasSecondary
+      return true
     default:
       return true
   }
@@ -48,8 +49,8 @@ export function SectionOrdemPaginas() {
   const hasMono = !!assets_base64.logo_monocromatica
   const hasSimbolo = !!assets_base64.logo_simbolo
   const mockupCount = assets_base64.mockups.length
-  const hasPrimary = !!tipografia.principal_nome
-  const hasSecondary = !!tipografia.secundaria_nome
+  const hasPrimary = true
+  const hasSecondary = !!resolveFontName(tipografia.secundaria_nome, tipografia.secundaria_custom.file_name)
   const items = page_order[template]
 
   return (

@@ -4,7 +4,7 @@ import { usePresentationTextStyles } from '../../../hooks/usePresentationTextSty
 
 export function TplFinal() {
   const { projeto } = useBrandStore()
-  const { primaryColor, darkColor, textColor } = usePageColors('final')
+  const { primaryColor, darkColor, textColor, pageBackgroundStyle } = usePageColors('final')
   const { pageTitleStyle, bodyStyle } = usePresentationTextStyles()
 
   const currentYear = new Date().getFullYear()
@@ -18,6 +18,7 @@ export function TplFinal() {
         position: 'relative',
         overflow: 'hidden',
         color: textColor,
+        ...pageBackgroundStyle,
       }}
     >
       <div

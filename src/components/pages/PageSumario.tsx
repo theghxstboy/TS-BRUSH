@@ -15,15 +15,13 @@ interface PageSumarioProps {
 
 export function PageSumario({ pageNumber, entries }: PageSumarioProps) {
   const { projeto, assets_base64, conteudo_pdf } = useBrandStore()
-  const { primaryColor, darkColor, textColor, pageColor, BgOverlay } = usePageColors('sumario')
+  const { primaryColor, darkColor, textColor, pageColor, pageBackgroundStyle } = usePageColors('sumario')
   const { pageTitleStyle, bodyStyle, metaStyle } = usePresentationTextStyles()
 
   return (
-    <div className="pagina-pdf" style={{ background: pageColor, color: textColor }}>
+    <div className="pagina-pdf" style={{ background: pageColor, color: textColor, ...pageBackgroundStyle }}>
       <div className="fundo" style={{ zIndex: 0 }}>
-        <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: '38%', background: darkColor, overflow: 'hidden' }}>
-          {BgOverlay && <BgOverlay />}
-        </div>
+        <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: '38%', background: darkColor, overflow: 'hidden' }} />
       </div>
 
       <div className="conteudo sumario-layout">

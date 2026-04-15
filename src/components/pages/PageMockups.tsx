@@ -1,5 +1,6 @@
 import { useBrandStore } from '../../store/useBrandStore'
 import { usePageColors } from '../../hooks/usePageColors'
+import { usePresentationTextStyles } from '../../hooks/usePresentationTextStyles'
 import { HUD } from '../canvas/HUD'
 
 interface PageMockupsProps { pageNumber: number }
@@ -14,13 +15,14 @@ function getMockupGridStyle(count: number): React.CSSProperties {
 
 export function PageMockups({ pageNumber }: PageMockupsProps) {
   const { projeto, assets_base64 } = useBrandStore()
-  const { primaryColor, darkColor, textColor, pageColor } = usePageColors('mockup')
+  const { primaryColor, darkColor, textColor, pageColor, pageBackgroundStyle } = usePageColors('mockup')
+  const { pageTitleStyle, bodyStyle, metaStyle } = usePresentationTextStyles()
   const mockups = assets_base64.mockups
   if (mockups.length === 0) return null
   const displayMockups = mockups.slice(0, 6)
 
   return (
-    <div className="pagina-pdf" style={{ background: pageColor, color: textColor }}>
+    <div className="pagina-pdf" style={{ background: pageColor, color: textColor, ...pageBackgroundStyle }}>
       {/* Fundo */}
       <div className="fundo" style={{ zIndex: 0 }}>
         <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 70, background: darkColor }} />
@@ -33,10 +35,10 @@ export function PageMockups({ pageNumber }: PageMockupsProps) {
         <div className="mockups-header" style={{ paddingTop: 20, paddingBottom: 12 }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', color: '#fff' }}>
             <div>
-              <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: primaryColor }}>Aplicações da Marca</div>
-              <div style={{ fontSize: 22, fontWeight: 800 }}>Mockups — {projeto.nome_marca || 'Marca'}</div>
+              <div style={{ ...metaStyle(10), fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: primaryColor }}>Aplicações da Marca</div>
+              <div style={{ ...pageTitleStyle(22, { fontWeight: 800, lineHeight: 1.05 }) }}>Mockups — {projeto.nome_marca || 'Marca'}</div>
             </div>
-            <div style={{ fontFamily: "'Geist Mono', monospace", fontSize: 24, fontWeight: 900, color: primaryColor }}>
+            <div style={{ ...bodyStyle(24), fontFamily: "'Geist Mono', monospace", fontWeight: 900, color: primaryColor, lineHeight: 1 }}>
               {String(pageNumber).padStart(2, '0')}
             </div>
           </div>

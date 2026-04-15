@@ -6,8 +6,8 @@ interface TplElementosProps { pageNumber: number }
 
 export function TplElementos({ pageNumber }: TplElementosProps) {
   const { projeto, assets_base64, conteudo_pdf } = useBrandStore()
-  const { darkColor, contentTitleColor, textColor, pageColor, logoBackdropColor } = usePageColors('elementos')
-  const { pageTitleStyle, bodyStyle } = usePresentationTextStyles()
+  const { darkColor, contentTitleColor, textColor, pageColor, logoBackdropColor, pageBackgroundStyle } = usePageColors('elementos')
+  const { pageTitleStyle, bodyStyle, metaStyle } = usePresentationTextStyles()
 
   const uploadedAssets = [
     { src: assets_base64.logo_principal, fallbackLabel: 'Logotipo principal' },
@@ -30,7 +30,7 @@ export function TplElementos({ pageNumber }: TplElementosProps) {
   return (
     <div
       className="pagina-pdf"
-      style={{ background: pageColor, position: 'relative', overflow: 'hidden', color: textColor }}
+      style={{ background: pageColor, position: 'relative', overflow: 'hidden', color: textColor, ...pageBackgroundStyle }}
     >
       <div
         style={{
@@ -62,7 +62,7 @@ export function TplElementos({ pageNumber }: TplElementosProps) {
             <div key={`${card.label}-${index}`} style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               <div
                 style={{
-                  fontSize: 12,
+                  ...metaStyle(12),
                   fontWeight: 700,
                   color: darkColor,
                   letterSpacing: '0.08em',
@@ -116,7 +116,7 @@ export function TplElementos({ pageNumber }: TplElementosProps) {
         }}
       >
         <div style={{ flex: 1, height: 1.5, background: darkColor, opacity: 0.2 }} />
-        <span style={{ fontSize: 15, fontWeight: 800, color: darkColor }}>
+        <span style={{ ...bodyStyle(15), fontWeight: 800, color: darkColor }}>
           {String(pageNumber).padStart(2, '0')}
         </span>
       </div>

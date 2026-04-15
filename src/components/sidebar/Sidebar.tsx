@@ -1,4 +1,4 @@
-import { SectionTemplate } from './SectionTemplate'
+
 import { SectionOrdemPaginas } from './SectionOrdemPaginas'
 import { SectionProjeto } from './SectionProjeto'
 import { SectionAssets } from './SectionAssets'
@@ -22,7 +22,7 @@ export function Sidebar() {
             Tudo aqui vale para a estrutura geral da apresentacao. O drawer da direita concentra o que pertence ao slide selecionado.
           </p>
         </div>
-        <SectionTemplate />
+
         <SectionOrdemPaginas />
         <SectionProjeto />
         <SectionAssets />

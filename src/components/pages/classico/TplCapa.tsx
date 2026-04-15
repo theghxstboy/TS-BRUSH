@@ -1,18 +1,20 @@
 import { useBrandStore } from '../../../store/useBrandStore'
 import { usePageColors } from '../../../hooks/usePageColors'
+import { usePresentationTextStyles } from '../../../hooks/usePresentationTextStyles'
 
 interface TplCapaProps { pageNumber: number }
 
 export function TplCapa({ pageNumber: _pageNumber }: TplCapaProps) {
   const { assets_base64 } = useBrandStore()
-  const { primaryColor, darkColor, textColor } = usePageColors('capa')
+  const { primaryColor, darkColor, textColor, pageBackgroundStyle } = usePageColors('capa')
+  const { metaStyle } = usePresentationTextStyles()
 
   if (!assets_base64.logo_principal) return null
 
   return (
     <div
       className="pagina-pdf"
-      style={{ background: primaryColor, position: 'relative', color: textColor }}
+      style={{ background: primaryColor, position: 'relative', color: textColor, ...pageBackgroundStyle }}
     >
       {/* Badge MANUAL DE MARCA — canto superior esquerdo */}
       <div style={{
@@ -22,7 +24,7 @@ export function TplCapa({ pageNumber: _pageNumber }: TplCapaProps) {
         background: darkColor,
         color: '#fff',
         fontWeight: 800,
-        fontSize: 13,
+        ...metaStyle(13),
         letterSpacing: '0.08em',
         padding: '10px 20px',
         borderRadius: 24,

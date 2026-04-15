@@ -1,6 +1,8 @@
 import { create } from 'zustand'
 import { toast } from 'sonner'
 import { hexToHsl, hexToRgb, normalizeHex } from '../lib/colorUtils'
+import { EMPTY_UPLOADED_FONT } from '../lib/fontUtils'
+import type { UploadedFontAsset } from '../lib/fontUtils'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -14,6 +16,8 @@ export interface BrandColor {
 
 type ColorTarget = 'logo' | 'apresentacao'
 
+export const DEFAULT_BACKGROUND_IMAGE_OPACITY = 0.16
+
 export interface Aparencia {
   /** Cor de fundo dos painéis escuros de cada página */
   cor_destaque: string
@@ -24,6 +28,7 @@ export interface Aparencia {
   cor_fundo_logo: string
   /** Imagem de textura/padrão aplicada sobre os painéis de fundo (opcional) */
   imagem_fundo: string | null
+  imagem_fundo_opacidade: number
 }
 
 export type SlideAppearanceKey =
@@ -56,6 +61,8 @@ export interface SlideAppearance {
   cor_texto: string
   cor_fundo_pagina: string
   cor_fundo_logo: string
+  imagem_fundo: string | null
+  imagem_fundo_opacidade: number
 }
 
 export type SlideAppearanceState = Record<SlideAppearanceKey, SlideAppearance>
@@ -107,10 +114,14 @@ export interface BrandStore {
   tipografia: {
     principal_nome: string
     principal_estilos: string
+    principal_custom: UploadedFontAsset
     secundaria_nome: string
     secundaria_estilos: string
+    secundaria_custom: UploadedFontAsset
     apresentacao_titulos: string
+    apresentacao_titulos_custom: UploadedFontAsset
     apresentacao_textos: string
+    apresentacao_textos_custom: UploadedFontAsset
     apresentacao_alinhamento: 'left' | 'center' | 'right' | 'justify'
     apresentacao_tamanho_titulo: number
     apresentacao_tamanho_titulo_pagina: number
@@ -162,6 +173,7 @@ const DEFAULT_APARENCIA: Aparencia = {
   cor_fundo_pagina: '#FFFFFF',
   cor_fundo_logo: '#F4F4F5',
   imagem_fundo: null,
+  imagem_fundo_opacidade: DEFAULT_BACKGROUND_IMAGE_OPACITY,
 }
 
 const DEFAULT_SLIDE_APPEARANCE: SlideAppearance = {
@@ -171,6 +183,8 @@ const DEFAULT_SLIDE_APPEARANCE: SlideAppearance = {
   cor_texto: '#1A1A1A',
   cor_fundo_pagina: DEFAULT_APARENCIA.cor_fundo_pagina,
   cor_fundo_logo: DEFAULT_APARENCIA.cor_fundo_logo,
+  imagem_fundo: null,
+  imagem_fundo_opacidade: DEFAULT_BACKGROUND_IMAGE_OPACITY,
 }
 
 function buildDefaultPageAppearance(): SlideAppearanceState {
@@ -255,10 +269,14 @@ function freshDefault(): Omit<BrandStore,
     tipografia: {
       principal_nome: '',
       principal_estilos: '',
+      principal_custom: { ...EMPTY_UPLOADED_FONT },
       secundaria_nome: '',
       secundaria_estilos: '',
+      secundaria_custom: { ...EMPTY_UPLOADED_FONT },
       apresentacao_titulos: '',
+      apresentacao_titulos_custom: { ...EMPTY_UPLOADED_FONT },
       apresentacao_textos: '',
+      apresentacao_textos_custom: { ...EMPTY_UPLOADED_FONT },
       apresentacao_alinhamento: 'left',
       apresentacao_tamanho_titulo: 1,
       apresentacao_tamanho_titulo_pagina: 1,
@@ -312,6 +330,12 @@ type SlideAppearanceColorKey =
   | 'cor_fundo_pagina'
   | 'cor_fundo_logo'
 
+function sanitizeOpacity(value: unknown, fallback: number) {
+  const numeric = typeof value === 'number' ? value : Number(value)
+  if (!Number.isFinite(numeric)) return fallback
+  return Math.min(1, Math.max(0, numeric))
+}
+
 function sanitizeAparenciaFields(fields: Partial<Aparencia>, current: Aparencia): Partial<Aparencia> {
   const next: Partial<Aparencia> = { ...fields }
   const colorKeys: AparenciaColorKey[] = [
@@ -327,6 +351,10 @@ function sanitizeAparenciaFields(fields: Partial<Aparencia>, current: Aparencia)
     if (!(key in next) || typeof next[key] !== 'string') continue
     const normalized = normalizeHex(String(next[key]))
     next[key] = normalized ?? current[key]
+  }
+
+  if ('imagem_fundo_opacidade' in next) {
+    next.imagem_fundo_opacidade = sanitizeOpacity(next.imagem_fundo_opacidade, current.imagem_fundo_opacidade)
   }
 
   return next
@@ -347,6 +375,10 @@ function sanitizeSlideAppearanceFields(fields: Partial<SlideAppearance>, current
     if (!(key in next) || typeof next[key] !== 'string') continue
     const normalized = normalizeHex(String(next[key]))
     next[key] = normalized ?? current[key]
+  }
+
+  if ('imagem_fundo_opacidade' in next) {
+    next.imagem_fundo_opacidade = sanitizeOpacity(next.imagem_fundo_opacidade, current.imagem_fundo_opacidade)
   }
 
   return next
@@ -494,7 +526,26 @@ export const useBrandStore = create<BrandStore>((set, get) => ({
         set(() => ({
           projeto:    { ...fallback.projeto, ...p.projeto },
           conteudo_pdf: { ...fallback.conteudo_pdf, ...p.conteudo_pdf },
-          tipografia: { ...fallback.tipografia, ...p.tipografia },
+          tipografia: {
+            ...fallback.tipografia,
+            ...p.tipografia,
+            principal_custom: {
+              ...fallback.tipografia.principal_custom,
+              ...(p.tipografia?.principal_custom ?? {}),
+            },
+            secundaria_custom: {
+              ...fallback.tipografia.secundaria_custom,
+              ...(p.tipografia?.secundaria_custom ?? {}),
+            },
+            apresentacao_titulos_custom: {
+              ...fallback.tipografia.apresentacao_titulos_custom,
+              ...(p.tipografia?.apresentacao_titulos_custom ?? {}),
+            },
+            apresentacao_textos_custom: {
+              ...fallback.tipografia.apresentacao_textos_custom,
+              ...(p.tipografia?.apresentacao_textos_custom ?? {}),
+            },
+          },
           cores_logo: assignIds(importedLogoColors.map((c: Omit<BrandColor, 'id'> & Partial<BrandColor>) => ({
             hex: c.hex ?? '#888888',
             rgb: c.rgb ?? hexToRgb(c.hex ?? '#888888'),
@@ -521,6 +572,10 @@ export const useBrandStore = create<BrandStore>((set, get) => ({
                 cor_destaque: p.aparencia.cor_destaque ?? importedPresentationColors[0]?.hex ?? DEFAULT_APARENCIA.cor_destaque,
                 cor_fundo_logo: p.aparencia.cor_fundo_logo ?? '#F4F4F5',
                 cor_fundo_pagina: p.aparencia.cor_fundo_pagina ?? '#FFFFFF',
+                imagem_fundo_opacidade: sanitizeOpacity(
+                  p.aparencia.imagem_fundo_opacidade,
+                  DEFAULT_APARENCIA.imagem_fundo_opacidade,
+                ),
               }
             : {
                 ...DEFAULT_APARENCIA,

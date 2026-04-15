@@ -7,7 +7,7 @@ interface PageLogoSimboloProps { pageNumber: number }
 
 export function PageLogoSimbolo({ pageNumber }: PageLogoSimboloProps) {
   const { assets_base64, conteudo_pdf } = useBrandStore()
-  const { primaryColor, contentTitleColor, textColor, pageColor, logoBackdropColor } = usePageColors('simbolo')
+  const { primaryColor, contentTitleColor, textColor, pageColor, logoBackdropColor, pageBackgroundStyle } = usePageColors('simbolo')
   const { pageTitleStyle, bodyStyle, metaStyle } = usePresentationTextStyles()
 
   if (!assets_base64.logo_simbolo) return null
@@ -16,7 +16,7 @@ export function PageLogoSimbolo({ pageNumber }: PageLogoSimboloProps) {
   const [linha1, linha2] = simboloTitulo.split(/\n| & /)
 
   return (
-    <div className="pagina-pdf" style={{ background: pageColor, color: textColor }}>
+    <div className="pagina-pdf" style={{ background: pageColor, color: textColor, ...pageBackgroundStyle }}>
       <div className="fundo" style={{ zIndex: 0 }}>
         <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: '45%', background: logoBackdropColor, borderRight: '1px solid rgba(0,0,0,0.05)' }} />
         <svg style={{ position: 'absolute', left: '22.5%', top: '50%', transform: 'translate(-50%,-50%)', opacity: 0.06 }} width="280" height="280">
@@ -53,8 +53,8 @@ export function PageLogoSimbolo({ pageNumber }: PageLogoSimboloProps) {
               <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '8px 12px', background: logoBackdropColor, borderRadius: 8 }}>
                 <div style={{ width: 4, height: 4, borderRadius: '50%', background: primaryColor, flexShrink: 0 }} />
                 <div>
-                  <div style={{ fontSize: 10, fontWeight: 600, color: '#71717a', textTransform: 'uppercase', letterSpacing: '0.08em' }}>{label}</div>
-                  <div style={{ fontSize: 12, fontWeight: 600, color: contentTitleColor }}>{value}</div>
+                  <div style={{ ...metaStyle(10), fontWeight: 600, color: '#71717a', textTransform: 'uppercase', letterSpacing: '0.08em' }}>{label}</div>
+                  <div style={{ ...bodyStyle(12), fontWeight: 600, color: contentTitleColor }}>{value}</div>
                 </div>
               </div>
             ))}

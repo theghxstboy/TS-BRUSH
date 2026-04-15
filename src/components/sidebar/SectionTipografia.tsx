@@ -1,105 +1,44 @@
-import { useEffect } from 'react'
 import { Type } from 'lucide-react'
+import { FontUploadControl } from '../common/FontUploadControl'
 import { useBrandStore } from '../../store/useBrandStore'
+import { DEFAULT_BODY_FONT } from '../../lib/fontUtils'
 import { CollapsibleSection } from './CollapsibleSection'
-
-function loadGoogleFont(fontName: string) {
-  if (!fontName.trim()) return
-  const id = `gfont-${fontName.replace(/\s+/g, '-').toLowerCase()}`
-  if (document.getElementById(id)) return
-
-  const link = document.createElement('link')
-  link.id = id
-  link.rel = 'stylesheet'
-  const query = encodeURIComponent(fontName)
-  link.href = `https://fonts.googleapis.com/css2?family=${query}:wght@300;400;500;600;700;800;900&display=swap`
-  document.head.appendChild(link)
-}
 
 export function SectionTipografia() {
   const { tipografia, setTipografia } = useBrandStore()
 
-  useEffect(() => {
-    ;[
-      tipografia.principal_nome,
-      tipografia.secundaria_nome,
-      tipografia.apresentacao_titulos,
-      tipografia.apresentacao_textos,
-    ].forEach(loadGoogleFont)
-  }, [
-    tipografia.principal_nome,
-    tipografia.secundaria_nome,
-    tipografia.apresentacao_titulos,
-    tipografia.apresentacao_textos,
-  ])
-
   return (
     <CollapsibleSection icon={<Type size={14} />} label="Tipografia" defaultOpen={false} sectionId="tipografia">
-      <div style={{ paddingBottom: 14, borderBottom: '1px solid var(--border)', marginBottom: 4 }}>
-        <p className="form-label" style={{ marginBottom: 10, color: 'var(--accent)' }}>Fontes da Apresentação</p>
+      <div style={{ paddingBottom: 14 }}>
+        <FontUploadControl
+          title="Fontes da Apresentacao · Titulos"
+          name={tipografia.apresentacao_titulos}
+          customFont={tipografia.apresentacao_titulos_custom}
+          onNameChange={(value) => setTipografia({ apresentacao_titulos: value })}
+          onCustomFontChange={(value) => setTipografia({ apresentacao_titulos_custom: value })}
+          placeholder="Ex: Sora, Montserrat, Poppins"
+          previewFallback={DEFAULT_BODY_FONT}
+          sourceHint="Digite o nome para buscar no Google Fonts ou escolha um arquivo personalizado para usar nos titulos da apresentacao."
+        />
 
-        <div className="form-group">
-          <label className="form-label">Fonte dos Títulos</label>
-          <input
-            id="input-apresentacao-titulos"
-            className="form-input"
-            placeholder="Ex: Sora, Montserrat, Poppins"
-            value={tipografia.apresentacao_titulos}
-            onChange={(e) => setTipografia({ apresentacao_titulos: e.target.value })}
-          />
-        </div>
+        <FontUploadControl
+          title="Fontes da Apresentacao · Textos"
+          name={tipografia.apresentacao_textos}
+          customFont={tipografia.apresentacao_textos_custom}
+          onNameChange={(value) => setTipografia({ apresentacao_textos: value })}
+          onCustomFontChange={(value) => setTipografia({ apresentacao_textos_custom: value })}
+          placeholder="Ex: Inter, Manrope, DM Sans"
+          previewFallback={DEFAULT_BODY_FONT}
+          sourceHint="Digite o nome para buscar no Google Fonts ou escolha um arquivo personalizado para usar nos textos da apresentacao."
+        />
 
-        <div className="form-group" style={{ marginTop: 10 }}>
-          <label className="form-label">Fonte dos Textos</label>
-          <input
-            id="input-apresentacao-textos"
-            className="form-input"
-            placeholder="Ex: Inter, Manrope, DM Sans"
-            value={tipografia.apresentacao_textos}
-            onChange={(e) => setTipografia({ apresentacao_textos: e.target.value })}
-          />
-        </div>
-
-        {(tipografia.apresentacao_titulos || tipografia.apresentacao_textos) && (
-          <div style={{ marginTop: 8, display: 'grid', gap: 6 }}>
-            <div
-              style={{
-                padding: '10px 12px',
-                background: 'var(--bg-input)',
-                borderRadius: 7,
-                border: '1px solid var(--border)',
-                fontFamily: tipografia.apresentacao_titulos ? `'${tipografia.apresentacao_titulos}', sans-serif` : 'inherit',
-                fontSize: 18,
-                fontWeight: 800,
-                color: 'var(--text-primary)',
-              }}
-            >
-              Título da apresentação
-            </div>
-            <div
-              style={{
-                padding: '10px 12px',
-                background: 'var(--bg-input)',
-                borderRadius: 7,
-                border: '1px solid var(--border)',
-                fontFamily: tipografia.apresentacao_textos ? `'${tipografia.apresentacao_textos}', sans-serif` : 'inherit',
-                fontSize: 13,
-                lineHeight: 1.6,
-                color: 'var(--text-secondary)',
-              }}
-            >
-              Texto corrido, descrições e observações do manual.
-            </div>
-          </div>
-        )}
-
-        {!tipografia.apresentacao_titulos && !tipografia.apresentacao_textos && (
-          <p style={{ fontSize: 11, color: '#52525b', marginTop: 6, lineHeight: 1.5 }}>
-            Se preferir, deixe em branco para herdar automaticamente a tipografia principal da marca.
+        {!tipografia.apresentacao_titulos && !tipografia.apresentacao_titulos_custom.data_url && !tipografia.apresentacao_textos && !tipografia.apresentacao_textos_custom.data_url && (
+          <p style={{ fontSize: 11, color: '#52525b', marginTop: 8, lineHeight: 1.5 }}>
+            Se deixar ambos em branco e sem arquivo, a apresentacao herda automaticamente a tipografia principal da marca.
           </p>
         )}
 
-        <div style={{ height: 1, background: 'var(--border)', margin: '12px 0 10px' }} />
+        <div style={{ height: 1, background: 'var(--border)', margin: '14px 0 10px' }} />
 
         <div className="form-group">
           <label className="form-label">Alinhamento do Texto</label>
@@ -109,15 +48,15 @@ export function SectionTipografia() {
             value={tipografia.apresentacao_alinhamento}
             onChange={(e) => setTipografia({ apresentacao_alinhamento: e.target.value as 'left' | 'center' | 'right' | 'justify' })}
           >
-            <option value="left">À esquerda</option>
+            <option value="left">A esquerda</option>
             <option value="center">Centralizado</option>
-            <option value="right">À direita</option>
+            <option value="right">A direita</option>
             <option value="justify">Justificado</option>
           </select>
         </div>
 
         <div className="form-group" style={{ marginTop: 10 }}>
-          <label className="form-label">Escala dos Títulos</label>
+          <label className="form-label">Escala dos Titulos</label>
           <input
             id="input-apresentacao-tamanho-titulo"
             type="range"
@@ -131,7 +70,7 @@ export function SectionTipografia() {
         </div>
 
         <div className="form-group" style={{ marginTop: 10 }}>
-          <label className="form-label">Tamanho dos Títulos das Páginas</label>
+          <label className="form-label">Tamanho dos Titulos das Paginas</label>
           <input
             id="input-apresentacao-titulo-pagina"
             type="range"
@@ -171,7 +110,7 @@ export function SectionTipografia() {
         </div>
 
         <div className="form-group" style={{ marginTop: 10 }}>
-          <label className="form-label">Espaçamento entre Letras</label>
+          <label className="form-label">Espacamento entre Letras</label>
           <input
             type="range"
             min="-0.04"
@@ -182,114 +121,21 @@ export function SectionTipografia() {
           />
           <span style={{ fontSize: 11, color: '#71717a' }}>{tipografia.apresentacao_espacamento_letras.toFixed(2)}em</span>
         </div>
-      </div>
 
-      <div style={{ paddingBottom: 14, borderBottom: '1px solid var(--border)', marginBottom: 4 }}>
-        <p className="form-label" style={{ marginBottom: 10, color: 'var(--accent)' }}>Fonte Principal da Marca</p>
-
-        <div className="form-group">
-          <label className="form-label">Nome da Fonte</label>
-          <input
-            id="input-fonte-principal"
-            className="form-input"
-            placeholder="Ex: Geist, Inter, Montserrat"
-            value={tipografia.principal_nome}
-            onChange={(e) => setTipografia({ principal_nome: e.target.value })}
-          />
-          {tipografia.principal_nome && (
-            <div
-              style={{
-                marginTop: 6,
-                padding: '8px 12px',
-                background: 'var(--bg-input)',
-                borderRadius: 7,
-                fontFamily: `'${tipografia.principal_nome}', sans-serif`,
-                fontSize: 15,
-                color: 'var(--text-primary)',
-                letterSpacing: '0.01em',
-                border: '1px solid var(--border)',
-              }}
-            >
-              Aa Bb Cc 0123456789
-            </div>
-          )}
+        <div
+          style={{
+            marginTop: 12,
+            padding: '10px 12px',
+            borderRadius: 8,
+            border: '1px solid var(--border)',
+            background: 'rgba(255,255,255,0.02)',
+            fontSize: 11,
+            lineHeight: 1.6,
+            color: 'var(--text-secondary)',
+          }}
+        >
+          As fontes principal e secundaria da marca continuam no slide de tipografia, no painel da direita.
         </div>
-
-        <div className="form-group" style={{ marginTop: 10 }}>
-          <label className="form-label">Estilos / Pesos</label>
-          <input
-            id="input-fonte-principal-estilos"
-            className="form-input"
-            placeholder="Ex: Light 300, Regular 400, Bold 700, Black 900"
-            value={tipografia.principal_estilos}
-            onChange={(e) => setTipografia({ principal_estilos: e.target.value })}
-          />
-        </div>
-      </div>
-
-      <div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10 }}>
-          <p className="form-label" style={{ margin: 0, color: 'var(--text-secondary)' }}>Fonte Secundária da Marca</p>
-          <span
-            style={{
-              fontSize: 9,
-              fontWeight: 700,
-              letterSpacing: '0.08em',
-              textTransform: 'uppercase',
-              background: 'rgba(255,255,255,0.06)',
-              border: '1px solid var(--border)',
-              borderRadius: 4,
-              padding: '1px 6px',
-              color: '#71717a',
-            }}
-          >
-            opcional
-          </span>
-        </div>
-
-        <div className="form-group">
-          <label className="form-label">Nome da Fonte</label>
-          <input
-            id="input-fonte-secundaria"
-            className="form-input"
-            placeholder="Ex: Geist Mono, DM Mono, Space Mono"
-            value={tipografia.secundaria_nome}
-            onChange={(e) => setTipografia({ secundaria_nome: e.target.value })}
-          />
-          {tipografia.secundaria_nome && (
-            <div
-              style={{
-                marginTop: 6,
-                padding: '8px 12px',
-                background: 'var(--bg-input)',
-                borderRadius: 7,
-                fontFamily: `'${tipografia.secundaria_nome}', monospace`,
-                fontSize: 14,
-                color: 'var(--text-secondary)',
-                border: '1px solid var(--border)',
-              }}
-            >
-              Aa Bb Cc 0123456789
-            </div>
-          )}
-        </div>
-
-        <div className="form-group" style={{ marginTop: 10 }}>
-          <label className="form-label">Estilos / Pesos</label>
-          <input
-            id="input-fonte-secundaria-estilos"
-            className="form-input"
-            placeholder="Ex: Regular 400, Medium 500"
-            value={tipografia.secundaria_estilos}
-            onChange={(e) => setTipografia({ secundaria_estilos: e.target.value })}
-          />
-        </div>
-
-        {!tipografia.secundaria_nome && (
-          <p style={{ fontSize: 11, color: '#52525b', marginTop: 6, lineHeight: 1.5 }}>
-            Deixe em branco para usar apenas a fonte principal no manual.
-          </p>
-        )}
       </div>
     </CollapsibleSection>
   )

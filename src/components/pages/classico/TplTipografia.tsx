@@ -1,6 +1,7 @@
 import { useBrandStore } from '../../../store/useBrandStore'
 import { usePageColors } from '../../../hooks/usePageColors'
 import { usePresentationTextStyles } from '../../../hooks/usePresentationTextStyles'
+import { getFontFamilyStack, resolveFontName } from '../../../lib/fontUtils'
 
 const UPPER = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
 const LOWER = 'abcdefghijklmnopqrstuvwxyz'
@@ -14,11 +15,13 @@ interface TplTipografiaProps {
 
 export function TplTipografia({ pageNumber, variante }: TplTipografiaProps) {
   const { tipografia, conteudo_pdf } = useBrandStore()
-  const { darkColor, contentTitleColor, textColor, pageColor } = usePageColors(variante === 'principal' ? 'tipografia-principal' : 'tipografia-secundaria')
+  const { darkColor, contentTitleColor, textColor, pageColor, pageBackgroundStyle } = usePageColors(variante === 'principal' ? 'tipografia-principal' : 'tipografia-secundaria')
   const { pageTitleStyle, bodyStyle } = usePresentationTextStyles()
 
   const isPrincipal = variante === 'principal'
-  const nome = isPrincipal ? tipografia.principal_nome : tipografia.secundaria_nome
+  const nome = isPrincipal
+    ? resolveFontName(tipografia.principal_nome, tipografia.principal_custom.file_name)
+    : resolveFontName(tipografia.secundaria_nome, tipografia.secundaria_custom.file_name)
   const estilos = isPrincipal ? tipografia.principal_estilos : tipografia.secundaria_estilos
   const titulo = isPrincipal
     ? (conteudo_pdf.tipografia_principal_titulo || 'Principal')
@@ -30,7 +33,7 @@ export function TplTipografia({ pageNumber, variante }: TplTipografiaProps) {
     ? (conteudo_pdf.tipografia_principal_descricao || descricaoPadrao)
     : (conteudo_pdf.tipografia_secundaria_descricao || descricaoPadrao)
 
-  const fontFamily = nome ? `'${nome}', sans-serif` : 'inherit'
+  const fontFamily = getFontFamilyStack(nome, 'inherit')
   const weightLabels = estilos
     ? estilos.split(/[,;]/).map((item) => item.trim()).filter(Boolean)
     : ['Thin', 'Light', 'Regular', 'Medium', 'Bold', 'ExtraBold', 'Black']
@@ -49,7 +52,7 @@ export function TplTipografia({ pageNumber, variante }: TplTipografiaProps) {
   return (
     <div
       className="pagina-pdf"
-      style={{ background: pageColor, position: 'relative', overflow: 'hidden', color: textColor }}
+      style={{ background: pageColor, position: 'relative', overflow: 'hidden', color: textColor, ...pageBackgroundStyle }}
     >
       <div
         style={{

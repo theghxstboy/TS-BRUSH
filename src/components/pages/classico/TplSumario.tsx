@@ -11,11 +11,11 @@ interface TplSumarioProps {
 }
 
 export function TplSumario({ pageNumber, grupos }: TplSumarioProps) {
-  const { primaryColor, darkColor, textColor } = usePageColors('sumario')
+  const { primaryColor, darkColor, textColor, pageBackgroundStyle } = usePageColors('sumario')
   const { pageTitleStyle, bodyStyle, metaStyle } = usePresentationTextStyles()
 
   return (
-    <div className="pagina-pdf" style={{ background: '#f7f5f1', position: 'relative', color: textColor }}>
+    <div className="pagina-pdf" style={{ background: '#f7f5f1', position: 'relative', color: textColor, ...pageBackgroundStyle }}>
       <div className="fundo" style={{ zIndex: 0 }}>
         <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: '34%', background: darkColor }} />
         <div style={{ position: 'absolute', left: '34%', top: 0, bottom: 0, width: 6, background: primaryColor }} />
@@ -72,7 +72,7 @@ export function TplSumario({ pageNumber, grupos }: TplSumarioProps) {
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    fontSize: 18,
+                    ...bodyStyle(18),
                     fontWeight: 900,
                   }}
                 >
@@ -97,7 +97,7 @@ export function TplSumario({ pageNumber, grupos }: TplSumarioProps) {
                     <div
                       style={{
                         color: primaryColor,
-                        fontSize: 13,
+                        ...metaStyle(13),
                         fontWeight: 800,
                         letterSpacing: '0.08em',
                       }}
@@ -126,7 +126,7 @@ export function TplSumario({ pageNumber, grupos }: TplSumarioProps) {
         }}
       >
         <div style={{ flex: 1, height: 1.5, background: darkColor, opacity: 0.2 }} />
-        <span style={{ fontSize: 15, fontWeight: 800, color: darkColor }}>
+        <span style={{ ...bodyStyle(15), fontWeight: 800, color: darkColor }}>
           {String(pageNumber).padStart(2, '0')}
         </span>
       </div>

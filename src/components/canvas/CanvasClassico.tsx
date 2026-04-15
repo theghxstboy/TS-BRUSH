@@ -15,8 +15,10 @@ import { TplAplicacaoFundos } from '../pages/classico/TplAplicacaoFundos'
 import { TplUsosIncorretos } from '../pages/classico/TplUsosIncorretos'
 import { TplAplicacaoMockup } from '../pages/classico/TplAplicacaoMockup'
 import { TplFinal } from '../pages/classico/TplFinal'
+import { EmptyCanvas } from './EmptyCanvas'
 import { focusSidebarTarget } from '../../lib/sidebarNavigation'
 import { useCanvasScale } from './useCanvasScale'
+import { resolveFontName } from '../../lib/fontUtils'
 
 type Slide =
   | { type: 'capa' }
@@ -55,8 +57,8 @@ export function CanvasClassico() {
   const hasLogo = !!assets_base64.logo_principal
   const hasMono = !!assets_base64.logo_monocromatica
   const mockupCount = assets_base64.mockups.length
-  const hasPrincipal = !!tipografia.principal_nome
-  const hasSecundaria = !!tipografia.secundaria_nome
+  const hasPrincipal = true
+  const hasSecundaria = !!resolveFontName(tipografia.secundaria_nome, tipografia.secundaria_custom.file_name)
 
   const chapterBlocks = useMemo<ChapterBlock[]>(() => {
     const blocks: ChapterBlock[] = []
@@ -70,12 +72,12 @@ export function CanvasClassico() {
         })
       }
 
-      if (blockId === 'tipografia' && (hasPrincipal || hasSecundaria)) {
+      if (blockId === 'tipografia') {
         blocks.push({
           id: 'tipografia',
           chapterTitle: 'Tipografia',
           items: [
-            ...(hasPrincipal ? [{ type: 'tipografia-principal' as const, title: 'Principal' }] : []),
+            { type: 'tipografia-principal' as const, title: 'Principal' },
             ...(hasSecundaria ? [{ type: 'tipografia-secundaria' as const, title: 'Secundaria' }] : []),
           ],
         })
@@ -197,21 +199,8 @@ export function CanvasClassico() {
     }))
   }, [chapterBlocks, slides, pageNumbers])
 
-  if (!hasLogo && mockupCount === 0) {
-    return (
-      <div ref={canvasRef} className="canvas-area">
-        <div className="canvas-empty">
-          <BookOpen size={48} className="canvas-empty-icon" />
-          <p style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-secondary)' }}>
-            Comece pelo upload do Logo Principal
-          </p>
-          <p style={{ fontSize: 13, color: '#52525b', maxWidth: 340, textAlign: 'center', lineHeight: 1.6 }}>
-            A capa e as paginas de logotipo aparecerao automaticamente.<br />
-            Paleta de Cores e Tipografia ja estao prontas para editar.
-          </p>
-        </div>
-      </div>
-    )
+  if (slides.length === 0) {
+    return <EmptyCanvas canvasRef={canvasRef} />
   }
 
   return (

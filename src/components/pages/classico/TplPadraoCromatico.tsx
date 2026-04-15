@@ -13,14 +13,14 @@ function getCircleBorder(hex: string) {
 
 export function TplPadraoCromatico({ pageNumber }: TplPadraoCromaticoProps) {
   const { projeto, cores_logo } = useBrandStore()
-  const { darkColor, contentTitleColor, textColor, pageColor } = usePageColors('padrao-cromatico')
-  const { pageTitleStyle, bodyStyle } = usePresentationTextStyles()
+  const { darkColor, contentTitleColor, textColor, pageColor, pageBackgroundStyle } = usePageColors('padrao-cromatico')
+  const { pageTitleStyle, bodyStyle, metaStyle } = usePresentationTextStyles()
   const sensacoes = projeto.sensacoes_cores || 'as sensações e associações que fortalecem a personalidade da marca'
 
   return (
     <div
       className="pagina-pdf"
-      style={{ background: pageColor, position: 'relative', overflow: 'hidden', color: textColor }}
+      style={{ background: pageColor, position: 'relative', overflow: 'hidden', color: textColor, ...pageBackgroundStyle }}
     >
       <div
         style={{
@@ -67,24 +67,24 @@ export function TplPadraoCromatico({ pageNumber }: TplPadraoCromaticoProps) {
               />
 
               <div style={{ textAlign: 'center', lineHeight: 1.7 }}>
-                <div style={{ fontSize: 13 }}>
+                <div style={bodyStyle(13, { lineHeight: 1.7 })}>
                   <span style={{ fontWeight: 400 }}>Hex: </span>
                   <span style={{ fontWeight: 700 }}>{cor.hex.toUpperCase()}</span>
                 </div>
                 {cor.rgb && (
-                  <div style={{ fontSize: 13 }}>
+                  <div style={bodyStyle(13, { lineHeight: 1.7 })}>
                     <span style={{ fontWeight: 700 }}>RGB: </span>
                     <span style={{ fontWeight: 400 }}>{cor.rgb}</span>
                   </div>
                 )}
                 {cor.hsl && (
-                  <div style={{ fontSize: 13 }}>
+                  <div style={bodyStyle(13, { lineHeight: 1.7 })}>
                     <span style={{ fontWeight: 700 }}>HSL: </span>
                     <span style={{ fontWeight: 400 }}>{cor.hsl}</span>
                   </div>
                 )}
                 {cor.cmyk && (
-                  <div style={{ fontSize: 13 }}>
+                  <div style={bodyStyle(13, { lineHeight: 1.7 })}>
                     <span style={{ fontWeight: 700 }}>CMYK: </span>
                     <span style={{ fontWeight: 400 }}>{cor.cmyk}</span>
                   </div>
@@ -108,7 +108,7 @@ export function TplPadraoCromatico({ pageNumber }: TplPadraoCromaticoProps) {
         }}
       >
         <div style={{ flex: 1, height: 1.5, background: darkColor, opacity: 0.2 }} />
-        <span style={{ fontSize: 15, fontWeight: 800, color: darkColor }}>
+        <span style={{ ...bodyStyle(15), fontWeight: 800, color: darkColor }}>
           {String(pageNumber).padStart(2, '0')}
         </span>
       </div>

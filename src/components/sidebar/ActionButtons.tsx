@@ -2,6 +2,7 @@ import { useMemo, useRef, useState } from 'react'
 import { Download, Upload, Printer, RotateCcw, Sparkles, Clipboard, Wand2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { useBrandStore } from '../../store/useBrandStore'
+import { resolveFontName } from '../../lib/fontUtils'
 
 export function ActionButtons() {
   const {
@@ -19,6 +20,8 @@ export function ActionButtons() {
   const importRef = useRef<HTMLInputElement>(null)
   const [aiPanelOpen, setAiPanelOpen] = useState(false)
   const [aiResponse, setAiResponse] = useState('')
+  const primaryFontName = resolveFontName(tipografia.principal_nome, tipografia.principal_custom.file_name)
+  const secondaryFontName = resolveFontName(tipografia.secundaria_nome, tipografia.secundaria_custom.file_name)
 
   const automaticPrompt = useMemo(() => {
     const currentContext = {
@@ -31,8 +34,8 @@ export function ActionButtons() {
         elementos_logo: projeto.elementos_logo,
       },
       tipografia: {
-        principal_nome: tipografia.principal_nome,
-        secundaria_nome: tipografia.secundaria_nome,
+        principal_nome: primaryFontName,
+        secundaria_nome: secondaryFontName,
       },
       conteudo_existente: {
         boas_vindas_titulo: conteudo_pdf.boas_vindas_titulo,
@@ -114,7 +117,7 @@ Orientações:
 - As descrições de tipografia devem funcionar mesmo sem o nome exato das fontes.
 
 Agora analise a imagem anexada e devolva apenas o JSON final.`
-  }, [conteudo_pdf, projeto, tipografia])
+  }, [conteudo_pdf, primaryFontName, projeto, secondaryFontName])
 
   const handlePrint = () => {
     setTimeout(() => window.print(), 200)

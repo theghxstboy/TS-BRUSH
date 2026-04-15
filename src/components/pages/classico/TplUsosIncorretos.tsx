@@ -7,8 +7,8 @@ interface TplUsosIncorretosProps { pageNumber: number }
 
 export function TplUsosIncorretos({ pageNumber }: TplUsosIncorretosProps) {
   const { assets_base64 } = useBrandStore()
-  const { darkColor, contentTitleColor, textColor, pageColor } = usePageColors('usos-incorretos')
-  const { pageTitleStyle, bodyStyle } = usePresentationTextStyles()
+  const { darkColor, contentTitleColor, textColor, pageColor, pageBackgroundStyle } = usePageColors('usos-incorretos')
+  const { pageTitleStyle, bodyStyle, metaStyle } = usePresentationTextStyles()
   const src = assets_base64.logo_principal
 
   const casos = [
@@ -33,7 +33,7 @@ export function TplUsosIncorretos({ pageNumber }: TplUsosIncorretosProps) {
   return (
     <div
       className="pagina-pdf"
-      style={{ background: pageColor, position: 'relative', overflow: 'hidden', color: textColor }}
+      style={{ background: pageColor, position: 'relative', overflow: 'hidden', color: textColor, ...pageBackgroundStyle }}
     >
       <div
         style={{
@@ -110,7 +110,7 @@ export function TplUsosIncorretos({ pageNumber }: TplUsosIncorretosProps) {
                 )}
               </div>
 
-              <div style={{ fontSize: 10.5, fontWeight: 700, color: darkColor, textAlign: 'center', position: 'relative', zIndex: 2, lineHeight: 1.3 }}>
+              <div style={{ ...metaStyle(10.5), fontWeight: 700, color: darkColor, textAlign: 'center', position: 'relative', zIndex: 2, lineHeight: 1.3 }}>
                 {caso.label}
               </div>
             </div>
@@ -131,7 +131,7 @@ export function TplUsosIncorretos({ pageNumber }: TplUsosIncorretosProps) {
         }}
       >
         <div style={{ flex: 1, height: 1.5, background: darkColor, opacity: 0.2 }} />
-        <span style={{ fontSize: 15, fontWeight: 800, color: darkColor }}>
+        <span style={{ ...bodyStyle(15), fontWeight: 800, color: darkColor }}>
           {String(pageNumber).padStart(2, '0')}
         </span>
       </div>

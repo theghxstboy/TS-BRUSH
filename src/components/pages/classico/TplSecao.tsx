@@ -21,7 +21,7 @@ export function TplSecao({ numero, titulo, subtitulo }: TplSecaoProps) {
             : titulo === 'Usos'
               ? 'secao-usos-incorretos'
               : 'secao-aplicacoes'
-  const { primaryColor, darkColor, dividerTitleColor, textColor } = usePageColors(sectionSlideType)
+  const { primaryColor, darkColor, dividerTitleColor, textColor, pageBackgroundStyle } = usePageColors(sectionSlideType)
   const { assets_base64 } = useBrandStore()
   const { pageTitleStyle } = usePresentationTextStyles()
 
@@ -33,6 +33,7 @@ export function TplSecao({ numero, titulo, subtitulo }: TplSecaoProps) {
         position: 'relative',
         overflow: 'hidden',
         color: textColor,
+        ...pageBackgroundStyle,
       }}
     >
       {/* Número gigante à esquerda, cortando a borda */}

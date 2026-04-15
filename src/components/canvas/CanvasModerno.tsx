@@ -10,6 +10,7 @@ import { PageLogoSimbolo } from '../pages/PageLogoSimbolo'
 import { PageCores } from '../pages/PageCores'
 import { PageTipografia } from '../pages/PageTipografia'
 import { PageMockup } from '../pages/PageMockup'
+import { EmptyCanvas } from './EmptyCanvas'
 import { focusSidebarTarget } from '../../lib/sidebarNavigation'
 import { useCanvasScale } from './useCanvasScale'
 
@@ -135,23 +136,10 @@ export function CanvasModerno() {
     },
   })
 
-  const isEmpty = !hasCapa && mockupCount === 0
+  const isEmpty = orderedPages.length === 0
 
   if (isEmpty) {
-    return (
-      <div ref={canvasRef} className="canvas-area">
-        <div className="canvas-empty">
-          <BookOpen size={48} className="canvas-empty-icon" />
-          <p style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-secondary)' }}>
-            Comece pelo upload do Logo Principal
-          </p>
-          <p style={{ fontSize: 13, color: '#52525b', maxWidth: 340, textAlign: 'center', lineHeight: 1.6 }}>
-            A capa e as paginas de logotipo aparecerao automaticamente.<br />
-            Paleta de Cores e Tipografia ja estao prontas para editar.
-          </p>
-        </div>
-      </div>
-    )
+    return <EmptyCanvas canvasRef={canvasRef} />
   }
 
   return (

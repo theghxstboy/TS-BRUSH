@@ -17,10 +17,20 @@ export function usePageColors(slideType?: SlideAppearanceKey) {
   const textColor = pageAppearance?.cor_texto || '#1A1A1A'
   const pageColor = pageAppearance?.cor_fundo_pagina || aparencia.cor_fundo_pagina || '#FFFFFF'
   const logoBackdropColor = pageAppearance?.cor_fundo_logo || aparencia.cor_fundo_logo || '#F4F4F5'
+  const backgroundImage = pageAppearance?.imagem_fundo || aparencia.imagem_fundo || null
+  const backgroundOpacity = backgroundImage
+    ? pageAppearance?.imagem_fundo
+      ? pageAppearance.imagem_fundo_opacidade
+      : aparencia.imagem_fundo_opacidade
+    : 0
+  const pageBackgroundStyle = {
+    '--presentation-bg-image': backgroundImage ? `url(${backgroundImage})` : 'none',
+    '--presentation-bg-opacity': String(backgroundOpacity),
+  } as React.CSSProperties
 
   /**
    * Returns the CSS style for a "dark panel" element.
-   * Applies cor_fundo + optional imagem_fundo overlay.
+   * Applies cor_fundo base.
    */
   const darkPanelStyle = (extra?: React.CSSProperties): React.CSSProperties => ({
     position: 'relative',
@@ -29,26 +39,17 @@ export function usePageColors(slideType?: SlideAppearanceKey) {
     ...extra,
   })
 
-  /**
-   * Background image overlay element — place inside a darkPanel as first child.
-   * Returns null if no image is set.
-   */
-  const BgOverlay = aparencia.imagem_fundo
-    ? () => (
-        <div
-          style={{
-            position: 'absolute',
-            inset: 0,
-            backgroundImage: `url(${aparencia.imagem_fundo})`,
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            opacity: 0.18,
-            mixBlendMode: 'luminosity',
-            pointerEvents: 'none',
-          }}
-        />
-      )
-    : null
-
-  return { primaryColor, darkColor, dividerTitleColor, contentTitleColor, textColor, pageColor, logoBackdropColor, darkPanelStyle, BgOverlay, aparencia }
+  return {
+    primaryColor,
+    darkColor,
+    dividerTitleColor,
+    contentTitleColor,
+    textColor,
+    pageColor,
+    logoBackdropColor,
+    darkPanelStyle,
+    backgroundImage,
+    backgroundOpacity,
+    pageBackgroundStyle,
+  }
 }

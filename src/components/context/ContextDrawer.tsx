@@ -2,12 +2,17 @@ import { useEffect, useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
 import { PanelRightClose, PanelRightOpen, Plus, SlidersHorizontal, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
+import { FontUploadControl } from '../common/FontUploadControl'
 import { UploadZone } from '../sidebar/UploadZone'
 import { hexToHsl, hexToRgb } from '../../lib/colorUtils'
 import { extractColorsFromDataUrl } from '../../lib/imageUtils'
 import type { ContextDrawerTarget } from '../../lib/sidebarNavigation'
-import { useBrandStore } from '../../store/useBrandStore'
+import { DEFAULT_BACKGROUND_IMAGE_OPACITY, useBrandStore } from '../../store/useBrandStore'
 import type { BrandColor, SlideAppearanceKey } from '../../store/useBrandStore'
+import {
+  DEFAULT_BODY_FONT,
+  DEFAULT_MONO_FONT,
+} from '../../lib/fontUtils'
 
 type SlideType = SlideAppearanceKey
 
@@ -192,6 +197,31 @@ function DrawerColorField({
   )
 }
 
+function DrawerOpacityField({
+  label,
+  value,
+  onChange,
+}: {
+  label: string
+  value: number
+  onChange: (value: number) => void
+}) {
+  return (
+    <div className="form-group">
+      <label className="form-label">{label}</label>
+      <input
+        type="range"
+        min="0"
+        max="1"
+        step="0.05"
+        value={value}
+        onChange={(e) => onChange(Number(e.target.value))}
+      />
+      <span style={{ fontSize: 11, color: '#71717a' }}>{Math.round(value * 100)}%</span>
+    </div>
+  )
+}
+
 function DrawerSection({ title, description, children }: { title: string; description?: string; children: ReactNode }) {
   return (
     <section className="context-section">
@@ -219,6 +249,26 @@ function AppearanceSection({ slideType }: { slideType: SlideType }) {
           onChange={(hex) => setPageAppearance(slideType, { [field.key]: hex })}
         />
       ))}
+
+      <div className="form-group">
+        <label className="form-label">Fundo personalizado deste slide</label>
+        <p style={{ fontSize: 11, color: 'var(--text-secondary)', marginBottom: 6, lineHeight: 1.5 }}>
+          Se existir um fundo global, este arquivo substitui somente nesta pagina. Tambem funciona nos slides de texto.
+        </p>
+        <UploadZone
+          label="Upload Fundo do Slide"
+          hint="JPG, PNG ou WebP · substitui o fundo global nesta pagina"
+          value={appearance.imagem_fundo}
+          onChange={(value) => setPageAppearance(slideType, { imagem_fundo: value })}
+          accept="image/*"
+        />
+      </div>
+
+      <DrawerOpacityField
+        label="Opacidade do Fundo deste Slide"
+        value={appearance.imagem_fundo ? appearance.imagem_fundo_opacidade : DEFAULT_BACKGROUND_IMAGE_OPACITY}
+        onChange={(value) => setPageAppearance(slideType, { imagem_fundo_opacidade: value })}
+      />
     </DrawerSection>
   )
 }
@@ -353,31 +403,37 @@ function ContextBody({
   )
 
   const renderTypographySection = (mode: 'primary' | 'secondary' | 'both') => (
-    <DrawerSection title="Tipografia usada neste slide" description={GLOBAL_SECTION_DESCRIPTION}>
+    <DrawerSection title="Tipografia da Marca" description={GLOBAL_SECTION_DESCRIPTION}>
       {(mode === 'primary' || mode === 'both') && (
-        <>
-          <div className="form-group">
-            <label className="form-label">Fonte Principal</label>
-            <input className="form-input" value={tipografia.principal_nome} onChange={(e) => setTipografia({ principal_nome: e.target.value })} placeholder="Ex: Geist, Inter, Montserrat" />
-          </div>
-          <div className="form-group">
-            <label className="form-label">Estilos / Pesos da Principal</label>
-            <input className="form-input" value={tipografia.principal_estilos} onChange={(e) => setTipografia({ principal_estilos: e.target.value })} placeholder="Ex: Light 300, Regular 400, Bold 700" />
-          </div>
-        </>
+        <FontUploadControl
+          title="Fonte Principal"
+          name={tipografia.principal_nome}
+          styles={tipografia.principal_estilos}
+          customFont={tipografia.principal_custom}
+          onNameChange={(value) => setTipografia({ principal_nome: value })}
+          onStylesChange={(value) => setTipografia({ principal_estilos: value })}
+          onCustomFontChange={(value) => setTipografia({ principal_custom: value })}
+          placeholder="Ex: Geist, Inter, Montserrat"
+          stylesPlaceholder="Ex: Light 300, Regular 400, Bold 700"
+          previewFallback={DEFAULT_BODY_FONT}
+        />
       )}
 
       {(mode === 'secondary' || mode === 'both') && (
-        <>
-          <div className="form-group">
-            <label className="form-label">Fonte Secundaria</label>
-            <input className="form-input" value={tipografia.secundaria_nome} onChange={(e) => setTipografia({ secundaria_nome: e.target.value })} placeholder="Ex: DM Sans, Space Grotesk, Mono" />
-          </div>
-          <div className="form-group">
-            <label className="form-label">Estilos / Pesos da Secundaria</label>
-            <input className="form-input" value={tipografia.secundaria_estilos} onChange={(e) => setTipografia({ secundaria_estilos: e.target.value })} placeholder="Ex: Regular 400, Medium 500" />
-          </div>
-        </>
+        <FontUploadControl
+          title="Fonte Secundaria"
+          optional
+          name={tipografia.secundaria_nome}
+          styles={tipografia.secundaria_estilos}
+          customFont={tipografia.secundaria_custom}
+          onNameChange={(value) => setTipografia({ secundaria_nome: value })}
+          onStylesChange={(value) => setTipografia({ secundaria_estilos: value })}
+          onCustomFontChange={(value) => setTipografia({ secundaria_custom: value })}
+          placeholder="Ex: DM Sans, Space Grotesk, Mono"
+          stylesPlaceholder="Ex: Regular 400, Medium 500"
+          previewFallback={DEFAULT_MONO_FONT}
+          previewGeneric="monospace"
+        />
       )}
     </DrawerSection>
   )
@@ -511,11 +567,10 @@ function ContextBody({
 
   if (slideType === 'tipografia-principal' || slideType === 'tipografia-secundaria') {
     const isPrimary = slideType === 'tipografia-principal'
-    const typographyMode = pageLabel === 'Tipografia' ? 'both' : isPrimary ? 'primary' : 'secondary'
 
     return (
       <>
-        {renderTypographySection(typographyMode)}
+        {renderTypographySection('both')}
         <DrawerSection title="Conteudo deste slide">
           <div className="form-group">
             <label className="form-label">Titulo</label>

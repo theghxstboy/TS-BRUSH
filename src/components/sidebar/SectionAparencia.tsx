@@ -1,5 +1,5 @@
 import { Layers } from 'lucide-react'
-import { useBrandStore } from '../../store/useBrandStore'
+import { DEFAULT_BACKGROUND_IMAGE_OPACITY, useBrandStore } from '../../store/useBrandStore'
 import { CollapsibleSection } from './CollapsibleSection'
 import { UploadZone } from './UploadZone'
 
@@ -67,6 +67,31 @@ function ColorField({
   )
 }
 
+function OpacityField({
+  label,
+  value,
+  onChange,
+}: {
+  label: string
+  value: number
+  onChange: (value: number) => void
+}) {
+  return (
+    <div className="form-group">
+      <label className="form-label">{label}</label>
+      <input
+        type="range"
+        min="0"
+        max="1"
+        step="0.05"
+        value={value}
+        onChange={(e) => onChange(Number(e.target.value))}
+      />
+      <span style={{ fontSize: 11, color: '#71717a' }}>{Math.round(value * 100)}%</span>
+    </div>
+  )
+}
+
 export function SectionAparencia() {
   const { aparencia, setAparencia } = useBrandStore()
 
@@ -117,17 +142,23 @@ export function SectionAparencia() {
       <div className="form-group">
         <label className="form-label">Imagem / Textura de Fundo</label>
         <p style={{ fontSize: 11, color: 'var(--text-secondary)', marginBottom: 6, lineHeight: 1.5 }}>
-          Aplicada como textura geral da apresentação para dar mais atmosfera ao template.
+          Aplicada como fundo global da apresentação. Cada slide pode receber um arquivo próprio e substituir este fundo quando necessário.
         </p>
         <UploadZone
           inputId="input-imagem-fundo"
           label="Upload Imagem de Fundo"
-          hint="JPG, PNG ou WebP · aplicada nos painéis da apresentação"
+          hint="JPG, PNG ou WebP · usada em toda a apresentação por padrão"
           accept="image/*"
           value={aparencia.imagem_fundo}
           onChange={(value) => setAparencia({ imagem_fundo: value })}
         />
       </div>
+
+      <OpacityField
+        label="Opacidade do Fundo Global"
+        value={aparencia.imagem_fundo ? aparencia.imagem_fundo_opacidade : DEFAULT_BACKGROUND_IMAGE_OPACITY}
+        onChange={(value) => setAparencia({ imagem_fundo_opacidade: value })}
+      />
 
       <div className="appearance-preview-strip">
         <div className="appearance-preview-page" style={{ background: aparencia.cor_fundo_pagina }}>
@@ -136,7 +167,14 @@ export function SectionAparencia() {
               <img
                 src={aparencia.imagem_fundo}
                 alt="preview fundo"
-                style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', opacity: 0.45 }}
+                style={{
+                  position: 'absolute',
+                  inset: 0,
+                  width: '100%',
+                  height: '100%',
+                  objectFit: 'cover',
+                  opacity: aparencia.imagem_fundo_opacidade,
+                }}
               />
             )}
             <div className="appearance-preview-title" style={{ color: aparencia.cor_destaque }}>Divisória</div>

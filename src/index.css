@@ -1079,7 +1079,6 @@ select.form-input { appearance: none; }
   padding: 48px 48px 48px 0;
   gap: 20px;
 }
-.logo-info-block { }
 .logo-info-label { font-size: calc(11px * var(--presentation-body-scale, 1)); font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; opacity: 0.5; margin-bottom: 4px; }
 .logo-info-value { font-size: calc(15px * var(--presentation-page-title-scale, 1)); font-weight: 600; }
 .logo-meta-row { display: flex; gap: 12px; flex-wrap: wrap; }
@@ -1154,7 +1153,6 @@ select.form-input { appearance: none; }
 .tipo-block-name {
   font-family: var(--presentation-title-font, var(--presentation-body-font, 'Geist', system-ui, sans-serif));
 }
-.tipo-block { }
 .tipo-block-name { font-size: calc(22px * var(--presentation-page-title-scale, 1)); font-weight: 800; margin-bottom: 4px; }
 .tipo-block-styles { font-size: calc(12px * var(--presentation-body-scale, 1)); opacity: 0.55; margin-bottom: 12px; }
 .tipo-alphabet { font-size: calc(15px * var(--presentation-body-scale, 1)); line-height: var(--presentation-line-height, 1.8); opacity: 0.8; word-break: break-all; }
@@ -1348,6 +1346,5 @@ select.form-input { appearance: none; }
   * {
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
-    color-adjust: exact !important;
   }
 }

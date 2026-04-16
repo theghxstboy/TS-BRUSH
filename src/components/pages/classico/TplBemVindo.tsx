@@ -6,7 +6,7 @@ interface TplBemVindoProps { pageNumber: number }
 
 export function TplBemVindo({ pageNumber }: TplBemVindoProps) {
   const { projeto, assets_base64, conteudo_pdf } = useBrandStore()
-  const { darkColor, contentTitleColor, textColor, pageColor, pageBackgroundStyle } = usePageColors('bem-vindo')
+  const { darkColor, contentTitleColor, textColor, pageColor, pageBackgroundStyle, exibirLogoFundo } = usePageColors('bem-vindo')
   const { pageTitleStyle, bodyStyle } = usePresentationTextStyles()
   const nomeMarca = projeto.nome_marca || 'AGÊNCIA TS'
 
@@ -16,22 +16,24 @@ export function TplBemVindo({ pageNumber }: TplBemVindoProps) {
       style={{ background: pageColor, position: 'relative', overflow: 'hidden', color: textColor, ...pageBackgroundStyle }}
     >
       {/* Logo de fundo - agora atrás de tudo */}
-      <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: 0.05, pointerEvents: 'none', zIndex: 1 }}>
-        {assets_base64.logo_principal ? (
-          <img
-            src={assets_base64.logo_principal}
-            alt=""
-            style={{
-              width: '80%',
-              height: '80%',
-              objectFit: 'contain',
-              filter: 'grayscale(1)',
-            }}
-          />
-        ) : (
-          <div style={{ fontSize: 200, fontWeight: 900, color: darkColor }}>LOGO</div>
-        )}
-      </div>
+      {exibirLogoFundo && (
+        <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: 0.05, pointerEvents: 'none', zIndex: 1 }}>
+          {assets_base64.logo_principal ? (
+            <img
+              src={assets_base64.logo_principal}
+              alt=""
+              style={{
+                width: '80%',
+                height: '80%',
+                objectFit: 'contain',
+                filter: 'grayscale(1)',
+              }}
+            />
+          ) : (
+            <div style={{ fontSize: 200, fontWeight: 900, color: darkColor }}>LOGO</div>
+          )}
+        </div>
+      )}
 
       <div
         style={{

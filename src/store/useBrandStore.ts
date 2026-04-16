@@ -22,11 +22,15 @@ export interface Aparencia {
   capa: {
     cor_fundo_pagina: string
     cor_detalhes: string
+    imagem_fundo?: string | null
+    imagem_fundo_opacidade?: number
   }
   secao: {
     cor_fundo_pagina: string
     cor_titulo: string
     cor_detalhes: string
+    imagem_fundo?: string | null
+    imagem_fundo_opacidade?: number
   }
   final: {
     cor_fundo_pagina: string
@@ -80,6 +84,7 @@ export interface SlideAppearance {
   cor_sombra: string
   imagem_fundo: string | null
   imagem_fundo_opacidade: number
+  exibir_logo_fundo: boolean
 }
 
 export type SlideAppearanceState = Record<SlideAppearanceKey, SlideAppearance>
@@ -186,18 +191,22 @@ const DEFAULT_APARENCIA: Aparencia = {
   capa: {
     cor_fundo_pagina: '#FFFFFF',
     cor_detalhes: '#F97316',
+    imagem_fundo: null,
+    imagem_fundo_opacidade: DEFAULT_BACKGROUND_IMAGE_OPACITY,
   },
   secao: {
     cor_fundo_pagina: '#FFFFFF',
     cor_titulo: '#0C0C0C',
     cor_detalhes: '#F97316',
+    imagem_fundo: null,
+    imagem_fundo_opacidade: DEFAULT_BACKGROUND_IMAGE_OPACITY,
   },
   final: {
     cor_fundo_pagina: '#FFFFFF',
-    cor_titulo: '#0C0C0C',
-    cor_texto: '#1A1A1A',
     cor_detalhes: '#F97316',
     cor_sombra: 'rgba(0,0,0,0.5)',
+    imagem_fundo: null,
+    imagem_fundo_opacidade: DEFAULT_BACKGROUND_IMAGE_OPACITY,
   },
   conteudo: {
     cor_fundo_pagina: '#FFFFFF',
@@ -205,6 +214,8 @@ const DEFAULT_APARENCIA: Aparencia = {
     cor_texto: '#1A1A1A',
     cor_detalhes: '#F97316',
     cor_sombra: 'rgba(0,0,0,0.5)',
+    imagem_fundo: null,
+    imagem_fundo_opacidade: DEFAULT_BACKGROUND_IMAGE_OPACITY,
   },
   imagem_fundo: null,
   imagem_fundo_opacidade: DEFAULT_BACKGROUND_IMAGE_OPACITY,
@@ -218,6 +229,7 @@ export const DEFAULT_SLIDE_APPEARANCE: SlideAppearance = {
   cor_sombra: '',
   imagem_fundo: null,
   imagem_fundo_opacidade: DEFAULT_BACKGROUND_IMAGE_OPACITY,
+  exibir_logo_fundo: true,
 }
 
 function buildDefaultPageAppearance(): SlideAppearanceState {
@@ -375,10 +387,30 @@ function sanitizeAparenciaFields(fields: Partial<Aparencia>, current: Aparencia)
 
   if ('final' in next && next.final) {
     next.final = { ...current.final, ...next.final }
+    if ('imagem_fundo_opacidade' in next.final) {
+      next.final.imagem_fundo_opacidade = sanitizeOpacity(next.final.imagem_fundo_opacidade, current.final.imagem_fundo_opacidade ?? 1)
+    }
   }
 
   if ('conteudo' in next && next.conteudo) {
     next.conteudo = { ...current.conteudo, ...next.conteudo }
+    if ('imagem_fundo_opacidade' in next.conteudo) {
+      next.conteudo.imagem_fundo_opacidade = sanitizeOpacity(next.conteudo.imagem_fundo_opacidade, current.conteudo.imagem_fundo_opacidade ?? 1)
+    }
+  }
+
+  if ('capa' in next && next.capa) {
+    next.capa = { ...current.capa, ...next.capa }
+    if ('imagem_fundo_opacidade' in next.capa) {
+      next.capa.imagem_fundo_opacidade = sanitizeOpacity(next.capa.imagem_fundo_opacidade, current.capa.imagem_fundo_opacidade ?? 1)
+    }
+  }
+
+  if ('secao' in next && next.secao) {
+    next.secao = { ...current.secao, ...next.secao }
+    if ('imagem_fundo_opacidade' in next.secao) {
+      next.secao.imagem_fundo_opacidade = sanitizeOpacity(next.secao.imagem_fundo_opacidade, current.secao.imagem_fundo_opacidade ?? 1)
+    }
   }
 
   if ('imagem_fundo_opacidade' in next) {

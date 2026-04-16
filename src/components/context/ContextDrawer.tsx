@@ -132,6 +132,28 @@ function DrawerOpacityField({
   )
 }
 
+function DrawerToggleField({
+  label,
+  value,
+  onChange,
+}: {
+  label: string
+  value: boolean
+  onChange: (val: boolean) => void
+}) {
+  return (
+    <div className="form-group" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '4px 0' }}>
+      <label className="form-label" style={{ margin: 0 }}>{label}</label>
+      <input
+        type="checkbox"
+        checked={value}
+        onChange={(e) => onChange(e.target.checked)}
+        style={{ width: 16, height: 16, cursor: 'pointer' }}
+      />
+    </div>
+  )
+}
+
 function DrawerSection({ title, description, children }: { title: string; description?: string; children: ReactNode }) {
   return (
     <section className="context-section">
@@ -208,6 +230,14 @@ function AppearanceSection({ slideType }: { slideType: SlideType }) {
         value={appearance.imagem_fundo ? appearance.imagem_fundo_opacidade : DEFAULT_BACKGROUND_IMAGE_OPACITY}
         onChange={(value) => setPageAppearance(slideType, { imagem_fundo_opacidade: value })}
       />
+
+      <div style={{ marginTop: 8, borderTop: '1px solid var(--border)', paddingTop: 12 }}>
+        <DrawerToggleField
+          label="Exibir logo no fundo"
+          value={appearance.exibir_logo_fundo !== false}
+          onChange={(val) => setPageAppearance(slideType, { exibir_logo_fundo: val })}
+        />
+      </div>
     </DrawerSection>
   )
 }

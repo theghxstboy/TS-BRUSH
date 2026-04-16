@@ -70,9 +70,8 @@ function OpacityField({
 export function SectionAparencia() {
   const { aparencia, setAparencia } = useBrandStore()
 
-  const handleChange = (section: keyof typeof aparencia, key: string, hex: string) => {
-    // @ts-ignore
-    setAparencia({ [section]: { ...aparencia[section], [key]: hex } })
+  const handleChange = (section: any, key: string, value: any) => {
+    setAparencia({ [section]: { ...aparencia[section], [key]: value } })
   }
 
   return (
@@ -98,6 +97,24 @@ export function SectionAparencia() {
           color={aparencia.capa.cor_detalhes}
           onChange={(hex) => handleChange('capa', 'cor_detalhes', hex)}
         />
+
+        <div style={{ marginTop: 12 }}>
+          <UploadZone
+            inputId="input-imagem-fundo-capa"
+            label="Fundo Exclusivo da Capa"
+            hint="Substitui o fundo global apenas na capa"
+            accept="image/*"
+            value={aparencia.capa.imagem_fundo}
+            onChange={(value) => handleChange('capa', 'imagem_fundo', value)}
+          />
+          {aparencia.capa.imagem_fundo && (
+            <OpacityField
+              label="Opacidade do Fundo da Capa"
+              value={aparencia.capa.imagem_fundo_opacidade ?? DEFAULT_BACKGROUND_IMAGE_OPACITY}
+              onChange={(val) => handleChange('capa', 'imagem_fundo_opacidade', val)}
+            />
+          )}
+        </div>
       </div>
 
       {/* SEÇÃO */}
@@ -127,6 +144,24 @@ export function SectionAparencia() {
           color={aparencia.secao.cor_detalhes}
           onChange={(hex) => handleChange('secao', 'cor_detalhes', hex)}
         />
+
+        <div style={{ marginTop: 12 }}>
+          <UploadZone
+            inputId="input-imagem-fundo-secao"
+            label="Fundo Exclusivo da Seção"
+            hint="Substitui o fundo global apenas nas divisórias"
+            accept="image/*"
+            value={aparencia.secao.imagem_fundo}
+            onChange={(value) => handleChange('secao', 'imagem_fundo', value)}
+          />
+          {aparencia.secao.imagem_fundo && (
+            <OpacityField
+              label="Opacidade do Fundo da Seção"
+              value={aparencia.secao.imagem_fundo_opacidade ?? DEFAULT_BACKGROUND_IMAGE_OPACITY}
+              onChange={(val) => handleChange('secao', 'imagem_fundo_opacidade', val)}
+            />
+          )}
+        </div>
       </div>
 
       {/* OBRIGADO */}
@@ -162,6 +197,24 @@ export function SectionAparencia() {
           color={aparencia.final.cor_detalhes}
           onChange={(hex) => handleChange('final', 'cor_detalhes', hex)}
         />
+
+        <div style={{ marginTop: 12 }}>
+          <UploadZone
+            inputId="input-imagem-fundo-final"
+            label="Fundo Exclusivo do Final"
+            hint="Substitui o fundo global apenas no slide final"
+            accept="image/*"
+            value={aparencia.final.imagem_fundo}
+            onChange={(value) => handleChange('final', 'imagem_fundo', value)}
+          />
+          {aparencia.final.imagem_fundo && (
+            <OpacityField
+              label="Opacidade do Fundo Final"
+              value={aparencia.final.imagem_fundo_opacidade ?? DEFAULT_BACKGROUND_IMAGE_OPACITY}
+              onChange={(val) => handleChange('final', 'imagem_fundo_opacidade', val)}
+            />
+          )}
+        </div>
       </div>
 
       {/* CONTEUDO */}
@@ -197,6 +250,24 @@ export function SectionAparencia() {
           color={aparencia.conteudo.cor_detalhes}
           onChange={(hex) => handleChange('conteudo', 'cor_detalhes', hex)}
         />
+
+        <div style={{ marginTop: 12 }}>
+          <UploadZone
+            inputId="input-imagem-fundo-conteudo"
+            label="Fundo Exclusivo de Conteúdo"
+            hint="Substitui o fundo global nos slides de texto"
+            accept="image/*"
+            value={aparencia.conteudo.imagem_fundo}
+            onChange={(value) => handleChange('conteudo', 'imagem_fundo', value)}
+          />
+          {aparencia.conteudo.imagem_fundo && (
+            <OpacityField
+              label="Opacidade do Fundo de Conteúdo"
+              value={aparencia.conteudo.imagem_fundo_opacidade ?? DEFAULT_BACKGROUND_IMAGE_OPACITY}
+              onChange={(val) => handleChange('conteudo', 'imagem_fundo_opacidade', val)}
+            />
+          )}
+        </div>
       </div>
       <div className="form-group">
         <label className="form-label">Imagem / Textura de Fundo</label>
@@ -222,9 +293,9 @@ export function SectionAparencia() {
       <div className="appearance-preview-strip">
         <div className="appearance-preview-page" style={{ background: aparencia.secao.cor_fundo_pagina }}>
           <div className="appearance-preview-panel" style={{ background: aparencia.secao.cor_detalhes }}>
-            {aparencia.imagem_fundo && (
+            {(aparencia.secao.imagem_fundo || aparencia.imagem_fundo) && (
               <img
-                src={aparencia.imagem_fundo}
+                src={aparencia.secao.imagem_fundo || aparencia.imagem_fundo || ''}
                 alt="preview fundo"
                 style={{
                   position: 'absolute',
@@ -232,7 +303,9 @@ export function SectionAparencia() {
                   width: '100%',
                   height: '100%',
                   objectFit: 'cover',
-                  opacity: aparencia.imagem_fundo_opacidade,
+                  opacity: aparencia.secao.imagem_fundo 
+                    ? aparencia.secao.imagem_fundo_opacidade 
+                    : aparencia.imagem_fundo_opacidade,
                 }}
               />
             )}

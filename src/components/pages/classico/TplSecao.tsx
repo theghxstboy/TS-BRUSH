@@ -11,7 +11,7 @@ interface TplSecaoProps {
 }
 
 export function TplSecao({ numero, titulo, subtitulo, appearanceKey }: TplSecaoProps) {
-  const { pageColor, detailColor, dividerTitleColor, textColor, pageBackgroundStyle } = usePageColors(appearanceKey)
+  const { pageColor, detailColor, dividerTitleColor, textColor, pageBackgroundStyle, exibirLogoFundo } = usePageColors(appearanceKey)
   const { assets_base64 } = useBrandStore()
   const { pageTitleStyle } = usePresentationTextStyles()
 
@@ -78,42 +78,44 @@ export function TplSecao({ numero, titulo, subtitulo, appearanceKey }: TplSecaoP
       </div>
 
       {/* Logo outline gigante — canto direito */}
-      <div style={{
-        position: 'absolute',
-        right: -60,
-        top: '50%',
-        transform: 'translateY(-50%)',
-        zIndex: 3,
-        opacity: 0.15,
-        width: '65%',
-        height: '80%',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'flex-end',
-      }}>
-        {assets_base64.logo_principal ? (
-          <img
-            src={assets_base64.logo_principal}
-            alt=""
-            style={{
-              width: '100%',
-              height: '100%',
-              objectFit: 'contain',
-              filter: 'brightness(0)',
-            }}
-          />
-        ) : (
-          <div style={{
-            fontSize: 180,
-            fontWeight: 900,
-            color: dividerTitleColor,
-            lineHeight: 1,
-            opacity: 0.2,
-          }}>
-            LOGO
-          </div>
-        )}
-      </div>
+      {exibirLogoFundo && (
+        <div style={{
+          position: 'absolute',
+          right: -60,
+          top: '50%',
+          transform: 'translateY(-50%)',
+          zIndex: 3,
+          opacity: 0.15,
+          width: '65%',
+          height: '80%',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'flex-end',
+        }}>
+          {assets_base64.logo_principal ? (
+            <img
+              src={assets_base64.logo_principal}
+              alt=""
+              style={{
+                width: '100%',
+                height: '100%',
+                objectFit: 'contain',
+                filter: 'brightness(0)',
+              }}
+            />
+          ) : (
+            <div style={{
+              fontSize: 180,
+              fontWeight: 900,
+              color: dividerTitleColor,
+              lineHeight: 1,
+              opacity: 0.2,
+            }}>
+              LOGO
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Linha inferior */}
       <div style={{

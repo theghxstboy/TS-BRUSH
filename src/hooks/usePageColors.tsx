@@ -29,12 +29,22 @@ export function usePageColors(slideType?: SlideAppearanceKey) {
   const contentTitleColor = titleColor
   const logoBackdropColor = pageColor // Deprecated cor_fundo_logo defaults to page color
 
-  const backgroundImage = pageAppearance?.imagem_fundo || aparencia.imagem_fundo || null
-  const backgroundOpacity = backgroundImage
-    ? pageAppearance?.imagem_fundo
-      ? pageAppearance.imagem_fundo_opacidade
-      : aparencia.imagem_fundo_opacidade
-    : 0
+  const backgroundImage = 
+    pageAppearance?.imagem_fundo 
+    || globalApp?.imagem_fundo 
+    || aparencia.imagem_fundo 
+    || null
+
+  let backgroundOpacity = 0
+  if (backgroundImage) {
+    if (pageAppearance?.imagem_fundo === backgroundImage) {
+      backgroundOpacity = pageAppearance?.imagem_fundo_opacidade ?? 0
+    } else if (globalApp?.imagem_fundo === backgroundImage) {
+      backgroundOpacity = globalApp?.imagem_fundo_opacidade ?? 0
+    } else {
+      backgroundOpacity = aparencia.imagem_fundo_opacidade ?? 0
+    }
+  }
 
   const pageBackgroundStyle = {
     '--presentation-bg-image': backgroundImage ? `url(${backgroundImage})` : 'none',
@@ -47,6 +57,8 @@ export function usePageColors(slideType?: SlideAppearanceKey) {
     overflow: 'hidden',
     ...extra,
   })
+
+  const exibirLogoFundo = pageAppearance?.exibir_logo_fundo !== false
 
   return {
     pageColor,
@@ -63,6 +75,7 @@ export function usePageColors(slideType?: SlideAppearanceKey) {
     backgroundImage,
     backgroundOpacity,
     pageBackgroundStyle,
+    exibirLogoFundo,
   }
 }
 

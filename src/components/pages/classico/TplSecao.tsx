@@ -39,7 +39,6 @@ export function TplSecao({ numero, titulo, subtitulo, appearanceKey }: TplSecaoP
         userSelect: 'none',
         zIndex: 2,
         letterSpacing: '-12px',
-        opacity: 0.9,
       }}>
         {numero}
       </div>
@@ -70,7 +69,6 @@ export function TplSecao({ numero, titulo, subtitulo, appearanceKey }: TplSecaoP
               fontWeight: 800,
               color: dividerTitleColor,
               marginTop: 4,
-              opacity: 0.8,
               ...pageTitleStyle(38, { lineHeight: 1 }),
             }}>
               {subtitulo}

@@ -352,6 +352,7 @@ type GlobalAppearanceColorKey =
   | 'cor_titulo'
   | 'cor_texto'
   | 'cor_detalhes'
+  | 'cor_sombra'
 
 type SlideAppearanceColorKey = GlobalAppearanceColorKey
 

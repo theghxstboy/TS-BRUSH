@@ -120,7 +120,16 @@ Agora analise a imagem anexada e devolva apenas o JSON final.`
   }, [conteudo_pdf, primaryFontName, projeto, secondaryFontName])
 
   const handlePrint = () => {
-    setTimeout(() => window.print(), 200)
+    const originalTitle = document.title
+    const brandName = projeto.nome_marca || 'MARCA'
+    document.title = `MANUAL DE MARCA - ${brandName.toUpperCase()}`
+
+    setTimeout(() => {
+      window.print()
+      setTimeout(() => {
+        document.title = originalTitle
+      }, 1000)
+    }, 200)
   }
 
   const handleReset = () => {

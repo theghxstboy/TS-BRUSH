@@ -38,7 +38,8 @@ export interface Aparencia {
     cor_texto: string
     cor_detalhes: string
     cor_sombra: string
-    [key: string]: string | number | boolean | null | undefined
+    imagem_fundo?: string | null
+    imagem_fundo_opacidade?: number
   }
   conteudo: {
     cor_fundo_pagina: string
@@ -46,7 +47,8 @@ export interface Aparencia {
     cor_texto: string
     cor_detalhes: string
     cor_sombra: string
-    [key: string]: string | number | boolean | null | undefined
+    imagem_fundo?: string | null
+    imagem_fundo_opacidade?: number
   }
   /** Imagem de textura/padrão aplicada sobre os painéis de fundo (opcional) */
   imagem_fundo: string | null
@@ -203,6 +205,8 @@ const DEFAULT_APARENCIA: Aparencia = {
   },
   final: {
     cor_fundo_pagina: '#FFFFFF',
+    cor_titulo: '#0C0C0C',
+    cor_texto: '#1A1A1A',
     cor_detalhes: '#F97316',
     cor_sombra: 'rgba(0,0,0,0.5)',
     imagem_fundo: null,

@@ -70,7 +70,8 @@ function OpacityField({
 export function SectionAparencia() {
   const { aparencia, setAparencia } = useBrandStore()
 
-  const handleChange = (section: any, key: string, value: any) => {
+  const handleChange = (section: keyof typeof aparencia, key: string, value: any) => {
+    // @ts-ignore
     setAparencia({ [section]: { ...aparencia[section], [key]: value } })
   }
 
@@ -104,7 +105,7 @@ export function SectionAparencia() {
             label="Fundo Exclusivo da Capa"
             hint="Substitui o fundo global apenas na capa"
             accept="image/*"
-            value={aparencia.capa.imagem_fundo}
+            value={aparencia.capa.imagem_fundo ?? null}
             onChange={(value) => handleChange('capa', 'imagem_fundo', value)}
           />
           {aparencia.capa.imagem_fundo && (
@@ -151,7 +152,7 @@ export function SectionAparencia() {
             label="Fundo Exclusivo da Seção"
             hint="Substitui o fundo global apenas nas divisórias"
             accept="image/*"
-            value={aparencia.secao.imagem_fundo}
+            value={aparencia.secao.imagem_fundo ?? null}
             onChange={(value) => handleChange('secao', 'imagem_fundo', value)}
           />
           {aparencia.secao.imagem_fundo && (
@@ -204,7 +205,7 @@ export function SectionAparencia() {
             label="Fundo Exclusivo do Final"
             hint="Substitui o fundo global apenas no slide final"
             accept="image/*"
-            value={aparencia.final.imagem_fundo}
+            value={aparencia.final.imagem_fundo ?? null}
             onChange={(value) => handleChange('final', 'imagem_fundo', value)}
           />
           {aparencia.final.imagem_fundo && (
@@ -257,7 +258,7 @@ export function SectionAparencia() {
             label="Fundo Exclusivo de Conteúdo"
             hint="Substitui o fundo global nos slides de texto"
             accept="image/*"
-            value={aparencia.conteudo.imagem_fundo}
+            value={aparencia.conteudo.imagem_fundo ?? null}
             onChange={(value) => handleChange('conteudo', 'imagem_fundo', value)}
           />
           {aparencia.conteudo.imagem_fundo && (

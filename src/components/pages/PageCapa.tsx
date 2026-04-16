@@ -7,13 +7,13 @@ interface PageCapaProps { pageNumber: number }
 
 export function PageCapa({ pageNumber }: PageCapaProps) {
   const { projeto, assets_base64 } = useBrandStore()
-  const { primaryColor, darkColor, textColor, pageBackgroundStyle } = usePageColors('capa')
+  const { primaryColor, darkColor, textColor, pageColor, pageBackgroundStyle } = usePageColors('capa')
   const { pageTitleStyle, bodyStyle, metaStyle } = usePresentationTextStyles()
 
   if (!assets_base64.logo_principal) return null
 
   return (
-    <div className="pagina-pdf" style={{ background: darkColor, color: textColor, ...pageBackgroundStyle }}>
+    <div className="pagina-pdf" style={{ background: pageColor, color: textColor, ...pageBackgroundStyle }}>
       <div className="fundo" style={{ zIndex: 0 }}>
         <svg width="100%" height="100%" style={{ opacity: 0.06 }}>
           <defs>

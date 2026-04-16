@@ -1,6 +1,4 @@
-import { useState, useRef, useEffect } from 'react'
 import { Palette, Plus, Trash2 } from 'lucide-react'
-import { HexColorPicker } from 'react-colorful'
 import { useBrandStore } from '../../store/useBrandStore'
 import { CollapsibleSection } from './CollapsibleSection'
 import type { BrandColor } from '../../store/useBrandStore'
@@ -14,70 +12,33 @@ interface ColorItemProps {
 }
 
 function ColorItem({ color, inputIdPrefix, onChange, onRemove }: ColorItemProps) {
-  const [open, setOpen] = useState(false)
-  const popoverRef = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    if (!open) return
-    const handler = (e: MouseEvent) => {
-      if (!popoverRef.current?.contains(e.target as Node)) setOpen(false)
-    }
-    document.addEventListener('mousedown', handler)
-    return () => document.removeEventListener('mousedown', handler)
-  }, [open])
-
   const handleHexChange = (hex: string) => {
     onChange({ hex, rgb: hexToRgb(hex), hsl: hexToHsl(hex) })
   }
 
+  const safeColor = color.hex && /^#[0-9A-Fa-f]{6}$/.test(color.hex) ? color.hex : '#000000'
+
   return (
     <div className="color-item">
-      <div style={{ position: 'relative' }}>
-        <div
-          className="color-swatch"
-          style={{ background: color.hex }}
-          onClick={() => setOpen(!open)}
-          title="Clique para abrir color picker"
-        />
-        {open && (
-          <div className="color-popover" ref={popoverRef}>
-            <HexColorPicker color={color.hex} onChange={handleHexChange} />
-          </div>
-        )}
-      </div>
-
-      <div className="color-inputs">
+      <div className="semantic-color-field" style={{ width: '100%' }}>
         <input
-          className="form-input"
+          className="semantic-color-native"
+          type="color"
+          value={safeColor}
+          onChange={(e) => handleHexChange(e.target.value.toUpperCase())}
+        />
+        <span className="semantic-color-label">HEX</span>
+        <input
+          className="form-input semantic-color-input"
           id={inputIdPrefix ? `${inputIdPrefix}-${color.id}-hex` : undefined}
-          style={{ height: 28, padding: '0 8px', fontSize: 12, fontFamily: "'Geist Mono', monospace" }}
           value={color.hex}
           onChange={(e) => handleHexChange(e.target.value)}
           placeholder="#FFFFFF"
         />
-        <input
-          className="color-meta-input"
-          value={color.rgb}
-          onChange={(e) => onChange({ rgb: e.target.value })}
-          placeholder="RGB: 255, 255, 255"
-        />
-        <input
-          className="color-meta-input"
-          value={color.hsl}
-          onChange={(e) => onChange({ hsl: e.target.value })}
-          placeholder="HSL: 0°, 0%, 0%"
-        />
-        <input
-          className="color-meta-input"
-          value={color.cmyk}
-          onChange={(e) => onChange({ cmyk: e.target.value })}
-          placeholder="CMYK: 0, 0, 0, 0"
-        />
+        <button className="btn-icon" onClick={onRemove} title="Remover cor">
+          <Trash2 size={13} />
+        </button>
       </div>
-
-      <button className="btn-icon" onClick={onRemove} title="Remover cor">
-        <Trash2 size={13} />
-      </button>
     </div>
   )
 }

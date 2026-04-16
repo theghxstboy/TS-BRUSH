@@ -21,6 +21,7 @@ type AppearanceFieldKey =
   | 'cor_titulo'
   | 'cor_texto'
   | 'cor_detalhes'
+  | 'cor_sombra'
 
 const LOGO_ACCEPT = 'image/svg+xml,image/png,image/webp,image/jpeg,.svg,.png,.webp,.jpg,.jpeg'
 const MOCKUP_ACCEPT = 'image/*'
@@ -31,6 +32,7 @@ const STANDARD_APPEARANCE_FIELDS: Array<{ key: AppearanceFieldKey; label: string
   { key: 'cor_titulo', label: 'Cor do título' },
   { key: 'cor_texto', label: 'Cor dos textos' },
   { key: 'cor_detalhes', label: 'Cor dos detalhes' },
+  { key: 'cor_sombra', label: 'Cor da sombra' },
 ]
 
 
@@ -90,7 +92,7 @@ function DrawerColorField({
         <input
           className="semantic-color-native"
           type="color"
-          value={displayValue && displayValue.startsWith('#') ? displayValue : '#000000'}
+          value={displayValue && /^#[0-9A-Fa-f]{6}$/.test(displayValue) ? displayValue : '#000000'}
           onChange={(e) => onChange(e.target.value.toUpperCase())}
         />
         <span className="semantic-color-label" style={{ fontSize: 10 }}>{isInherited ? 'AUTO' : 'SLIDE'}</span>
@@ -157,6 +159,9 @@ function AppearanceSection({ slideType }: { slideType: SlideType }) {
   } else if (slideType?.startsWith('secao-')) {
     globalApp = aparencia.secao
     fields = STANDARD_APPEARANCE_FIELDS.filter(f => ['cor_fundo_pagina', 'cor_titulo', 'cor_detalhes'].includes(f.key))
+  } else if (slideType === 'mockup' || slideType === 'padrao-cromatico') {
+    globalApp = aparencia.conteudo
+    fields = STANDARD_APPEARANCE_FIELDS.filter(f => ['cor_fundo_pagina', 'cor_detalhes', 'cor_sombra'].includes(f.key))
   }
 
   const getInherited = (key: AppearanceFieldKey) => {
@@ -165,6 +170,7 @@ function AppearanceSection({ slideType }: { slideType: SlideType }) {
       case 'cor_titulo': return globalApp.cor_titulo || '#0C0C0C'
       case 'cor_fundo_pagina': return globalApp.cor_fundo_pagina || '#FFFFFF'
       case 'cor_texto': return globalApp.cor_texto || '#1A1A1A'
+      case 'cor_sombra': return globalApp.cor_sombra || 'rgba(0,0,0,0.5)'
       default: return '#000000'
     }
   }
@@ -249,22 +255,32 @@ function LogoPaletteSection() {
   return (
     <DrawerSection title="Paleta usada neste slide" description={GLOBAL_SECTION_DESCRIPTION}>
       <div className="color-list">
-        {cores_logo.map((color) => (
-          <div key={color.id} className="color-item">
-            <input className="semantic-color-native" type="color" value={color.hex} onChange={(e) => handleHexChange(color, e.target.value.toUpperCase())} />
+        {cores_logo.map((color) => {
+          const safeColor = color.hex && /^#[0-9A-Fa-f]{6}$/.test(color.hex) ? color.hex : '#000000'
 
-            <div className="color-inputs">
-              <input className="form-input" style={{ height: 28, padding: '0 8px', fontSize: 12, fontFamily: "'Geist Mono', monospace" }} value={color.hex} onChange={(e) => handleHexChange(color, e.target.value)} placeholder="#FFFFFF" />
-              <input className="color-meta-input" value={color.rgb} onChange={(e) => setCor('logo', color.id, { rgb: e.target.value })} placeholder="RGB: 255, 255, 255" />
-              <input className="color-meta-input" value={color.hsl} onChange={(e) => setCor('logo', color.id, { hsl: e.target.value })} placeholder="HSL: 0deg, 0%, 0%" />
-              <input className="color-meta-input" value={color.cmyk} onChange={(e) => setCor('logo', color.id, { cmyk: e.target.value })} placeholder="CMYK: 0, 0, 0, 0" />
+          return (
+            <div key={color.id} className="color-item">
+              <div className="semantic-color-field" style={{ width: '100%' }}>
+                <input
+                  className="semantic-color-native"
+                  type="color"
+                  value={safeColor}
+                  onChange={(e) => handleHexChange(color, e.target.value.toUpperCase())}
+                />
+                <span className="semantic-color-label">HEX</span>
+                <input
+                  className="form-input semantic-color-input"
+                  value={color.hex}
+                  onChange={(e) => handleHexChange(color, e.target.value)}
+                  placeholder="#FFFFFF"
+                />
+                <button type="button" className="btn-icon" onClick={() => removeCor('logo', color.id)} title="Remover cor">
+                  <Trash2 size={13} />
+                </button>
+              </div>
             </div>
-
-            <button type="button" className="btn-icon" onClick={() => removeCor('logo', color.id)} title="Remover cor">
-              <Trash2 size={13} />
-            </button>
-          </div>
-        ))}
+          )
+        })}
       </div>
 
       <button type="button" className="btn-add" onClick={() => addCor('logo')}>

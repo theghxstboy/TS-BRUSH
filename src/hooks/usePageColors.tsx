@@ -19,11 +19,12 @@ export function usePageColors(slideType?: SlideAppearanceKey) {
   const titleColor = pageAppearance?.cor_titulo || globalApp.cor_titulo || '#0C0C0C'
   const textColor = pageAppearance?.cor_texto || globalApp.cor_texto || '#1A1A1A'
   const detailColor = pageAppearance?.cor_detalhes || globalApp.cor_detalhes || '#F97316'
+  const shadowColor = pageAppearance?.cor_sombra || globalApp.cor_sombra || 'rgba(0,0,0,0.5)'
 
 
   // Backward compatibility mappings
   const primaryColor = detailColor
-  const darkColor = detailColor
+  const darkColor = shadowColor
   const dividerTitleColor = titleColor
   const contentTitleColor = titleColor
   const logoBackdropColor = pageColor // Deprecated cor_fundo_logo defaults to page color
@@ -52,6 +53,7 @@ export function usePageColors(slideType?: SlideAppearanceKey) {
     titleColor,
     textColor,
     detailColor,
+    shadowColor,
     primaryColor,
     darkColor,
     dividerTitleColor,

@@ -27,7 +27,7 @@ function ColorField({
         <input
           className="semantic-color-native"
           type="color"
-          value={color}
+          value={color && /^#[0-9A-Fa-f]{6}$/.test(color) ? color : '#000000'}
           onChange={(e) => onChange(e.target.value.toUpperCase())}
         />
         <span className="semantic-color-label">Livre</span>

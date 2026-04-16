@@ -5,19 +5,11 @@ import { usePresentationTextStyles } from '../../../hooks/usePresentationTextSty
 interface TplCapaProps { pageNumber: number }
 
 export function TplCapa({ pageNumber: _pageNumber }: TplCapaProps) {
-  const { assets_base64, cores_apresentacao, tipografia, aparencia, page_appearance } = useBrandStore()
+  const { assets_base64, tipografia, aparencia } = useBrandStore()
   const { pageColor, darkColor, textColor, pageBackgroundStyle } = usePageColors('capa')
   const { metaStyle } = usePresentationTextStyles()
 
-  // Lógica para escolher a cor de fundo automática "mais distante" do logo
-  // Se o usuário não definiu uma cor específica para a capa (''), tentamos ser inteligentes.
-  const hasCustomCapaColor = page_appearance.capa.cor_fundo_pagina !== ''
-  
-  let bgToUse = pageColor
-  if (!hasCustomCapaColor && cores_apresentacao.length >= 2) {
-    // Escolha automática: se não tem cor customizada, usamos a segunda cor da paleta para dar contraste
-    bgToUse = cores_apresentacao[1].hex
-  }
+  const bgToUse = pageColor
 
   const alignment = tipografia.apresentacao_alinhamento || 'left'
   const badgeStyle: React.CSSProperties = {

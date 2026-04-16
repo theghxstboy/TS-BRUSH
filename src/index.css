@@ -890,9 +890,10 @@ select.form-input { appearance: none; }
 
 .ai-response-input {
   min-height: 180px;
-  font-size: 12px;
-  line-height: 1.55;
-  font-family: 'Geist Mono', monospace;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
 /* ─── Canvas Area ─────────────────────────────────────────── */
@@ -932,6 +933,7 @@ select.form-input { appearance: none; }
 }
 
 .canvas-empty-icon { color: #3f3f46; }
+
 
 /* ─── PDF Pages ───────────────────────────────────────────── */
 .pagina-pdf {
@@ -1275,20 +1277,19 @@ select.form-input { appearance: none; }
     0 20px 56px rgba(0,0,0,0.58);
 }
 
-.pagina-pdf-clickable.is-active .page-label {
-  color: #fed7aa;
-}
-
 /* ─── @media print ───────────────────────────────────────── */
 @media print {
   @page { size: A4 landscape; margin: 0; }
 
   aside,
   .sidebar,
+  .context-drawer,
   .ui-controls,
   .toast-container,
   .page-label,
-  .canvas-area > :not(.pagina-pdf-wrapper) {
+  .btn-float-container,
+  .pagina-pdf-clickable::before,
+  .pagina-pdf-clickable::after {
     display: none !important;
   }
 
@@ -1309,20 +1310,37 @@ select.form-input { appearance: none; }
     overflow: visible !important;
     display: block !important;
   }
+
+  .canvas-page-shell {
+    width: auto !important;
+    height: auto !important;
+    display: block !important;
+  }
+
+  .pagina-pdf-wrapper {
+    transform: none !important;
+    position: static !important;
+    width: 297mm !important;
+    height: 210mm !important;
+    margin: 0 !important;
+    display: block !important;
+    page-break-after: always;
+    page-break-inside: avoid;
+    break-after: page;
+    break-inside: avoid;
+  }
+
   .pagina-pdf {
     width: 297mm !important;
     height: 210mm !important;
     box-shadow: none !important;
     border-radius: 0 !important;
-    page-break-after: always;
-    page-break-inside: avoid;
-    break-after: page;
-    break-inside: avoid;
+    border: none !important;
+    margin: 0 !important;
     display: block !important;
   }
 
-  .pagina-pdf-wrapper:last-child .pagina-pdf,
-  .canvas-area > .pagina-pdf:last-child {
+  .canvas-page-shell:last-child .pagina-pdf-wrapper {
     page-break-after: auto;
     break-after: auto;
   }

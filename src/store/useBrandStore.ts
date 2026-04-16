@@ -33,6 +33,7 @@ export interface Aparencia {
     cor_titulo: string
     cor_texto: string
     cor_detalhes: string
+    cor_sombra: string
     [key: string]: string | number | boolean | null | undefined
   }
   conteudo: {
@@ -40,6 +41,7 @@ export interface Aparencia {
     cor_titulo: string
     cor_texto: string
     cor_detalhes: string
+    cor_sombra: string
     [key: string]: string | number | boolean | null | undefined
   }
   /** Imagem de textura/padrão aplicada sobre os painéis de fundo (opcional) */
@@ -75,6 +77,7 @@ export interface SlideAppearance {
   cor_titulo: string
   cor_texto: string
   cor_detalhes: string
+  cor_sombra: string
   imagem_fundo: string | null
   imagem_fundo_opacidade: number
 }
@@ -194,12 +197,14 @@ const DEFAULT_APARENCIA: Aparencia = {
     cor_titulo: '#0C0C0C',
     cor_texto: '#1A1A1A',
     cor_detalhes: '#F97316',
+    cor_sombra: 'rgba(0,0,0,0.5)',
   },
   conteudo: {
     cor_fundo_pagina: '#FFFFFF',
     cor_titulo: '#0C0C0C',
     cor_texto: '#1A1A1A',
     cor_detalhes: '#F97316',
+    cor_sombra: 'rgba(0,0,0,0.5)',
   },
   imagem_fundo: null,
   imagem_fundo_opacidade: DEFAULT_BACKGROUND_IMAGE_OPACITY,
@@ -210,6 +215,7 @@ export const DEFAULT_SLIDE_APPEARANCE: SlideAppearance = {
   cor_titulo: '',
   cor_texto: '',
   cor_detalhes: '',
+  cor_sombra: '',
   imagem_fundo: null,
   imagem_fundo_opacidade: DEFAULT_BACKGROUND_IMAGE_OPACITY,
 }
@@ -359,49 +365,19 @@ function sanitizeAparenciaFields(fields: Partial<Aparencia>, current: Aparencia)
   const next: Partial<Aparencia> = { ...fields }
 
   if ('capa' in next && next.capa) {
-    const divNext = { ...next.capa }
-    const validKeys = ['cor_fundo_pagina', 'cor_detalhes']
-    for (const key of validKeys) {
-      if (key in divNext) {
-        // @ts-ignore
-        divNext[key] = normalizeHex(String(divNext[key]).trim()) ?? current.capa[key]
-      }
-    }
-    next.capa = { ...current.capa, ...divNext }
+    next.capa = { ...current.capa, ...next.capa }
   }
 
   if ('secao' in next && next.secao) {
-    const divNext = { ...next.secao }
-    const validKeys = ['cor_fundo_pagina', 'cor_titulo', 'cor_detalhes']
-    for (const key of validKeys) {
-      if (key in divNext) {
-        // @ts-ignore
-        divNext[key] = normalizeHex(String(divNext[key]).trim()) ?? current.secao[key]
-      }
-    }
-    next.secao = { ...current.secao, ...divNext }
+    next.secao = { ...current.secao, ...next.secao }
   }
 
   if ('final' in next && next.final) {
-    const divNext = { ...next.final }
-    const validKeys = ['cor_fundo_pagina', 'cor_titulo', 'cor_texto', 'cor_detalhes']
-    for (const key of validKeys) {
-      if (key in divNext) {
-        divNext[key] = normalizeHex(String(divNext[key]).trim()) ?? current.final[key]
-      }
-    }
-    next.final = { ...current.final, ...divNext }
+    next.final = { ...current.final, ...next.final }
   }
 
   if ('conteudo' in next && next.conteudo) {
-    const contNext = { ...next.conteudo }
-    const validKeys = ['cor_fundo_pagina', 'cor_titulo', 'cor_texto', 'cor_detalhes']
-    for (const key of validKeys) {
-      if (key in contNext) {
-        contNext[key] = normalizeHex(String(contNext[key]).trim()) ?? current.conteudo[key]
-      }
-    }
-    next.conteudo = { ...current.conteudo, ...contNext }
+    next.conteudo = { ...current.conteudo, ...next.conteudo }
   }
 
   if ('imagem_fundo_opacidade' in next) {
@@ -418,16 +394,12 @@ function sanitizeSlideAppearanceFields(fields: Partial<SlideAppearance>, current
     'cor_titulo',
     'cor_texto',
     'cor_detalhes',
+    'cor_sombra',
   ]
 
   for (const key of colorKeys) {
-    if (!(key in next) || typeof next[key] !== 'string') continue
-    const val = String(next[key]).trim()
-    if (val === '') {
-      next[key] = ''
-    } else {
-      const normalized = normalizeHex(val)
-      next[key] = normalized ?? (current?.[key] || '')
+    if ((key in next) && typeof next[key] === 'string') {
+      // Allow any string, normalization happens in components
     }
   }
 

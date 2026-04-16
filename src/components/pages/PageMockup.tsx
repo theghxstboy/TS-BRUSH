@@ -11,7 +11,7 @@ interface PageMockupProps {
 
 export function PageMockup({ mockupIndex, pageNumber, totalMockups }: PageMockupProps) {
   const { projeto, assets_base64 } = useBrandStore()
-  const { primaryColor, darkColor, textColor, pageBackgroundStyle } = usePageColors('mockup')
+  const { primaryColor, textColor, shadowColor, pageBackgroundStyle } = usePageColors('mockup')
   const { pageTitleStyle, bodyStyle, metaStyle } = usePresentationTextStyles()
   const src = assets_base64.mockups[mockupIndex]
   if (!src) return null
@@ -28,7 +28,7 @@ export function PageMockup({ mockupIndex, pageNumber, totalMockups }: PageMockup
           style={{
             position: 'absolute',
             inset: 0,
-            background: `linear-gradient(to top, ${darkColor}cc 0%, transparent 45%, transparent 65%, ${darkColor}88 100%)`,
+            background: `linear-gradient(to top, ${shadowColor} 0%, transparent 45%, transparent 65%, ${shadowColor} 100%)`,
           }}
         />
       </div>

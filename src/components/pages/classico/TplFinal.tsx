@@ -4,7 +4,7 @@ import { usePresentationTextStyles } from '../../../hooks/usePresentationTextSty
 
 export function TplFinal() {
   const { projeto } = useBrandStore()
-  const { primaryColor, darkColor, textColor, pageBackgroundStyle } = usePageColors('final')
+  const { pageColor, titleColor, textColor, detailColor, pageBackgroundStyle } = usePageColors('final')
   const { pageTitleStyle, bodyStyle } = usePresentationTextStyles()
 
   const currentYear = new Date().getFullYear()
@@ -14,7 +14,7 @@ export function TplFinal() {
     <div
       className="pagina-pdf"
       style={{
-        background: primaryColor,
+        background: pageColor,
         position: 'relative',
         overflow: 'hidden',
         color: textColor,
@@ -33,7 +33,7 @@ export function TplFinal() {
           zIndex: 5,
         }}
       >
-        <div style={{ fontWeight: 900, color: darkColor, ...pageTitleStyle(72, { lineHeight: 1, letterSpacing: '-0.04em' }) }}>
+        <div style={{ fontWeight: 900, color: titleColor, ...pageTitleStyle(72, { lineHeight: 1, letterSpacing: '-0.04em', textAlign: 'center' }) }}>
           OBRIGADO
         </div>
       </div>
@@ -48,12 +48,12 @@ export function TplFinal() {
           zIndex: 10,
         }}
       >
-        <div style={{ fontWeight: 800, color: darkColor, marginBottom: 4, ...bodyStyle(13) }}>
+        <div style={{ fontWeight: 800, color: textColor, marginBottom: 4, ...bodyStyle(13, { textAlign: 'center' }) }}>
           © {currentYear} Todos os Direitos Reservados
         </div>
-        <div style={{ color: darkColor, ...bodyStyle(13) }}>
-          <strong>Desenvolvido por:</strong> Trajetória Do Sucesso | Designer{' '}
-          <span style={{ color: darkColor, fontWeight: 700 }}>{responsibleName}</span>
+        <div style={{ color: textColor, ...bodyStyle(13, { textAlign: 'center' }) }}>
+          <strong>Desenvolvido por:</strong> Agência TS | Designer{' '}
+          <span style={{ color: detailColor, fontWeight: 700 }}>{responsibleName}</span>
         </div>
       </div>
 
@@ -64,7 +64,7 @@ export function TplFinal() {
           left: 28,
           right: 28,
           height: 2,
-          background: darkColor,
+          background: detailColor,
           opacity: 0.25,
           zIndex: 10,
         }}

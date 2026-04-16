@@ -7,7 +7,7 @@ import { UploadZone } from '../sidebar/UploadZone'
 import { hexToHsl, hexToRgb } from '../../lib/colorUtils'
 import { extractColorsFromDataUrl } from '../../lib/imageUtils'
 import type { ContextDrawerTarget } from '../../lib/sidebarNavigation'
-import { DEFAULT_BACKGROUND_IMAGE_OPACITY, useBrandStore } from '../../store/useBrandStore'
+import { DEFAULT_BACKGROUND_IMAGE_OPACITY, DEFAULT_SLIDE_APPEARANCE, useBrandStore } from '../../store/useBrandStore'
 import type { BrandColor, SlideAppearanceKey } from '../../store/useBrandStore'
 import {
   DEFAULT_BODY_FONT,
@@ -17,140 +17,22 @@ import {
 type SlideType = SlideAppearanceKey
 
 type AppearanceFieldKey =
-  | 'cor_destaque'
-  | 'cor_paineis'
+  | 'cor_fundo_pagina'
   | 'cor_titulo'
   | 'cor_texto'
-  | 'cor_fundo_pagina'
-  | 'cor_fundo_logo'
+  | 'cor_detalhes'
 
 const LOGO_ACCEPT = 'image/svg+xml,image/png,image/webp,image/jpeg,.svg,.png,.webp,.jpg,.jpeg'
 const MOCKUP_ACCEPT = 'image/*'
 const GLOBAL_SECTION_DESCRIPTION = 'Estes controles continuam sendo globais e podem refletir em outras paginas do manual.'
 
-const APPEARANCE_FIELDS: Record<SlideType, Array<{ key: AppearanceFieldKey; label: string }>> = {
-  capa: [
-    { key: 'cor_destaque', label: 'Cor de destaque' },
-    { key: 'cor_paineis', label: 'Cor dos paineis' },
-    { key: 'cor_texto', label: 'Cor do texto' },
-  ],
-  'bem-vindo': [
-    { key: 'cor_titulo', label: 'Cor do titulo' },
-    { key: 'cor_texto', label: 'Cor do texto' },
-    { key: 'cor_fundo_pagina', label: 'Cor do fundo da pagina' },
-  ],
-  sumario: [
-    { key: 'cor_destaque', label: 'Cor de destaque' },
-    { key: 'cor_paineis', label: 'Cor dos paineis' },
-    { key: 'cor_texto', label: 'Cor do texto' },
-    { key: 'cor_fundo_pagina', label: 'Cor do fundo da pagina' },
-  ],
-  conceito: [
-    { key: 'cor_titulo', label: 'Cor do titulo' },
-    { key: 'cor_texto', label: 'Cor do texto' },
-    { key: 'cor_fundo_pagina', label: 'Cor do fundo da pagina' },
-  ],
-  'tipografia-principal': [
-    { key: 'cor_destaque', label: 'Cor de destaque' },
-    { key: 'cor_titulo', label: 'Cor do titulo' },
-    { key: 'cor_texto', label: 'Cor do texto' },
-    { key: 'cor_fundo_pagina', label: 'Cor do fundo da pagina' },
-    { key: 'cor_fundo_logo', label: 'Cor do fundo atras da tipografia' },
-  ],
-  'tipografia-secundaria': [
-    { key: 'cor_destaque', label: 'Cor de destaque' },
-    { key: 'cor_titulo', label: 'Cor do titulo' },
-    { key: 'cor_texto', label: 'Cor do texto' },
-    { key: 'cor_fundo_pagina', label: 'Cor do fundo da pagina' },
-    { key: 'cor_fundo_logo', label: 'Cor do fundo atras da tipografia' },
-  ],
-  'padrao-cromatico': [
-    { key: 'cor_destaque', label: 'Cor de destaque' },
-    { key: 'cor_paineis', label: 'Cor dos paineis' },
-    { key: 'cor_titulo', label: 'Cor do titulo' },
-    { key: 'cor_texto', label: 'Cor do texto' },
-    { key: 'cor_fundo_pagina', label: 'Cor do fundo da pagina' },
-  ],
-  'versao-mono': [
-    { key: 'cor_paineis', label: 'Cor dos paineis' },
-    { key: 'cor_titulo', label: 'Cor do titulo' },
-    { key: 'cor_texto', label: 'Cor do texto' },
-    { key: 'cor_fundo_pagina', label: 'Cor do fundo da pagina' },
-    { key: 'cor_fundo_logo', label: 'Cor do fundo atras da logo' },
-  ],
-  elementos: [
-    { key: 'cor_titulo', label: 'Cor do titulo' },
-    { key: 'cor_texto', label: 'Cor do texto' },
-    { key: 'cor_fundo_pagina', label: 'Cor do fundo da pagina' },
-    { key: 'cor_fundo_logo', label: 'Cor do fundo atras da logo' },
-  ],
-  'aplicacao-fundos': [
-    { key: 'cor_paineis', label: 'Cor dos paineis' },
-    { key: 'cor_titulo', label: 'Cor do titulo' },
-    { key: 'cor_texto', label: 'Cor do texto' },
-    { key: 'cor_fundo_pagina', label: 'Cor do fundo da pagina' },
-  ],
-  'usos-incorretos': [
-    { key: 'cor_titulo', label: 'Cor do titulo' },
-    { key: 'cor_texto', label: 'Cor do texto' },
-    { key: 'cor_fundo_pagina', label: 'Cor do fundo da pagina' },
-  ],
-  mockup: [
-    { key: 'cor_destaque', label: 'Cor de destaque' },
-    { key: 'cor_paineis', label: 'Cor dos paineis' },
-    { key: 'cor_texto', label: 'Cor do texto' },
-  ],
-  final: [
-    { key: 'cor_destaque', label: 'Cor de destaque' },
-    { key: 'cor_paineis', label: 'Cor dos paineis' },
-    { key: 'cor_texto', label: 'Cor do texto' },
-  ],
-  'logo-principal': [
-    { key: 'cor_destaque', label: 'Cor de destaque' },
-    { key: 'cor_paineis', label: 'Cor dos paineis' },
-    { key: 'cor_titulo', label: 'Cor do titulo' },
-    { key: 'cor_texto', label: 'Cor do texto' },
-    { key: 'cor_fundo_pagina', label: 'Cor do fundo da pagina' },
-    { key: 'cor_fundo_logo', label: 'Cor do fundo atras da logo' },
-  ],
-  simbolo: [
-    { key: 'cor_destaque', label: 'Cor de destaque' },
-    { key: 'cor_titulo', label: 'Cor do titulo' },
-    { key: 'cor_texto', label: 'Cor do texto' },
-    { key: 'cor_fundo_pagina', label: 'Cor do fundo da pagina' },
-    { key: 'cor_fundo_logo', label: 'Cor do fundo atras da logo' },
-  ],
-  'secao-logo': [
-    { key: 'cor_destaque', label: 'Cor de destaque' },
-    { key: 'cor_paineis', label: 'Cor da linha inferior' },
-    { key: 'cor_titulo', label: 'Cor do titulo' },
-  ],
-  'secao-tipografia': [
-    { key: 'cor_destaque', label: 'Cor de destaque' },
-    { key: 'cor_paineis', label: 'Cor da linha inferior' },
-    { key: 'cor_titulo', label: 'Cor do titulo' },
-  ],
-  'secao-cores': [
-    { key: 'cor_destaque', label: 'Cor de destaque' },
-    { key: 'cor_paineis', label: 'Cor da linha inferior' },
-    { key: 'cor_titulo', label: 'Cor do titulo' },
-  ],
-  'secao-construcao': [
-    { key: 'cor_destaque', label: 'Cor de destaque' },
-    { key: 'cor_paineis', label: 'Cor da linha inferior' },
-    { key: 'cor_titulo', label: 'Cor do titulo' },
-  ],
-  'secao-usos-incorretos': [
-    { key: 'cor_destaque', label: 'Cor de destaque' },
-    { key: 'cor_paineis', label: 'Cor da linha inferior' },
-    { key: 'cor_titulo', label: 'Cor do titulo' },
-  ],
-  'secao-aplicacoes': [
-    { key: 'cor_destaque', label: 'Cor de destaque' },
-    { key: 'cor_paineis', label: 'Cor da linha inferior' },
-    { key: 'cor_titulo', label: 'Cor do titulo' },
-  ],
-}
+const STANDARD_APPEARANCE_FIELDS: Array<{ key: AppearanceFieldKey; label: string }> = [
+  { key: 'cor_fundo_pagina', label: 'Cor do fundo da página' },
+  { key: 'cor_titulo', label: 'Cor do título' },
+  { key: 'cor_texto', label: 'Cor dos textos' },
+  { key: 'cor_detalhes', label: 'Cor dos detalhes' },
+]
+
 
 const TITLES: Record<SlideType, string> = {
   capa: 'Capa',
@@ -179,19 +61,45 @@ const TITLES: Record<SlideType, string> = {
 function DrawerColorField({
   label,
   value,
+  inheritedValue,
   onChange,
 }: {
   label: string
   value: string
+  inheritedValue: string
   onChange: (hex: string) => void
 }) {
+  const isInherited = !value
+  const displayValue = isInherited ? inheritedValue : value
+
   return (
     <div className="form-group">
-      <label className="form-label">{label}</label>
-      <div className="semantic-color-field">
-        <input className="semantic-color-native" type="color" value={value} onChange={(e) => onChange(e.target.value.toUpperCase())} />
-        <span className="semantic-color-label">Livre</span>
-        <input className="form-input semantic-color-input" value={value} onChange={(e) => onChange(e.target.value)} />
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+        <label className="form-label" style={{ margin: 0 }}>{label}</label>
+        {!isInherited && (
+          <button
+            type="button"
+            onClick={() => onChange('')}
+            style={{ fontSize: 10, color: 'var(--accent)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+          >
+            Resetar Global
+          </button>
+        )}
+      </div>
+      <div className="semantic-color-field" style={{ opacity: isInherited ? 0.8 : 1 }}>
+        <input
+          className="semantic-color-native"
+          type="color"
+          value={displayValue && displayValue.startsWith('#') ? displayValue : '#000000'}
+          onChange={(e) => onChange(e.target.value.toUpperCase())}
+        />
+        <span className="semantic-color-label" style={{ fontSize: 10 }}>{isInherited ? 'AUTO' : 'SLIDE'}</span>
+        <input
+          className="form-input semantic-color-input"
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder={inheritedValue}
+        />
       </div>
     </div>
   )
@@ -235,9 +143,33 @@ function DrawerSection({ title, description, children }: { title: string; descri
 }
 
 function AppearanceSection({ slideType }: { slideType: SlideType }) {
-  const { page_appearance, setPageAppearance } = useBrandStore()
-  const appearance = page_appearance[slideType]
-  const fields = APPEARANCE_FIELDS[slideType]
+  const { page_appearance, setPageAppearance, aparencia } = useBrandStore()
+  const appearance = page_appearance[slideType] || DEFAULT_SLIDE_APPEARANCE
+  let globalApp: any = aparencia.conteudo
+  let fields = STANDARD_APPEARANCE_FIELDS
+
+  if (slideType === 'capa') {
+    globalApp = aparencia.capa
+    fields = STANDARD_APPEARANCE_FIELDS.filter(f => ['cor_fundo_pagina', 'cor_detalhes'].includes(f.key))
+  } else if (slideType === 'final') {
+    globalApp = aparencia.final
+    fields = STANDARD_APPEARANCE_FIELDS
+  } else if (slideType?.startsWith('secao-')) {
+    globalApp = aparencia.secao
+    fields = STANDARD_APPEARANCE_FIELDS.filter(f => ['cor_fundo_pagina', 'cor_titulo', 'cor_detalhes'].includes(f.key))
+  }
+
+  const getInherited = (key: AppearanceFieldKey) => {
+    switch (key) {
+      case 'cor_detalhes': return globalApp.cor_detalhes || '#F97316'
+      case 'cor_titulo': return globalApp.cor_titulo || '#0C0C0C'
+      case 'cor_fundo_pagina': return globalApp.cor_fundo_pagina || '#FFFFFF'
+      case 'cor_texto': return globalApp.cor_texto || '#1A1A1A'
+      default: return '#000000'
+    }
+  }
+
+
 
   return (
     <DrawerSection title="Aparencia deste slide" description="Somente os controles que afetam esta pagina em especifico.">
@@ -246,6 +178,7 @@ function AppearanceSection({ slideType }: { slideType: SlideType }) {
           key={`${slideType}-${field.key}`}
           label={field.label}
           value={appearance[field.key]}
+          inheritedValue={getInherited(field.key)}
           onChange={(hex) => setPageAppearance(slideType, { [field.key]: hex })}
         />
       ))}

@@ -35,15 +35,15 @@ export function TplConceito({ pageNumber }: TplConceitoProps) {
             {conteudo_pdf.conceito_titulo || 'Conceito'}
           </h2>
 
-          <p style={{ color: '#222', margin: 0, ...bodyStyle(13.5, { lineHeight: 1.75 }) }}>
+          <p style={{ color: textColor, margin: 0, ...bodyStyle(13.5, { lineHeight: 1.75 }) }}>
             &nbsp;&nbsp;{texto1}
           </p>
 
-          <p style={{ color: '#222', margin: 0, ...bodyStyle(13.5, { lineHeight: 1.75 }) }}>
+          <p style={{ color: textColor, margin: 0, ...bodyStyle(13.5, { lineHeight: 1.75 }) }}>
             &nbsp;&nbsp;{texto2}
           </p>
 
-          <p style={{ color: '#222', margin: 0, ...bodyStyle(13.5, { lineHeight: 1.75 }) }}>
+          <p style={{ color: textColor, margin: 0, ...bodyStyle(13.5, { lineHeight: 1.75 }) }}>
             &nbsp;&nbsp;{texto3}
           </p>
         </div>

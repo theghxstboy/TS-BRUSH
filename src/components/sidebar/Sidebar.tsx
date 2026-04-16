@@ -4,6 +4,7 @@ import { SectionProjeto } from './SectionProjeto'
 import { SectionAssets } from './SectionAssets'
 import { SectionCores } from './SectionCores'
 import { SectionTipografia } from './SectionTipografia'
+import { SectionAparencia } from './SectionAparencia'
 import { ActionButtons } from './ActionButtons'
 
 export function Sidebar() {
@@ -27,6 +28,7 @@ export function Sidebar() {
         <SectionProjeto />
         <SectionAssets />
         <SectionCores />
+        <SectionAparencia />
         <SectionTipografia />
       </div>
 

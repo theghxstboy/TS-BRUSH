@@ -66,7 +66,7 @@ export function TplTipografia({ pageNumber, variante }: TplTipografiaProps) {
       >
         <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 16, paddingRight: 24 }}>
           <h2 style={{ fontWeight: 900, color: contentTitleColor, margin: 0, ...pageTitleStyle(40) }}>{titulo}</h2>
-          <p style={{ color: '#222', margin: 0, ...bodyStyle(13.5, { lineHeight: 1.75 }) }}>&nbsp;&nbsp;{descricao}</p>
+          <p style={{ color: textColor, margin: 0, ...bodyStyle(13.5, { lineHeight: 1.75 }) }}>&nbsp;&nbsp;{descricao}</p>
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', gap: 10, paddingRight: 36, paddingLeft: 8 }}>

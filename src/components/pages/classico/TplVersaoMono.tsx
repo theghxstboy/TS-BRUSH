@@ -30,7 +30,7 @@ export function TplVersaoMono({ pageNumber }: TplVersaoMonoProps) {
           Versao Monocromatica
         </h2>
 
-        <p style={{ color: '#222', margin: '0 0 24px 0', maxWidth: '90%', ...bodyStyle(13.5, { lineHeight: 1.75 }) }}>
+        <p style={{ color: textColor, margin: '0 0 24px 0', maxWidth: '90%', ...bodyStyle(13.5, { lineHeight: 1.75 }) }}>
           &nbsp;&nbsp;Para garantir a flexibilidade da identidade visual, o logo pode ser aplicado em versoes monocromaticas
           (preto ou branco). Essas variacoes devem ser usadas em casos especificos, como fundos que comprometam
           a legibilidade da versao original.
@@ -38,19 +38,19 @@ export function TplVersaoMono({ pageNumber }: TplVersaoMonoProps) {
 
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 20, flex: 1 }}>
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
-            <div style={{ ...metaStyle(12), fontWeight: 400, color: darkColor, letterSpacing: '0.05em', fontFamily: 'monospace' }}>p&amp;b</div>
-            <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', background: logoBackdropColor, borderRadius: 4 }}>
+            <div style={{ ...metaStyle(12), fontWeight: 400, color: darkColor, letterSpacing: '0.05em', fontFamily: 'monospace' }}>Preto &amp; Branco</div>
+            <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', background: '#F4F4F5', borderRadius: 4 }}>
               {src ? (
-                <MonochromeLogo src={src} color={contentTitleColor} maxWidth="80%" maxHeight={110} />
+                <MonochromeLogo src={src} color="#000000" maxWidth="80%" maxHeight={110} />
               ) : (
-                <div style={{ fontSize: 52, fontWeight: 900, color: darkColor, textAlign: 'center', lineHeight: 1 }}>LOGO<br />AQUI</div>
+                <div style={{ fontSize: 52, fontWeight: 900, color: '#000', textAlign: 'center', lineHeight: 1 }}>LOGO<br />AQUI</div>
               )}
             </div>
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
-            <div style={{ ...metaStyle(12), fontWeight: 400, color: darkColor, letterSpacing: '0.05em', fontFamily: 'monospace' }}>negativo</div>
-            <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', background: darkColor, borderRadius: 4 }}>
+            <div style={{ ...metaStyle(12), fontWeight: 400, color: darkColor, letterSpacing: '0.05em', fontFamily: 'monospace' }}>Negativo</div>
+            <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', background: '#000000', borderRadius: 4 }}>
               {src ? (
                 <MonochromeLogo src={src} color="#FFFFFF" maxWidth="80%" maxHeight={110} />
               ) : (
@@ -60,12 +60,12 @@ export function TplVersaoMono({ pageNumber }: TplVersaoMonoProps) {
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
-            <div style={{ ...metaStyle(12), fontWeight: 400, color: darkColor, letterSpacing: '0.05em', fontFamily: 'monospace' }}>apenas preto</div>
-            <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', background: pageColor, borderRadius: 4 }}>
+            <div style={{ ...metaStyle(12), fontWeight: 400, color: darkColor, letterSpacing: '0.05em', fontFamily: 'monospace' }}>Escala de Cinza</div>
+            <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', background: '#FFFFFF', border: '1px solid #ddd', borderRadius: 4 }}>
               {src ? (
-                <MonochromeLogo src={src} color={darkColor} maxWidth="80%" maxHeight={110} />
+                <img src={src} style={{ maxWidth: '80%', maxHeight: 110, objectFit: 'contain', filter: 'grayscale(1)' }} alt="Grayscale" />
               ) : (
-                <div style={{ fontSize: 52, fontWeight: 900, color: darkColor, textAlign: 'center', lineHeight: 1, opacity: 0.8 }}>LOGO<br />AQUI</div>
+                <div style={{ fontSize: 52, fontWeight: 900, color: '#888', textAlign: 'center', lineHeight: 1 }}>LOGO<br />AQUU</div>
               )}
             </div>
           </div>

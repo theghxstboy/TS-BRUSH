@@ -36,7 +36,7 @@ export function TplPadraoCromatico({ pageNumber }: TplPadraoCromaticoProps) {
           Padrão Cromático
         </h2>
 
-        <p style={{ color: '#222', margin: '0 0 32px 0', maxWidth: '92%', ...bodyStyle(13.5, { lineHeight: 1.75 }) }}>
+        <p style={{ color: textColor, margin: '0 0 32px 0', maxWidth: '92%', ...bodyStyle(13.5, { lineHeight: 1.75 }) }}>
           &nbsp;&nbsp;As cores escolhidas para a identidade visual da marca desempenham um papel fundamental na construção de
           sua personalidade. Cada tom foi selecionado para transmitir <span style={{ color: darkColor, fontWeight: 600 }}>{sensacoes}</span>.
           O uso correto da paleta reforça o reconhecimento da marca e deve ser seguido em todas as aplicações.

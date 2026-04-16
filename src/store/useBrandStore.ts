@@ -19,13 +19,29 @@ type ColorTarget = 'logo' | 'apresentacao'
 export const DEFAULT_BACKGROUND_IMAGE_OPACITY = 0.16
 
 export interface Aparencia {
-  /** Cor de fundo dos painéis escuros de cada página */
-  cor_destaque: string
-  cor_paineis: string
-  cor_titulos_divisoria: string
-  cor_titulos_conteudo: string
-  cor_fundo_pagina: string
-  cor_fundo_logo: string
+  capa: {
+    cor_fundo_pagina: string
+    cor_detalhes: string
+  }
+  secao: {
+    cor_fundo_pagina: string
+    cor_titulo: string
+    cor_detalhes: string
+  }
+  final: {
+    cor_fundo_pagina: string
+    cor_titulo: string
+    cor_texto: string
+    cor_detalhes: string
+    [key: string]: string | number | boolean | null | undefined
+  }
+  conteudo: {
+    cor_fundo_pagina: string
+    cor_titulo: string
+    cor_texto: string
+    cor_detalhes: string
+    [key: string]: string | number | boolean | null | undefined
+  }
   /** Imagem de textura/padrão aplicada sobre os painéis de fundo (opcional) */
   imagem_fundo: string | null
   imagem_fundo_opacidade: number
@@ -55,12 +71,10 @@ export type SlideAppearanceKey =
   | 'secao-aplicacoes'
 
 export interface SlideAppearance {
-  cor_destaque: string
-  cor_paineis: string
+  cor_fundo_pagina: string
   cor_titulo: string
   cor_texto: string
-  cor_fundo_pagina: string
-  cor_fundo_logo: string
+  cor_detalhes: string
   imagem_fundo: string | null
   imagem_fundo_opacidade: number
 }
@@ -166,23 +180,36 @@ export interface BrandStore {
 // ─── Default state ────────────────────────────────────────────────────────────
 
 const DEFAULT_APARENCIA: Aparencia = {
-  cor_destaque: '#F97316',
-  cor_paineis: '#0C0C0C',
-  cor_titulos_divisoria: '#0C0C0C',
-  cor_titulos_conteudo: '#0C0C0C',
-  cor_fundo_pagina: '#FFFFFF',
-  cor_fundo_logo: '#F4F4F5',
+  capa: {
+    cor_fundo_pagina: '#FFFFFF',
+    cor_detalhes: '#F97316',
+  },
+  secao: {
+    cor_fundo_pagina: '#FFFFFF',
+    cor_titulo: '#0C0C0C',
+    cor_detalhes: '#F97316',
+  },
+  final: {
+    cor_fundo_pagina: '#FFFFFF',
+    cor_titulo: '#0C0C0C',
+    cor_texto: '#1A1A1A',
+    cor_detalhes: '#F97316',
+  },
+  conteudo: {
+    cor_fundo_pagina: '#FFFFFF',
+    cor_titulo: '#0C0C0C',
+    cor_texto: '#1A1A1A',
+    cor_detalhes: '#F97316',
+  },
   imagem_fundo: null,
   imagem_fundo_opacidade: DEFAULT_BACKGROUND_IMAGE_OPACITY,
 }
 
-const DEFAULT_SLIDE_APPEARANCE: SlideAppearance = {
-  cor_destaque: DEFAULT_APARENCIA.cor_destaque,
-  cor_paineis: DEFAULT_APARENCIA.cor_paineis,
-  cor_titulo: DEFAULT_APARENCIA.cor_titulos_conteudo,
-  cor_texto: '#1A1A1A',
-  cor_fundo_pagina: DEFAULT_APARENCIA.cor_fundo_pagina,
-  cor_fundo_logo: DEFAULT_APARENCIA.cor_fundo_logo,
+export const DEFAULT_SLIDE_APPEARANCE: SlideAppearance = {
+  cor_fundo_pagina: '',
+  cor_titulo: '',
+  cor_texto: '',
+  cor_detalhes: '',
   imagem_fundo: null,
   imagem_fundo_opacidade: DEFAULT_BACKGROUND_IMAGE_OPACITY,
 }
@@ -314,21 +341,13 @@ function getColorKey(target: ColorTarget) {
   return target === 'logo' ? 'cores_logo' : 'cores_apresentacao'
 }
 
-type AparenciaColorKey =
-  | 'cor_destaque'
-  | 'cor_paineis'
-  | 'cor_titulos_divisoria'
-  | 'cor_titulos_conteudo'
+type GlobalAppearanceColorKey =
   | 'cor_fundo_pagina'
-  | 'cor_fundo_logo'
-
-type SlideAppearanceColorKey =
-  | 'cor_destaque'
-  | 'cor_paineis'
   | 'cor_titulo'
   | 'cor_texto'
-  | 'cor_fundo_pagina'
-  | 'cor_fundo_logo'
+  | 'cor_detalhes'
+
+type SlideAppearanceColorKey = GlobalAppearanceColorKey
 
 function sanitizeOpacity(value: unknown, fallback: number) {
   const numeric = typeof value === 'number' ? value : Number(value)
@@ -338,23 +357,55 @@ function sanitizeOpacity(value: unknown, fallback: number) {
 
 function sanitizeAparenciaFields(fields: Partial<Aparencia>, current: Aparencia): Partial<Aparencia> {
   const next: Partial<Aparencia> = { ...fields }
-  const colorKeys: AparenciaColorKey[] = [
-    'cor_destaque',
-    'cor_paineis',
-    'cor_titulos_divisoria',
-    'cor_titulos_conteudo',
-    'cor_fundo_pagina',
-    'cor_fundo_logo',
-  ]
 
-  for (const key of colorKeys) {
-    if (!(key in next) || typeof next[key] !== 'string') continue
-    const normalized = normalizeHex(String(next[key]))
-    next[key] = normalized ?? current[key]
+  if ('capa' in next && next.capa) {
+    const divNext = { ...next.capa }
+    const validKeys = ['cor_fundo_pagina', 'cor_detalhes']
+    for (const key of validKeys) {
+      if (key in divNext) {
+        // @ts-ignore
+        divNext[key] = normalizeHex(String(divNext[key]).trim()) ?? current.capa[key]
+      }
+    }
+    next.capa = { ...current.capa, ...divNext }
+  }
+
+  if ('secao' in next && next.secao) {
+    const divNext = { ...next.secao }
+    const validKeys = ['cor_fundo_pagina', 'cor_titulo', 'cor_detalhes']
+    for (const key of validKeys) {
+      if (key in divNext) {
+        // @ts-ignore
+        divNext[key] = normalizeHex(String(divNext[key]).trim()) ?? current.secao[key]
+      }
+    }
+    next.secao = { ...current.secao, ...divNext }
+  }
+
+  if ('final' in next && next.final) {
+    const divNext = { ...next.final }
+    const validKeys = ['cor_fundo_pagina', 'cor_titulo', 'cor_texto', 'cor_detalhes']
+    for (const key of validKeys) {
+      if (key in divNext) {
+        divNext[key] = normalizeHex(String(divNext[key]).trim()) ?? current.final[key]
+      }
+    }
+    next.final = { ...current.final, ...divNext }
+  }
+
+  if ('conteudo' in next && next.conteudo) {
+    const contNext = { ...next.conteudo }
+    const validKeys = ['cor_fundo_pagina', 'cor_titulo', 'cor_texto', 'cor_detalhes']
+    for (const key of validKeys) {
+      if (key in contNext) {
+        contNext[key] = normalizeHex(String(contNext[key]).trim()) ?? current.conteudo[key]
+      }
+    }
+    next.conteudo = { ...current.conteudo, ...contNext }
   }
 
   if ('imagem_fundo_opacidade' in next) {
-    next.imagem_fundo_opacidade = sanitizeOpacity(next.imagem_fundo_opacidade, current.imagem_fundo_opacidade)
+    next.imagem_fundo_opacidade = sanitizeOpacity(next.imagem_fundo_opacidade, current?.imagem_fundo_opacidade ?? 1)
   }
 
   return next
@@ -363,22 +414,25 @@ function sanitizeAparenciaFields(fields: Partial<Aparencia>, current: Aparencia)
 function sanitizeSlideAppearanceFields(fields: Partial<SlideAppearance>, current: SlideAppearance): Partial<SlideAppearance> {
   const next: Partial<SlideAppearance> = { ...fields }
   const colorKeys: SlideAppearanceColorKey[] = [
-    'cor_destaque',
-    'cor_paineis',
+    'cor_fundo_pagina',
     'cor_titulo',
     'cor_texto',
-    'cor_fundo_pagina',
-    'cor_fundo_logo',
+    'cor_detalhes',
   ]
 
   for (const key of colorKeys) {
     if (!(key in next) || typeof next[key] !== 'string') continue
-    const normalized = normalizeHex(String(next[key]))
-    next[key] = normalized ?? current[key]
+    const val = String(next[key]).trim()
+    if (val === '') {
+      next[key] = ''
+    } else {
+      const normalized = normalizeHex(val)
+      next[key] = normalized ?? (current?.[key] || '')
+    }
   }
 
   if ('imagem_fundo_opacidade' in next) {
-    next.imagem_fundo_opacidade = sanitizeOpacity(next.imagem_fundo_opacidade, current.imagem_fundo_opacidade)
+    next.imagem_fundo_opacidade = sanitizeOpacity(next.imagem_fundo_opacidade, current?.imagem_fundo_opacidade ?? 1)
   }
 
   return next
@@ -449,15 +503,18 @@ export const useBrandStore = create<BrandStore>((set, get) => ({
     set((s) => ({ aparencia: { ...s.aparencia, ...sanitizeAparenciaFields(fields, s.aparencia) } })),
 
   setPageAppearance: (slide, fields) =>
-    set((s) => ({
-      page_appearance: {
-        ...s.page_appearance,
-        [slide]: {
-          ...s.page_appearance[slide],
-          ...sanitizeSlideAppearanceFields(fields, s.page_appearance[slide]),
+    set((s) => {
+      const currentItem = s.page_appearance[slide] || { ...DEFAULT_SLIDE_APPEARANCE }
+      return {
+        page_appearance: {
+          ...s.page_appearance,
+          [slide]: {
+            ...currentItem,
+            ...sanitizeSlideAppearanceFields(fields, currentItem),
+          },
         },
-      },
-    })),
+      }
+    }),
 
   setTemplate: (t) => set(() => ({ template: t })),
 
@@ -562,28 +619,84 @@ export const useBrandStore = create<BrandStore>((set, get) => ({
             moderno: Array.isArray(p.page_order?.moderno) ? p.page_order.moderno : fallback.page_order.moderno,
             classico: Array.isArray(p.page_order?.classico) ? p.page_order.classico : fallback.page_order.classico,
           },
-          aparencia: p.aparencia
-            ? {
-                ...DEFAULT_APARENCIA,
-                ...p.aparencia,
-                cor_paineis: p.aparencia.cor_paineis ?? p.aparencia.cor_fundo ?? DEFAULT_APARENCIA.cor_paineis,
-                cor_titulos_divisoria: p.aparencia.cor_titulos_divisoria ?? p.aparencia.cor_titulos ?? p.aparencia.cor_fundo ?? DEFAULT_APARENCIA.cor_titulos_divisoria,
-                cor_titulos_conteudo: p.aparencia.cor_titulos_conteudo ?? p.aparencia.cor_titulos ?? p.aparencia.cor_fundo ?? DEFAULT_APARENCIA.cor_titulos_conteudo,
-                cor_destaque: p.aparencia.cor_destaque ?? importedPresentationColors[0]?.hex ?? DEFAULT_APARENCIA.cor_destaque,
-                cor_fundo_logo: p.aparencia.cor_fundo_logo ?? '#F4F4F5',
-                cor_fundo_pagina: p.aparencia.cor_fundo_pagina ?? '#FFFFFF',
-                imagem_fundo_opacidade: sanitizeOpacity(
-                  p.aparencia.imagem_fundo_opacidade,
-                  DEFAULT_APARENCIA.imagem_fundo_opacidade,
-                ),
-              }
-            : {
-                ...DEFAULT_APARENCIA,
-                cor_destaque: importedPresentationColors[0]?.hex ?? DEFAULT_APARENCIA.cor_destaque,
-                cor_paineis: importedPresentationColors[1]?.hex ?? DEFAULT_APARENCIA.cor_paineis,
-                cor_titulos_divisoria: importedPresentationColors[1]?.hex ?? DEFAULT_APARENCIA.cor_titulos_divisoria,
-                cor_titulos_conteudo: importedPresentationColors[1]?.hex ?? DEFAULT_APARENCIA.cor_titulos_conteudo,
-              },
+          aparencia: {
+            ...DEFAULT_APARENCIA,
+            capa: {
+              ...DEFAULT_APARENCIA.capa,
+              ...(p.aparencia?.capa ?? {}),
+              cor_fundo_pagina: p.aparencia?.capa?.cor_fundo_pagina
+                ?? p.aparencia?.divisores?.cor_fundo_pagina
+                ?? p.aparencia?.cor_fundo_pagina 
+                ?? DEFAULT_APARENCIA.capa.cor_fundo_pagina,
+              cor_detalhes: p.aparencia?.capa?.cor_detalhes
+                ?? p.aparencia?.divisores?.cor_detalhes
+                ?? p.aparencia?.cor_destaque 
+                ?? importedPresentationColors[0]?.hex 
+                ?? DEFAULT_APARENCIA.capa.cor_detalhes,
+            },
+            secao: {
+              ...DEFAULT_APARENCIA.secao,
+              ...(p.aparencia?.secao ?? {}),
+              cor_fundo_pagina: p.aparencia?.secao?.cor_fundo_pagina
+                ?? p.aparencia?.divisores?.cor_fundo_pagina
+                ?? p.aparencia?.cor_fundo_pagina 
+                ?? DEFAULT_APARENCIA.secao.cor_fundo_pagina,
+              cor_titulo: p.aparencia?.secao?.cor_titulo
+                ?? p.aparencia?.divisores?.cor_titulo
+                ?? p.aparencia?.cor_titulos_divisoria 
+                ?? p.aparencia?.cor_titulos 
+                ?? DEFAULT_APARENCIA.secao.cor_titulo,
+              cor_detalhes: p.aparencia?.secao?.cor_detalhes
+                ?? p.aparencia?.divisores?.cor_detalhes
+                ?? p.aparencia?.cor_destaque 
+                ?? importedPresentationColors[0]?.hex 
+                ?? DEFAULT_APARENCIA.secao.cor_detalhes,
+            },
+            final: {
+              ...DEFAULT_APARENCIA.final,
+              ...(p.aparencia?.final ?? {}),
+              cor_fundo_pagina: p.aparencia?.final?.cor_fundo_pagina
+                ?? p.aparencia?.divisores?.cor_fundo_pagina
+                ?? p.aparencia?.cor_fundo_pagina 
+                ?? DEFAULT_APARENCIA.final.cor_fundo_pagina,
+              cor_titulo: p.aparencia?.final?.cor_titulo
+                ?? p.aparencia?.divisores?.cor_titulo
+                ?? p.aparencia?.cor_titulos_divisoria 
+                ?? p.aparencia?.cor_titulos 
+                ?? DEFAULT_APARENCIA.final.cor_titulo,
+              cor_texto: p.aparencia?.final?.cor_texto
+                ?? p.aparencia?.divisores?.cor_texto
+                ?? p.aparencia?.cor_texto
+                ?? DEFAULT_APARENCIA.final.cor_texto,
+              cor_detalhes: p.aparencia?.final?.cor_detalhes
+                ?? p.aparencia?.divisores?.cor_detalhes
+                ?? p.aparencia?.cor_destaque 
+                ?? importedPresentationColors[0]?.hex 
+                ?? DEFAULT_APARENCIA.final.cor_detalhes,
+            },
+            conteudo: {
+              ...DEFAULT_APARENCIA.conteudo,
+              ...(p.aparencia?.conteudo ?? {}),
+              cor_fundo_pagina: p.aparencia?.conteudo?.cor_fundo_pagina 
+                ?? p.aparencia?.cor_fundo_pagina 
+                ?? DEFAULT_APARENCIA.conteudo.cor_fundo_pagina,
+              cor_titulo: p.aparencia?.conteudo?.cor_titulo 
+                ?? p.aparencia?.cor_titulos_conteudo 
+                ?? p.aparencia?.cor_titulos 
+                ?? DEFAULT_APARENCIA.conteudo.cor_titulo,
+              cor_texto: p.aparencia?.conteudo?.cor_texto 
+                ?? p.aparencia?.cor_texto
+                ?? DEFAULT_APARENCIA.conteudo.cor_texto,
+              cor_detalhes: p.aparencia?.conteudo?.cor_detalhes 
+                ?? p.aparencia?.cor_destaque 
+                ?? importedPresentationColors[0]?.hex 
+                ?? DEFAULT_APARENCIA.conteudo.cor_detalhes,
+            },
+            imagem_fundo_opacidade: sanitizeOpacity(
+              p.aparencia?.imagem_fundo_opacidade,
+              DEFAULT_APARENCIA.imagem_fundo_opacidade,
+            ),
+          },
           page_appearance: {
             ...buildDefaultPageAppearance(),
             ...Object.fromEntries(

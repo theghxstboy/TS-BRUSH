@@ -5,32 +5,53 @@ import { usePresentationTextStyles } from '../../../hooks/usePresentationTextSty
 interface TplCapaProps { pageNumber: number }
 
 export function TplCapa({ pageNumber: _pageNumber }: TplCapaProps) {
-  const { assets_base64 } = useBrandStore()
-  const { primaryColor, darkColor, textColor, pageBackgroundStyle } = usePageColors('capa')
+  const { assets_base64, cores_apresentacao, tipografia, aparencia, page_appearance } = useBrandStore()
+  const { pageColor, darkColor, textColor, pageBackgroundStyle } = usePageColors('capa')
   const { metaStyle } = usePresentationTextStyles()
+
+  // Lógica para escolher a cor de fundo automática "mais distante" do logo
+  // Se o usuário não definiu uma cor específica para a capa (''), tentamos ser inteligentes.
+  const hasCustomCapaColor = page_appearance.capa.cor_fundo_pagina !== ''
+  
+  let bgToUse = pageColor
+  if (!hasCustomCapaColor && cores_apresentacao.length >= 2) {
+    // Escolha automática: se não tem cor customizada, usamos a segunda cor da paleta para dar contraste
+    bgToUse = cores_apresentacao[1].hex
+  }
+
+  const alignment = tipografia.apresentacao_alinhamento || 'left'
+  const badgeStyle: React.CSSProperties = {
+    position: 'absolute',
+    top: 28,
+    background: darkColor,
+    color: '#fff',
+    fontWeight: 800,
+    ...metaStyle(13),
+    letterSpacing: '0.08em',
+    padding: '10px 20px',
+    borderRadius: 24,
+    zIndex: 10,
+    textTransform: 'uppercase',
+  }
+
+  if (alignment === 'center') {
+    badgeStyle.left = '50%'
+    badgeStyle.transform = 'translateX(-50%)'
+  } else if (alignment === 'right') {
+    badgeStyle.right = 28
+  } else {
+    badgeStyle.left = 28
+  }
 
   if (!assets_base64.logo_principal) return null
 
   return (
     <div
       className="pagina-pdf"
-      style={{ background: primaryColor, position: 'relative', color: textColor, ...pageBackgroundStyle }}
+      style={{ background: bgToUse, position: 'relative', color: textColor, ...pageBackgroundStyle }}
     >
-      {/* Badge MANUAL DE MARCA — canto superior esquerdo */}
-      <div style={{
-        position: 'absolute',
-        top: 28,
-        left: 28,
-        background: darkColor,
-        color: '#fff',
-        fontWeight: 800,
-        ...metaStyle(13),
-        letterSpacing: '0.08em',
-        padding: '10px 20px',
-        borderRadius: 24,
-        zIndex: 10,
-        textTransform: 'uppercase',
-      }}>
+      {/* Badge MANUAL DE MARCA */}
+      <div style={badgeStyle}>
         Manual de Marca
       </div>
 
@@ -46,7 +67,7 @@ export function TplCapa({ pageNumber: _pageNumber }: TplCapaProps) {
         <img
           src={assets_base64.logo_principal}
           alt="Logo"
-          style={{ maxWidth: '55%', maxHeight: '52%', objectFit: 'contain' }}
+          style={{ maxWidth: '60%', maxHeight: '55%', objectFit: 'contain' }}
         />
       </div>
 

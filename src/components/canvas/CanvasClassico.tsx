@@ -24,7 +24,7 @@ type Slide =
   | { type: 'capa' }
   | { type: 'bem-vindo' }
   | { type: 'sumario' }
-  | { type: 'secao'; numero: string; titulo: string; subtitulo?: string }
+  | { type: 'secao'; numero: string; titulo: string; subtitulo?: string; appearanceKey: any }
   | { type: 'conceito' }
   | { type: 'tipografia-principal' }
   | { type: 'tipografia-secundaria' }
@@ -50,7 +50,7 @@ interface ChapterBlock {
 }
 
 export function CanvasClassico() {
-  const { assets_base64, tipografia, page_order } = useBrandStore()
+  const { assets_base64, tipografia, page_order, aparencia, page_appearance } = useBrandStore()
   const [activeKey, setActiveKey] = useState<string | null>(null)
   const { canvasRef, pageScale, scaledPageWidth, scaledPageHeight } = useCanvasScale()
 
@@ -143,6 +143,7 @@ export function CanvasClassico() {
           numero: String(chapterIndex + 1).padStart(2, '0'),
           titulo: chapter.chapterTitle,
           subtitulo: chapter.chapterSubtitle,
+          appearanceKey: `secao-${chapter.id}`,
         })
 
         for (const item of chapter.items) {
@@ -215,14 +216,7 @@ export function CanvasClassico() {
             ? [slide.titulo, slide.subtitulo].filter(Boolean).join(' ')
             : label
         const clickType: string = slide.type === 'secao'
-          ? ({
-              Logo: 'secao-logo',
-              Tipografia: 'secao-tipografia',
-              Cores: 'secao-cores',
-              Construcao: 'secao-construcao',
-              Usos: 'secao-usos-incorretos',
-              Aplicacoes: 'secao-aplicacoes',
-            }[slide.titulo] ?? 'sumario')
+          ? slide.appearanceKey
           : slide.type
 
         return (
@@ -245,7 +239,14 @@ export function CanvasClassico() {
               {slide.type === 'capa' && <TplCapa pageNumber={pg} />}
               {slide.type === 'bem-vindo' && <TplBemVindo pageNumber={pg} />}
               {slide.type === 'sumario' && <TplSumario pageNumber={pg} grupos={sumarioGrupos} />}
-              {slide.type === 'secao' && <TplSecao numero={slide.numero} titulo={slide.titulo} subtitulo={slide.subtitulo} />}
+              {slide.type === 'secao' && (
+                <TplSecao
+                  numero={slide.numero}
+                  titulo={slide.titulo}
+                  subtitulo={slide.subtitulo}
+                  appearanceKey={slide.appearanceKey}
+                />
+              )}
               {slide.type === 'conceito' && <TplConceito pageNumber={pg} />}
               {slide.type === 'tipografia-principal' && <TplTipografia pageNumber={pg} variante="principal" />}
               {slide.type === 'tipografia-secundaria' && <TplTipografia pageNumber={pg} variante="secundaria" />}

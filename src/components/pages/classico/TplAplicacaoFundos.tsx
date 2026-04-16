@@ -34,7 +34,7 @@ export function TplAplicacaoFundos({ pageNumber }: TplAplicacaoFundosProps) {
           Aplicacao Sobre Fundos
         </h2>
 
-        <p style={{ color: '#222', margin: '0 0 20px 0', maxWidth: '90%', ...bodyStyle(13.5, { lineHeight: 1.75 }) }}>
+        <p style={{ color: textColor, margin: '0 0 20px 0', maxWidth: '90%', ...bodyStyle(13.5, { lineHeight: 1.75 }) }}>
           &nbsp;&nbsp;Para manter a integridade visual, a aplicacao do logotipo deve considerar o contraste adequado com o
           fundo. Sempre que possivel, utilize a versao original da marca. Em fundos escuros, prefira a versao clara, e em
           fundos claros, a versao escura.

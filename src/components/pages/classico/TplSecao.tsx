@@ -1,27 +1,17 @@
 import { usePageColors } from '../../../hooks/usePageColors'
 import { useBrandStore } from '../../../store/useBrandStore'
+import type { SlideAppearanceKey } from '../../../store/useBrandStore'
 import { usePresentationTextStyles } from '../../../hooks/usePresentationTextStyles'
 
 interface TplSecaoProps {
   numero: string    // ex: "01"
   titulo: string    // ex: "Logo"
   subtitulo?: string
+  appearanceKey: SlideAppearanceKey
 }
 
-export function TplSecao({ numero, titulo, subtitulo }: TplSecaoProps) {
-  const sectionSlideType =
-    titulo === 'Logo'
-      ? 'secao-logo'
-      : titulo === 'Tipografia'
-        ? 'secao-tipografia'
-        : titulo === 'Cores'
-          ? 'secao-cores'
-          : titulo === 'Construcao'
-            ? 'secao-construcao'
-            : titulo === 'Usos'
-              ? 'secao-usos-incorretos'
-              : 'secao-aplicacoes'
-  const { primaryColor, darkColor, dividerTitleColor, textColor, pageBackgroundStyle } = usePageColors(sectionSlideType)
+export function TplSecao({ numero, titulo, subtitulo, appearanceKey }: TplSecaoProps) {
+  const { pageColor, detailColor, dividerTitleColor, textColor, pageBackgroundStyle } = usePageColors(appearanceKey)
   const { assets_base64 } = useBrandStore()
   const { pageTitleStyle } = usePresentationTextStyles()
 
@@ -29,46 +19,49 @@ export function TplSecao({ numero, titulo, subtitulo }: TplSecaoProps) {
     <div
       className="pagina-pdf"
       style={{
-        background: primaryColor,
+        background: pageColor,
         position: 'relative',
         overflow: 'hidden',
         color: textColor,
         ...pageBackgroundStyle,
       }}
     >
-      {/* Número gigante à esquerda, cortando a borda */}
+      {/* Número gigante — movido mais para a esquerda para evitar overlap */}
       <div style={{
         position: 'absolute',
-        left: -36,
+        left: -42,
         top: '50%',
         transform: 'translateY(-50%)',
-        fontSize: 260,
+        fontSize: 280,
         fontWeight: 900,
         color: dividerTitleColor,
-        lineHeight: 0.85,
+        lineHeight: 0.8,
         userSelect: 'none',
         zIndex: 2,
-        letterSpacing: '-8px',
+        letterSpacing: '-12px',
+        opacity: 0.9,
       }}>
         {numero}
       </div>
 
-      {/* Título da seção — centro */}
+      {/* Título da seção — centro-esquerda, com padding aumentado para não bater no número */}
       <div style={{
         position: 'absolute',
         inset: 0,
         display: 'flex',
         alignItems: 'center',
-        justifyContent: 'center',
-        paddingLeft: '38%',
-        paddingRight: '28%',
-        zIndex: 5,
+        justifyContent: 'flex-start',
+        paddingLeft: '40%',
+        paddingRight: '20%',
+        zIndex: 10,
       }}>
         <div>
           <div style={{
-            fontWeight: 800,
+            fontWeight: 900,
             color: dividerTitleColor,
-            ...pageTitleStyle(subtitulo ? 36 : 42, { lineHeight: 1.05 }),
+            textTransform: 'uppercase',
+            letterSpacing: '0.02em',
+            ...pageTitleStyle(subtitulo ? 44 : 52, { lineHeight: 1 }),
           }}>
             {titulo}
           </div>
@@ -76,8 +69,9 @@ export function TplSecao({ numero, titulo, subtitulo }: TplSecaoProps) {
             <div style={{
               fontWeight: 800,
               color: dividerTitleColor,
-              marginTop: 2,
-              ...pageTitleStyle(36, { lineHeight: 1.05 }),
+              marginTop: 4,
+              opacity: 0.8,
+              ...pageTitleStyle(38, { lineHeight: 1 }),
             }}>
               {subtitulo}
             </div>
@@ -88,13 +82,16 @@ export function TplSecao({ numero, titulo, subtitulo }: TplSecaoProps) {
       {/* Logo outline gigante — canto direito */}
       <div style={{
         position: 'absolute',
-        right: -40,
+        right: -60,
         top: '50%',
         transform: 'translateY(-50%)',
         zIndex: 3,
-        opacity: 0.18,
-        width: '42%',
-        overflow: 'hidden',
+        opacity: 0.15,
+        width: '65%',
+        height: '80%',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'flex-end',
       }}>
         {assets_base64.logo_principal ? (
           <img
@@ -102,20 +99,20 @@ export function TplSecao({ numero, titulo, subtitulo }: TplSecaoProps) {
             alt=""
             style={{
               width: '100%',
+              height: '100%',
               objectFit: 'contain',
               filter: 'brightness(0)',
             }}
           />
         ) : (
           <div style={{
-            fontSize: 140,
+            fontSize: 180,
             fontWeight: 900,
             color: dividerTitleColor,
             lineHeight: 1,
-            fontFamily: 'Impact, sans-serif',
-            letterSpacing: '-4px',
+            opacity: 0.2,
           }}>
-            LG<br />AQ
+            LOGO
           </div>
         )}
       </div>
@@ -127,7 +124,7 @@ export function TplSecao({ numero, titulo, subtitulo }: TplSecaoProps) {
         left: 28,
         right: 28,
         height: 2,
-        background: darkColor,
+        background: detailColor,
         opacity: 0.25,
         zIndex: 10,
       }} />

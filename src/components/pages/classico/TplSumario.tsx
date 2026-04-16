@@ -11,100 +11,78 @@ interface TplSumarioProps {
 }
 
 export function TplSumario({ pageNumber, grupos }: TplSumarioProps) {
-  const { primaryColor, darkColor, textColor, pageBackgroundStyle } = usePageColors('sumario')
+  const { pageColor, titleColor, textColor, detailColor, pageBackgroundStyle } = usePageColors('sumario')
   const { pageTitleStyle, bodyStyle, metaStyle } = usePresentationTextStyles()
 
   return (
-    <div className="pagina-pdf" style={{ background: '#f7f5f1', position: 'relative', color: textColor, ...pageBackgroundStyle }}>
-      <div className="fundo" style={{ zIndex: 0 }}>
-        <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: '34%', background: darkColor }} />
-        <div style={{ position: 'absolute', left: '34%', top: 0, bottom: 0, width: 6, background: primaryColor }} />
-      </div>
-
+    <div className="pagina-pdf" style={{ background: pageColor, position: 'relative', color: textColor, ...pageBackgroundStyle }}>
       <div
         style={{
           position: 'absolute',
           inset: 0,
-          display: 'grid',
-          gridTemplateColumns: '34% 1fr',
+          padding: '44px 48px',
+          display: 'flex',
+          flexDirection: 'column',
           zIndex: 5,
         }}
       >
-        <div style={{ padding: '42px 28px 52px 36px', color: '#fff', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-          <div>
-            <div style={{ color: primaryColor, ...metaStyle(11, { fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase' }) }}>
-              Navegação
-            </div>
-            <div style={{ color: '#fff', fontWeight: 900, marginTop: 10, ...pageTitleStyle(44, { lineHeight: 0.95 }) }}>
-              Sumário
-            </div>
-            <div style={{ width: 44, height: 3, background: primaryColor, borderRadius: 999, marginTop: 18 }} />
+        <div style={{ marginBottom: 40 }}>
+          <div style={{ color: detailColor, ...metaStyle(12, { fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase' }) }}>
+            Guia de Navegação
           </div>
-
-          <div style={{ color: 'rgba(255,255,255,0.72)', ...bodyStyle(12, { lineHeight: 1.7 }) }}>
-            Consulte esta estrutura para localizar rapidamente cada orientação do manual e navegar pelos capítulos do template.
+          <div style={{ color: titleColor, fontWeight: 900, marginTop: 10, ...pageTitleStyle(48, { lineHeight: 0.95 }) }}>
+            Sumário
           </div>
+          <div style={{ width: 60, height: 4, background: detailColor, borderRadius: 999, marginTop: 20 }} />
         </div>
 
-        <div style={{ padding: '34px 38px 50px 34px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 18 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24, flex: 1 }}>
           {grupos.map((grupo) => (
             <div
               key={grupo.numero}
               style={{
-                background: 'rgba(255,255,255,0.72)',
-                border: '1px solid rgba(0,0,0,0.06)',
-                borderRadius: 18,
-                padding: '18px 18px 16px',
-                boxShadow: '0 10px 28px rgba(0,0,0,0.05)',
                 display: 'flex',
                 flexDirection: 'column',
-                gap: 12,
+                gap: 14,
               }}
             >
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: 12, borderBottom: `2px solid ${detailColor}`, paddingBottom: 6 }}>
                 <div
                   style={{
-                    minWidth: 42,
-                    height: 42,
-                    borderRadius: 12,
-                    background: darkColor,
-                    color: '#fff',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    ...bodyStyle(18),
+                    color: detailColor,
+                    ...bodyStyle(20),
                     fontWeight: 900,
                   }}
                 >
                   {String(grupo.numero).padStart(2, '0')}
                 </div>
-                <div style={{ fontWeight: 800, color: darkColor, ...pageTitleStyle(18) }}>{grupo.titulo}</div>
+                <div style={{ fontWeight: 800, color: titleColor, ...pageTitleStyle(20), textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                  {grupo.titulo}
+                </div>
               </div>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                 {grupo.itens.map((item) => (
                   <div
                     key={`${grupo.numero}-${item.titulo}`}
                     style={{
-                      display: 'grid',
-                      gridTemplateColumns: '44px 1fr',
-                      gap: 10,
-                      alignItems: 'start',
-                      paddingTop: 8,
-                      borderTop: '1px solid rgba(0,0,0,0.06)',
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      gap: 12,
                     }}
                   >
+                    <div style={{ color: textColor, ...bodyStyle(15, { fontWeight: 500 }) }}>{item.titulo}</div>
+                    <div style={{ flex: 1, borderBottom: `1.5px dotted ${textColor}`, opacity: 0.25, marginTop: 4 }} />
                     <div
                       style={{
-                        color: primaryColor,
-                        ...metaStyle(13),
+                        color: detailColor,
+                        ...metaStyle(14),
                         fontWeight: 800,
-                        letterSpacing: '0.08em',
                       }}
                     >
                       {item.pagina}
                     </div>
-                    <div style={{ color: '#2f2a24', ...bodyStyle(14, { lineHeight: 1.35 }) }}>{item.titulo}</div>
                   </div>
                 ))}
               </div>
@@ -125,8 +103,8 @@ export function TplSumario({ pageNumber, grupos }: TplSumarioProps) {
           zIndex: 10,
         }}
       >
-        <div style={{ flex: 1, height: 1.5, background: darkColor, opacity: 0.2 }} />
-        <span style={{ ...bodyStyle(15), fontWeight: 800, color: darkColor }}>
+        <div style={{ flex: 1, height: 1.5, background: detailColor, opacity: 0.2 }} />
+        <span style={{ ...bodyStyle(15), fontWeight: 800, color: detailColor }}>
           {String(pageNumber).padStart(2, '0')}
         </span>
       </div>

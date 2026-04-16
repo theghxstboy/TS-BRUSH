@@ -7,45 +7,55 @@ import type { SlideAppearanceKey } from '../store/useBrandStore'
  * used across all PDF pages.
  */
 export function usePageColors(slideType?: SlideAppearanceKey) {
-  const { cores_apresentacao, aparencia, page_appearance } = useBrandStore()
+  const { aparencia, page_appearance } = useBrandStore()
   const pageAppearance = slideType ? page_appearance[slideType] : null
 
-  const primaryColor = pageAppearance?.cor_destaque || aparencia.cor_destaque || cores_apresentacao[0]?.hex || '#F97316'
-  const darkColor = pageAppearance?.cor_paineis || aparencia.cor_paineis || cores_apresentacao[1]?.hex || '#0C0C0C'
-  const dividerTitleColor = pageAppearance?.cor_titulo || aparencia.cor_titulos_divisoria || darkColor
-  const contentTitleColor = pageAppearance?.cor_titulo || aparencia.cor_titulos_conteudo || darkColor
-  const textColor = pageAppearance?.cor_texto || '#1A1A1A'
-  const pageColor = pageAppearance?.cor_fundo_pagina || aparencia.cor_fundo_pagina || '#FFFFFF'
-  const logoBackdropColor = pageAppearance?.cor_fundo_logo || aparencia.cor_fundo_logo || '#F4F4F5'
+  let globalApp = aparencia.conteudo
+  if (slideType === 'capa') globalApp = aparencia.capa as any
+  else if (slideType === 'final') globalApp = aparencia.final as any
+  else if (slideType?.startsWith('secao-')) globalApp = aparencia.secao as any
+
+  const pageColor = pageAppearance?.cor_fundo_pagina || globalApp.cor_fundo_pagina || '#FFFFFF'
+  const titleColor = pageAppearance?.cor_titulo || globalApp.cor_titulo || '#0C0C0C'
+  const textColor = pageAppearance?.cor_texto || globalApp.cor_texto || '#1A1A1A'
+  const detailColor = pageAppearance?.cor_detalhes || globalApp.cor_detalhes || '#F97316'
+
+
+  // Backward compatibility mappings
+  const primaryColor = detailColor
+  const darkColor = detailColor
+  const dividerTitleColor = titleColor
+  const contentTitleColor = titleColor
+  const logoBackdropColor = pageColor // Deprecated cor_fundo_logo defaults to page color
+
   const backgroundImage = pageAppearance?.imagem_fundo || aparencia.imagem_fundo || null
   const backgroundOpacity = backgroundImage
     ? pageAppearance?.imagem_fundo
       ? pageAppearance.imagem_fundo_opacidade
       : aparencia.imagem_fundo_opacidade
     : 0
+
   const pageBackgroundStyle = {
     '--presentation-bg-image': backgroundImage ? `url(${backgroundImage})` : 'none',
     '--presentation-bg-opacity': String(backgroundOpacity),
   } as React.CSSProperties
 
-  /**
-   * Returns the CSS style for a "dark panel" element.
-   * Applies cor_fundo base.
-   */
   const darkPanelStyle = (extra?: React.CSSProperties): React.CSSProperties => ({
     position: 'relative',
-    background: darkColor,
+    background: detailColor,
     overflow: 'hidden',
     ...extra,
   })
 
   return {
+    pageColor,
+    titleColor,
+    textColor,
+    detailColor,
     primaryColor,
     darkColor,
     dividerTitleColor,
     contentTitleColor,
-    textColor,
-    pageColor,
     logoBackdropColor,
     darkPanelStyle,
     backgroundImage,
@@ -53,3 +63,4 @@ export function usePageColors(slideType?: SlideAppearanceKey) {
     pageBackgroundStyle,
   }
 }
+

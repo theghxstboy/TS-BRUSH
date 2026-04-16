@@ -18,7 +18,7 @@ export function TplUsosIncorretos({ pageNumber }: TplUsosIncorretosProps) {
     { label: 'Não usar sem contraste', filter: 'brightness(1.6) contrast(0.4)', transform: 'none', bg: '#e8e5d8' },
     { label: 'Não inverter o símbolo', filter: 'none', transform: 'scaleX(-1)', bg: '#fff' },
     { label: 'Não aplicar em textos', filter: 'none', transform: 'none', bg: '#fff', small: true },
-    { label: 'Não diminuir', filter: 'brightness(0) opacity(0.3)', transform: 'none', bg: '#fff' },
+    { label: 'Não diminuir', filter: 'none', transform: 'scale(0.35)', bg: '#fff' },
     { label: 'Não aplicar sombra', filter: 'drop-shadow(4px 6px 4px rgba(0,0,0,0.9))', transform: 'none', bg: '#fff' },
   ]
 
@@ -48,12 +48,12 @@ export function TplUsosIncorretos({ pageNumber }: TplUsosIncorretosProps) {
         <h2 style={{ fontWeight: 900, color: contentTitleColor, margin: '0 0 8px 0', ...pageTitleStyle(38) }}>
           O Que Não Fazer
         </h2>
-        <p style={{ color: '#222', margin: '0 0 16px 0', maxWidth: '88%', ...bodyStyle(12.5, { lineHeight: 1.7 }) }}>
+        <p style={{ color: textColor, margin: '0 0 16px 0', maxWidth: '88%', ...bodyStyle(12.5, { lineHeight: 1.7 }) }}>
           &nbsp;&nbsp;Para preservar a identidade visual da marca, é essencial evitar alterações indevidas no logo. Não modifique
           cores, proporções, inclinações ou insira efeitos que comprometam sua legibilidade e reconhecimento.
         </p>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gridTemplateRows: '1fr 1fr', gap: 0, flex: 1, border: '1px solid #ddd' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gridTemplateRows: 'repeat(2, 1fr)', gap: 16, flex: 1 }}>
           {casos.map((caso, index) => (
             <div
               key={index}
@@ -62,38 +62,29 @@ export function TplUsosIncorretos({ pageNumber }: TplUsosIncorretosProps) {
                 flexDirection: 'column',
                 alignItems: 'center',
                 justifyContent: 'center',
-                borderRight: index % 4 !== 3 ? '1px solid #ddd' : 'none',
-                borderBottom: index < 4 ? '1px solid #ddd' : 'none',
                 background: caso.bg,
+                borderRadius: 8,
+                border: '1px solid rgba(0, 0, 0, 0.05)',
+                boxShadow: '0 8px 24px rgba(0, 0, 0, 0.04)',
                 position: 'relative',
-                padding: '12px 8px 8px',
-                gap: 6,
+                padding: '24px 12px 14px',
+                gap: 16,
+                overflow: 'hidden',
               }}
             >
-              <div
-                style={{
-                  position: 'absolute',
-                  inset: 6,
-                  border: '2px dashed #E53935',
-                  borderRadius: 2,
-                  pointerEvents: 'none',
-                }}
-              >
-                <div
-                  style={{
-                    position: 'absolute',
-                    inset: 0,
-                    background: `
-                      linear-gradient(to bottom right, transparent calc(50% - 1px), #E53935 calc(50% - 1px), #E53935 calc(50% + 1px), transparent calc(50% + 1px)),
-                      linear-gradient(to bottom left, transparent calc(50% - 1px), #E53935 calc(50% - 1px), #E53935 calc(50% + 1px), transparent calc(50% + 1px))
-                    `,
-                    opacity: 0.5,
-                  }}
-                />
+              <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 10 }}>
+                <svg width="100%" height="100%">
+                  <line x1="0" y1="0" x2="100%" y2="100%" stroke="#EF4444" strokeWidth="1.5" strokeOpacity="0.3" />
+                  <line x1="100%" y1="0" x2="0" y2="100%" stroke="#EF4444" strokeWidth="1.5" strokeOpacity="0.3" />
+                </svg>
               </div>
 
-              <div style={{ position: 'relative', zIndex: 2, display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 1, width: '100%' }}>
-                {src ? (
+              <div style={{ position: 'relative', zIndex: 5, display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 1, width: '100%', overflow: 'hidden' }}>
+                {caso.label === 'Não aplicar em textos' ? (
+                  <div style={{ padding: '4px 8px', textAlign: 'justify', fontSize: 6, color: '#333', lineHeight: 1.2, opacity: 0.8 }}>
+                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor {src ? <img src={src} style={{ height: 10, verticalAlign: 'middle', display: 'inline-block', margin: '0 2px' }} alt="" /> : <span>[LOGO]</span>} incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+                  </div>
+                ) : src ? (
                   <img
                     src={src}
                     alt={caso.label}
@@ -110,8 +101,21 @@ export function TplUsosIncorretos({ pageNumber }: TplUsosIncorretosProps) {
                 )}
               </div>
 
-              <div style={{ ...metaStyle(10.5), fontWeight: 700, color: darkColor, textAlign: 'center', position: 'relative', zIndex: 2, lineHeight: 1.3 }}>
-                {caso.label}
+              <div style={{
+                ...metaStyle(10.5),
+                fontWeight: 600,
+                color: '#EF4444',
+                textAlign: 'center',
+                position: 'relative',
+                zIndex: 12,
+                lineHeight: 1,
+                background: 'rgba(239, 68, 68, 0.05)',
+                padding: '6px 14px',
+                borderRadius: 100,
+                border: '1px solid rgba(239, 68, 68, 0.15)',
+              }}>
+                <span style={{ marginRight: 4, opacity: 0.8, fontSize: 8, verticalAlign: 'middle' }}>✖</span>
+                <span style={{ verticalAlign: 'middle' }}>{caso.label}</span>
               </div>
             </div>
           ))}

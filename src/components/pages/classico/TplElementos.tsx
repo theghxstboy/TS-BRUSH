@@ -46,7 +46,7 @@ export function TplElementos({ pageNumber }: TplElementosProps) {
           {conteudo_pdf.elementos_titulo || 'Elementos'}
         </h2>
 
-        <p style={{ color: '#222', margin: '0 0 24px 0', ...bodyStyle(13.5, { lineHeight: 1.75 }) }}>
+        <p style={{ color: textColor, margin: '0 0 24px 0', ...bodyStyle(13.5, { lineHeight: 1.75 }) }}>
           &nbsp;&nbsp;{conteudo_pdf.elementos_descricao}
         </p>
 

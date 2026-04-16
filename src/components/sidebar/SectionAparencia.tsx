@@ -3,16 +3,7 @@ import { DEFAULT_BACKGROUND_IMAGE_OPACITY, useBrandStore } from '../../store/use
 import { CollapsibleSection } from './CollapsibleSection'
 import { UploadZone } from './UploadZone'
 
-const PRESETS = [
-  '#F97316',
-  '#0C0C0C',
-  '#FFFFFF',
-  '#1F3A5F',
-  '#8B1E3F',
-  '#0F766E',
-  '#E5E7EB',
-  '#111827',
-]
+// Presets removidos
 
 function ColorField({
   label,
@@ -47,22 +38,6 @@ function ColorField({
           placeholder="#FFFFFF"
         />
       </div>
-
-      <div className="semantic-color-presets">
-        {PRESETS.map((preset) => (
-          <button
-            key={`${label}-${preset}`}
-            type="button"
-            className="semantic-color-preset"
-            title={preset}
-            onClick={() => onChange(preset)}
-            style={{
-              background: preset,
-              outline: preset.toLowerCase() === color.toLowerCase() ? '2px solid var(--accent)' : 'none',
-            }}
-          />
-        ))}
-      </div>
     </div>
   )
 }
@@ -95,50 +70,134 @@ function OpacityField({
 export function SectionAparencia() {
   const { aparencia, setAparencia } = useBrandStore()
 
+  const handleChange = (section: keyof typeof aparencia, key: string, hex: string) => {
+    // @ts-ignore
+    setAparencia({ [section]: { ...aparencia[section], [key]: hex } })
+  }
+
   return (
     <CollapsibleSection icon={<Layers size={14} />} label="Aparência das Páginas" defaultOpen={false} sectionId="aparencia">
-      <ColorField
-        label="Cor de Destaque"
-        description="Usada em barras, badges, linhas de destaque e elementos visuais principais."
-        color={aparencia.cor_destaque}
-        onChange={(hex) => setAparencia({ cor_destaque: hex })}
-      />
+      {/* CAPA */}
+      <div style={{ marginBottom: 24 }}>
+        <h4 style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 12, paddingBottom: 8, borderBottom: '1px solid var(--border)' }}>
+          Capa
+        </h4>
+        <p style={{ fontSize: 11, color: 'var(--text-secondary)', marginBottom: 16 }}>
+          Aplica-se exclusivamente ao primeiro slide da apresentação.
+        </p>
 
-      <ColorField
-        label="Cor dos Painéis"
-        description="Usada nos blocos escuros, capas, seções laterais e áreas estruturais da apresentação."
-        color={aparencia.cor_paineis}
-        onChange={(hex) => setAparencia({ cor_paineis: hex })}
-      />
+        <ColorField
+          label="Cor do Fundo da Página"
+          description=""
+          color={aparencia.capa.cor_fundo_pagina}
+          onChange={(hex) => handleChange('capa', 'cor_fundo_pagina', hex)}
+        />
+        <ColorField
+          label="Cor dos Detalhes"
+          description="Usada em botões cruzados, badges, e blocos de destaque nas capas."
+          color={aparencia.capa.cor_detalhes}
+          onChange={(hex) => handleChange('capa', 'cor_detalhes', hex)}
+        />
+      </div>
 
-      <ColorField
-        label="Cor dos Títulos das Divisórias"
-        description="Usada nas páginas de capítulo e divisórias, como 01 — Logo."
-        color={aparencia.cor_titulos_divisoria}
-        onChange={(hex) => setAparencia({ cor_titulos_divisoria: hex })}
-      />
+      {/* SEÇÃO */}
+      <div style={{ marginBottom: 24 }}>
+        <h4 style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 12, paddingBottom: 8, borderBottom: '1px solid var(--border)' }}>
+          Seção
+        </h4>
+        <p style={{ fontSize: 11, color: 'var(--text-secondary)', marginBottom: 16 }}>
+          Aplica-se aos slides de título das seções (ex: 01 Tipografia).
+        </p>
 
-      <ColorField
-        label="Cor dos Títulos de Conteúdo"
-        description="Usada nas páginas explicativas em geral, como conceito, elementos, tipografia e similares."
-        color={aparencia.cor_titulos_conteudo}
-        onChange={(hex) => setAparencia({ cor_titulos_conteudo: hex })}
-      />
+        <ColorField
+          label="Cor do Fundo da Página"
+          description=""
+          color={aparencia.secao.cor_fundo_pagina}
+          onChange={(hex) => handleChange('secao', 'cor_fundo_pagina', hex)}
+        />
+        <ColorField
+          label="Cor do Título"
+          description=""
+          color={aparencia.secao.cor_titulo}
+          onChange={(hex) => handleChange('secao', 'cor_titulo', hex)}
+        />
+        <ColorField
+          label="Cor dos Detalhes"
+          description="Cores das faixas decorativas laterais se existirem."
+          color={aparencia.secao.cor_detalhes}
+          onChange={(hex) => handleChange('secao', 'cor_detalhes', hex)}
+        />
+      </div>
 
-      <ColorField
-        label="Cor do Fundo da Página"
-        description="Cor base geral das páginas claras do manual."
-        color={aparencia.cor_fundo_pagina}
-        onChange={(hex) => setAparencia({ cor_fundo_pagina: hex })}
-      />
+      {/* OBRIGADO */}
+      <div style={{ marginBottom: 24 }}>
+        <h4 style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 12, paddingBottom: 8, borderBottom: '1px solid var(--border)' }}>
+          Obrigado / Final
+        </h4>
+        <p style={{ fontSize: 11, color: 'var(--text-secondary)', marginBottom: 16 }}>
+          Aplica-se ao último slide de fechamento.
+        </p>
 
-      <ColorField
-        label="Cor do Fundo atrás da Logo"
-        description="Usada em áreas de apoio e fundos claros para exibir logos e composições com mais contraste."
-        color={aparencia.cor_fundo_logo}
-        onChange={(hex) => setAparencia({ cor_fundo_logo: hex })}
-      />
+        <ColorField
+          label="Cor do Fundo da Página"
+          description=""
+          color={aparencia.final.cor_fundo_pagina}
+          onChange={(hex) => handleChange('final', 'cor_fundo_pagina', hex)}
+        />
+        <ColorField
+          label="Cor do Título"
+          description=""
+          color={aparencia.final.cor_titulo}
+          onChange={(hex) => handleChange('final', 'cor_titulo', hex)}
+        />
+        <ColorField
+          label="Cor dos Textos"
+          description=""
+          color={aparencia.final.cor_texto}
+          onChange={(hex) => handleChange('final', 'cor_texto', hex)}
+        />
+        <ColorField
+          label="Cor dos Detalhes"
+          description=""
+          color={aparencia.final.cor_detalhes}
+          onChange={(hex) => handleChange('final', 'cor_detalhes', hex)}
+        />
+      </div>
 
+      {/* CONTEUDO */}
+      <div style={{ marginBottom: 24 }}>
+        <h4 style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 12, paddingBottom: 8, borderBottom: '1px solid var(--border)' }}>
+          Conteúdo / Textos
+        </h4>
+        <p style={{ fontSize: 11, color: 'var(--text-secondary)', marginBottom: 16 }}>
+          Aplica-se à Bem Vindo, Sumário, Conceito, Tipografia, Cores, etc.
+        </p>
+
+        <ColorField
+          label="Cor do Fundo da Página"
+          description=""
+          color={aparencia.conteudo.cor_fundo_pagina}
+          onChange={(hex) => handleChange('conteudo', 'cor_fundo_pagina', hex)}
+        />
+        <ColorField
+          label="Cor do Título"
+          description=""
+          color={aparencia.conteudo.cor_titulo}
+          onChange={(hex) => handleChange('conteudo', 'cor_titulo', hex)}
+        />
+        <ColorField
+          label="Cor dos Textos"
+          description=""
+          color={aparencia.conteudo.cor_texto}
+          onChange={(hex) => handleChange('conteudo', 'cor_texto', hex)}
+        />
+        <ColorField
+          label="Cor dos Detalhes"
+          description="Usada em botões, badges, e elementos visuais de destaque."
+          color={aparencia.conteudo.cor_detalhes}
+          onChange={(hex) => handleChange('conteudo', 'cor_detalhes', hex)}
+        />
+      </div>
       <div className="form-group">
         <label className="form-label">Imagem / Textura de Fundo</label>
         <p style={{ fontSize: 11, color: 'var(--text-secondary)', marginBottom: 6, lineHeight: 1.5 }}>
@@ -161,8 +220,8 @@ export function SectionAparencia() {
       />
 
       <div className="appearance-preview-strip">
-        <div className="appearance-preview-page" style={{ background: aparencia.cor_fundo_pagina }}>
-          <div className="appearance-preview-panel" style={{ background: aparencia.cor_paineis }}>
+        <div className="appearance-preview-page" style={{ background: aparencia.secao.cor_fundo_pagina }}>
+          <div className="appearance-preview-panel" style={{ background: aparencia.secao.cor_detalhes }}>
             {aparencia.imagem_fundo && (
               <img
                 src={aparencia.imagem_fundo}
@@ -177,10 +236,10 @@ export function SectionAparencia() {
                 }}
               />
             )}
-            <div className="appearance-preview-title" style={{ color: aparencia.cor_destaque }}>Divisória</div>
+            <div className="appearance-preview-title" style={{ color: aparencia.secao.cor_titulo }}>Divisória</div>
           </div>
-          <div className="appearance-preview-logo" style={{ background: aparencia.cor_fundo_logo }}>
-            <div style={{ width: 32, height: 8, background: aparencia.cor_titulos_conteudo, borderRadius: 999 }} />
+          <div className="appearance-preview-logo" style={{ background: aparencia.conteudo.cor_fundo_pagina }}>
+            <div style={{ width: 32, height: 8, background: aparencia.conteudo.cor_detalhes, borderRadius: 999 }} />
           </div>
         </div>
       </div>

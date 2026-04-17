@@ -1,6 +1,16 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
-import { PanelRightClose, PanelRightOpen, Plus, SlidersHorizontal, Trash2 } from 'lucide-react'
+import { 
+  PanelRightClose, 
+  PanelRightOpen, 
+  Plus, 
+  SlidersHorizontal, 
+  Trash2, 
+  FileText,
+  Palette,
+  Layers,
+  Image as ImageIcon
+} from 'lucide-react'
 import { toast } from 'sonner'
 import { FontUploadControl } from '../common/FontUploadControl'
 import { UploadZone } from '../sidebar/UploadZone'
@@ -857,11 +867,7 @@ export function ContextDrawer() {
           <div className="context-drawer-rail-icon">
             <PanelRightOpen size={18} />
           </div>
-          <div className="context-drawer-rail-copy">
-            <span className="context-drawer-rail-eyebrow">Drawer</span>
-            <span className="context-drawer-rail-label">{slideType ? title : 'Pagina'}</span>
-            <span className="context-drawer-rail-hint">{slideType ? 'Editar slide' : 'Abrir contexto'}</span>
-          </div>
+
           <div className="context-drawer-rail-badge">
             <SlidersHorizontal size={14} />
           </div>

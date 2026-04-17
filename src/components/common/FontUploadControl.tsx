@@ -1,4 +1,4 @@
-import { useRef } from 'react'
+import { useRef, useState } from 'react'
 import { toast } from 'sonner'
 import {
   EMPTY_UPLOADED_FONT,
@@ -43,6 +43,7 @@ export function FontUploadControl({
   sourceHint = 'Digite o nome da fonte para carregar via Google Fonts ou escolha um arquivo personalizado.',
 }: FontUploadControlProps) {
   const inputRef = useRef<HTMLInputElement>(null)
+  const [showUpload, setShowUpload] = useState(!!customFont.data_url)
   const effectiveName = resolveFontName(name, customFont.file_name)
   const previewFontFamily = getFontFamilyStack(effectiveName, previewFallback, previewGeneric)
 
@@ -66,84 +67,86 @@ export function FontUploadControl({
   }
 
   return (
-    <div className="font-control">
-      <div className="font-control-header">
-        <p className="form-label" style={{ margin: 0, color: 'var(--accent)' }}>{title}</p>
-        {optional ? <span className="font-control-badge">opcional</span> : null}
+    <div className="font-control" style={{ gap: '8px' }}>
+      <div className="font-control-header" style={{ marginBottom: '4px', height: '20px' }}>
+        <p className="form-label" style={{ margin: 0, color: 'var(--accent)', fontSize: '10px' }}>{title}</p>
+        {optional ? <span className="font-control-badge" style={{ padding: '1px 6px', fontSize: '8px' }}>opcional</span> : <div style={{height: 18}} />}
       </div>
 
       <div className="form-group">
         <label className="form-label">Nome da Fonte</label>
         <input className="form-input" value={name} onChange={(e) => onNameChange(e.target.value)} placeholder={placeholder} />
+        <p className="font-helper-text" style={{ marginTop: 4 }}>
+          O sistema puxará do <strong>Google Fonts automaticamente</strong> (caso a fonte esteja no catálogo oficial).
+        </p>
       </div>
 
       {effectiveName ? (
-        <div className="font-preview-card">
-          <div className="font-preview-name">{effectiveName}</div>
-          <div className="font-preview-sample" style={{ fontFamily: previewFontFamily }}>
+        <div className="font-preview-card" style={{ padding: '8px 12px' }}>
+          <div className="font-preview-name" style={{ fontSize: '11px' }}>{effectiveName}</div>
+          <div className="font-preview-sample" style={{ fontFamily: previewFontFamily, fontSize: '15px', marginTop: '4px' }}>
             Aa Bb Cc 0123456789
           </div>
         </div>
       ) : (
-        <p className="font-helper-text">
-          Digite o nome da fonte ou carregue um arquivo para ver o preview desta tipografia.
+        <p className="font-helper-text" style={{ margin: '4px 0' }}>
+          Digite o nome ou carregue um arquivo para preview.
         </p>
       )}
 
       {onStylesChange ? (
-        <div className="form-group">
-          <label className="form-label">Estilos / Pesos</label>
-          <input className="form-input" value={styles} onChange={(e) => onStylesChange(e.target.value)} placeholder={stylesPlaceholder} />
+        <div className="form-group" style={{ gap: '3px' }}>
+          <label className="form-label" style={{ fontSize: '10px' }}>Estilos / Pesos</label>
+          <input className="form-input" style={{ padding: '7px 10px', fontSize: '12px' }} value={styles} onChange={(e) => onStylesChange(e.target.value)} placeholder={stylesPlaceholder} />
         </div>
       ) : null}
 
-      <div className="font-upload-card">
-        <div className="form-group">
-          <label className="form-label">Pasta Padrao das Fontes no Windows</label>
-          <input className="form-input" value={WINDOWS_FONTS_PATH} readOnly />
+      <label className="np-switch-wrapper" style={{ marginTop: '4px' }}>
+        <div className="np-switch">
+          <input type="checkbox" checked={showUpload} onChange={(e) => setShowUpload(e.target.checked)} />
+          <span className="np-switch-slider"></span>
         </div>
+        <span className="np-switch-label" style={{ fontSize: '10px', opacity: 0.8 }}>Anexar Arquivo (Opcional)</span>
+      </label>
 
-        <p className="font-helper-text">{sourceHint}</p>
-        <p className="font-helper-text">
-          Use arquivos <code>.ttf</code>, <code>.otf</code>, <code>.woff</code> ou <code>.woff2</code>.
-        </p>
+      {showUpload && (
+        <div className="font-upload-card" style={{ marginTop: '4px', padding: '10px' }}>
+          <p className="font-helper-text" style={{ marginBottom: '8px', fontSize: '10px' }}>{sourceHint}</p>
 
-        <div className="font-upload-actions">
-          <input
-            ref={inputRef}
-            type="file"
-            accept=".ttf,.otf,.woff,.woff2"
-            style={{ display: 'none' }}
-            onChange={(e) => {
-              const file = e.target.files?.[0]
-              if (file) handleFontFile(file)
-              e.target.value = ''
-            }}
-          />
+          <div className="font-upload-actions" style={{ marginTop: 0 }}>
+            <input
+              ref={inputRef}
+              type="file"
+              accept=".ttf,.otf,.woff,.woff2"
+              style={{ display: 'none' }}
+              onChange={(e) => {
+                const file = e.target.files?.[0]
+                if (file) handleFontFile(file)
+                e.target.value = ''
+              }}
+            />
 
-          <button type="button" className="font-upload-button is-primary" onClick={() => inputRef.current?.click()}>
-            Escolher arquivo
-          </button>
-
-          {customFont.data_url ? (
-            <button
-              type="button"
-              className="font-upload-button"
-              onClick={() => onCustomFontChange({ ...EMPTY_UPLOADED_FONT })}
-            >
-              Remover arquivo
+            <button type="button" className="font-upload-button is-primary" style={{ padding: '6px 12px', fontSize: '11px' }} onClick={() => inputRef.current?.click()}>
+              Escolher arquivo
             </button>
-          ) : null}
-        </div>
 
-        {customFont.file_name ? (
-          <div className="font-upload-file">Arquivo atual: {customFont.file_name}</div>
-        ) : (
-          <p className="font-helper-text" style={{ marginTop: 2 }}>
-            Sem arquivo carregado. Nesse caso, o sistema usa o nome digitado como referencia.
-          </p>
-        )}
-      </div>
+            {customFont.data_url ? (
+              <button
+                type="button"
+                className="font-upload-button"
+                style={{ padding: '6px 12px', fontSize: '11px' }}
+                onClick={() => onCustomFontChange({ ...EMPTY_UPLOADED_FONT })}
+              >
+                Remover
+              </button>
+            ) : null}
+          </div>
+
+          {customFont.file_name && (
+            <div className="font-upload-file" style={{ fontSize: '10px', marginTop: '6px' }}>Arquivo: {customFont.file_name}</div>
+          )}
+        </div>
+      )}
     </div>
   )
 }

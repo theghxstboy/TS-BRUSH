@@ -24,7 +24,7 @@ export function usePageColors(slideType?: SlideAppearanceKey) {
 
   // Backward compatibility mappings
   const primaryColor = detailColor
-  const darkColor = shadowColor
+  const darkColor = detailColor
   const dividerTitleColor = titleColor
   const contentTitleColor = titleColor
   const logoBackdropColor = pageColor // Deprecated cor_fundo_logo defaults to page color

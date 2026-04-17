@@ -24,70 +24,12 @@ import { FontUploadControl } from '../common/FontUploadControl'
 type ModalView = 'choose' | 'create' | 'typography-brand' | 'style' | 'typography-layout'
 type StyleTab = 'capa' | 'secao' | 'conteudo' | 'final' | 'fundos' | 'mockups'
 
+import { extractColorsFromDataUrl } from '../../lib/imageUtils'
+import type { BrandColor } from '../../store/useBrandStore'
+
 // ─── Color extraction from logo ──────────────────────────────────────────────
 
-function sampleColors(src: string, count = 5): Promise<string[]> {
-  return new Promise((resolve) => {
-    const img = new window.Image()
-    img.crossOrigin = 'anonymous'
-    img.onload = () => {
-      const canvas = document.createElement('canvas')
-      const size = 80
-      canvas.width = size
-      canvas.height = size
-      const ctx = canvas.getContext('2d')!
-      ctx.drawImage(img, 0, 0, size, size)
-      const data = ctx.getImageData(0, 0, size, size).data
-      const buckets: Record<string, number> = {}
-
-      for (let i = 0; i < data.length; i += 4) {
-        const r = data[i]
-        const g = data[i + 1]
-        const b = data[i + 2]
-        const a = data[i + 3]
-        if (a < 50) continue 
-
-        // Skip near-white or near-black backgrounds if we have variety
-        const luminance = (r * 0.299 + g * 0.587 + b * 0.114)
-        if (luminance > 245 || luminance < 10) continue 
- 
-        // Bucket them with higher resolution
-        const rB = Math.round(r / 12) * 12
-        const gB = Math.round(g / 12) * 12
-        const bB = Math.round(b / 12) * 12
-        const key = `${rB},${gB},${bB}`
-        buckets[key] = (buckets[key] ?? 0) + 1
-      }
-
-      const sorted = Object.entries(buckets)
-        .sort((a, b) => b[1] - a[1])
-        .slice(0, count * 6)
-
-      const toHex = (n: number) => n.toString(16).padStart(2, '0')
-      const unique: string[] = []
-      for (const [key] of sorted) {
-        if (unique.length >= count) break
-        const [r, g, b] = key.split(',').map(Number)
-        const hex = `#${toHex(r)}${toHex(g)}${toHex(b)}`.toUpperCase()
-        
-        const isDuplicate = unique.some((u) => {
-          const dr = parseInt(u.slice(1, 3), 16) - r
-          const dg = parseInt(u.slice(3, 5), 16) - g
-          const db = parseInt(u.slice(5, 7), 16) - b
-          return Math.sqrt(dr * dr + dg * dg + db * db) < 45 // Strictness for uniqueness
-        })
-        if (!isDuplicate) unique.push(hex)
-      }
-
-      const fallbacks = ['#0C0C0C', '#FFFFFF', '#F97316', '#27272A', '#F4F4F5']
-      while (unique.length < count) unique.push(fallbacks[unique.length % fallbacks.length])
-      resolve(unique)
-    }
-    img.onerror = () =>
-      resolve(['#0C0C0C', '#FFFFFF', '#F97316', '#888888', '#EEEEEE'].slice(0, count))
-    img.src = src
-  })
-}
+// Removed manual sampleColors to use exact extraction from lib
 
 // ─── Helper ───────────────────────────────────────────────────────────────────
 
@@ -383,19 +325,20 @@ export function NewProjectModal({ onClose }: NewProjectModalProps) {
 
   // ── Step 2: colors ─────────────────────────────────────────────────────────
   const [sampledColors, setSampledColors] = useState<string[]>([])
+  const [extractedBrandColors, setExtractedBrandColors] = useState<Omit<BrandColor, 'id'>[]>([])
   const [capaFundo, setCapaFundo] = useState('#0C0C0C')
-  const [capaDetalhe, setCapaDetalhe] = useState('#F97316')
+  const [capaDetalhe, setCapaDetalhe] = useState('#FFA300')
   const [secaoFundo, setSecaoFundo] = useState('#0C0C0C')
   const [secaoTitulo, setSecaoTitulo] = useState('#FFFFFF')
-  const [secaoDetalhe, setSecaoDetalhe] = useState('#F97316')
+  const [secaoDetalhe, setSecaoDetalhe] = useState('#FFA300')
   const [conteudoFundo, setConteudoFundo] = useState('#141414')
   const [conteudoTitulo, setConteudoTitulo] = useState('#FFFFFF')
   const [conteudoTexto, setConteudoTexto] = useState('#D4D4D4')
-  const [conteudoDetalhe, setConteudoDetalhe] = useState('#F97316')
+  const [conteudoDetalhe, setConteudoDetalhe] = useState('#FFA300')
   const [finalFundo, setFinalFundo] = useState('#0C0C0C')
   const [finalTitulo, setFinalTitulo] = useState('#FFFFFF')
   const [finalTexto, setFinalTexto] = useState('#D4D4D4')
-  const [finalDetalhe, setFinalDetalhe] = useState('#F97316')
+  const [finalDetalhe, setFinalDetalhe] = useState('#FFA300')
   const [bgCapaSecao, setBgCapaSecao] = useState<string | null>(null)
   const [bgConteudo, setBgConteudo] = useState<string | null>(null)
 
@@ -421,7 +364,11 @@ export function NewProjectModal({ onClose }: NewProjectModalProps) {
 
   // Apply detected colors to all states
   const applyPalette = (colors: string[]) => {
-    const [c0, c1, c2, c3, c4] = colors
+    const c0 = colors[0] || '#0C0C0C'
+    const c1 = colors[1] || '#FFFFFF'
+    const c2 = colors[2] || '#FFA300'
+    const c3 = colors[3] || c0
+    const c4 = colors[4] || '#D4D4D4'
     // Logic: 
     // Fundo usually dark/main (c0)
     // Título/Text usually white/light (c1 or c4)
@@ -436,14 +383,27 @@ export function NewProjectModal({ onClose }: NewProjectModalProps) {
   // Extract colors from logo
   useEffect(() => {
     if (!logoPrincipal) return
-    sampleColors(logoPrincipal, 5).then((colors) => {
-      setSampledColors(colors)
+    extractColorsFromDataUrl(logoPrincipal, 5).then((colors) => {
+      setExtractedBrandColors(colors)
+      const hexes = colors.map((c) => c.hex)
+      setSampledColors(hexes)
       // Only auto-apply if we haven't set custom colors yet or if it's the first run
-      applyPalette(colors)
+      if (hexes.length > 0) applyPalette(hexes)
     })
   }, [logoPrincipal])
 
   // ─── Handlers ───────────────────────────────────────────────────────────────
+
+  function handleConfirmClose() {
+    const hasData = nomeMarca || conceito || caracteristicas || valores || sensacoes || elementos || responsavel || aiResponse;
+    if (hasData) {
+      if (window.confirm('Você tem progresso não salvo. Deseja realmente fechar e perder os dados?')) {
+        onClose()
+      }
+    } else {
+      onClose()
+    }
+  }
 
   function handleBlankProject() { reset(); onClose(); setScreen('brand-manual') }
   function handleImportFile(file: File) { importJson(file); onClose(); setScreen('brand-manual') }
@@ -515,6 +475,13 @@ export function NewProjectModal({ onClose }: NewProjectModalProps) {
   }
 
   function handleEnterEditor() {
+    const { replaceCores } = useBrandStore.getState()
+    
+    if (extractedBrandColors.length > 0) {
+      replaceCores('logo', extractedBrandColors)
+      replaceCores('apresentacao', extractedBrandColors)
+    }
+
     setAparencia({
       capa: { cor_fundo_pagina: capaFundo, cor_detalhes: capaDetalhe, imagem_fundo: bgCapaSecao, imagem_fundo_opacidade: 0.16 },
       secao: { cor_fundo_pagina: secaoFundo, cor_titulo: secaoTitulo, cor_detalhes: secaoDetalhe, imagem_fundo: bgCapaSecao, imagem_fundo_opacidade: 0.16 },
@@ -574,7 +541,7 @@ export function NewProjectModal({ onClose }: NewProjectModalProps) {
   const isWide = view !== 'choose'
 
   return (
-    <div className="home-modal-overlay" onClick={onClose}>
+    <div className="home-modal-overlay">
       <div
         className={`np-modal ${isWide ? 'np-modal-wide' : ''}`}
         onClick={(e) => e.stopPropagation()}
@@ -588,7 +555,7 @@ export function NewProjectModal({ onClose }: NewProjectModalProps) {
                 <h3 className="home-modal-title">Manual de Marca</h3>
                 <p className="np-modal-subtitle">Como você quer começar?</p>
               </div>
-              <button type="button" className="np-close-btn" onClick={onClose}><X size={16} /></button>
+              <button type="button" className="np-close-btn" onClick={handleConfirmClose}><X size={16} /></button>
             </div>
             <div className="np-options">
               <OptionCard icon={<PlusCircle size={20} />} title="Criar projeto"
@@ -616,7 +583,7 @@ export function NewProjectModal({ onClose }: NewProjectModalProps) {
                 <p className="np-modal-subtitle">Preencha as informações básicas da marca</p>
               </div>
               <StepIndicator current={1} />
-              <button type="button" className="np-close-btn" onClick={onClose}><X size={16} /></button>
+              <button type="button" className="np-close-btn" onClick={handleConfirmClose}><X size={16} /></button>
             </div>
 
             <div className="np-form-grid">
@@ -691,7 +658,7 @@ export function NewProjectModal({ onClose }: NewProjectModalProps) {
                 <p className="np-modal-subtitle">Personalize cada tipo de slide da apresentação</p>
               </div>
               <StepIndicator current={3} />
-              <button type="button" className="np-close-btn" onClick={onClose}><X size={16} /></button>
+              <button type="button" className="np-close-btn" onClick={handleConfirmClose}><X size={16} /></button>
             </div>
 
             {/* Tab bar */}
@@ -952,7 +919,7 @@ export function NewProjectModal({ onClose }: NewProjectModalProps) {
                 <p className="np-modal-subtitle">Configure as duas fontes oficias ou secundárias associadas unicamente à marca</p>
               </div>
               <StepIndicator current={2} />
-              <button type="button" className="np-close-btn" onClick={onClose}><X size={16} /></button>
+              <button type="button" className="np-close-btn" onClick={handleConfirmClose}><X size={16} /></button>
             </div>
 
             <div className="np-style-tabpanel" style={{ padding: '24px 48px' }}>

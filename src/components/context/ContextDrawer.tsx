@@ -198,7 +198,7 @@ function AppearanceSection({ slideType }: { slideType: SlideType }) {
 
   const getInherited = (key: AppearanceFieldKey) => {
     switch (key) {
-      case 'cor_detalhes': return globalApp.cor_detalhes || '#F97316'
+      case 'cor_detalhes': return globalApp.cor_detalhes || '#FFA300'
       case 'cor_titulo': return globalApp.cor_titulo || '#0C0C0C'
       case 'cor_fundo_pagina': return globalApp.cor_fundo_pagina || '#FFFFFF'
       case 'cor_texto': return globalApp.cor_texto || '#1A1A1A'

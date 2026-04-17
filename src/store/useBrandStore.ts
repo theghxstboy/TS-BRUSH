@@ -192,14 +192,14 @@ export interface BrandStore {
 const DEFAULT_APARENCIA: Aparencia = {
   capa: {
     cor_fundo_pagina: '#FFFFFF',
-    cor_detalhes: '#F97316',
+    cor_detalhes: '#FFA300',
     imagem_fundo: null,
     imagem_fundo_opacidade: DEFAULT_BACKGROUND_IMAGE_OPACITY,
   },
   secao: {
     cor_fundo_pagina: '#FFFFFF',
     cor_titulo: '#0C0C0C',
-    cor_detalhes: '#F97316',
+    cor_detalhes: '#FFA300',
     imagem_fundo: null,
     imagem_fundo_opacidade: DEFAULT_BACKGROUND_IMAGE_OPACITY,
   },
@@ -207,7 +207,7 @@ const DEFAULT_APARENCIA: Aparencia = {
     cor_fundo_pagina: '#FFFFFF',
     cor_titulo: '#0C0C0C',
     cor_texto: '#1A1A1A',
-    cor_detalhes: '#F97316',
+    cor_detalhes: '#FFA300',
     cor_sombra: 'rgba(0,0,0,0.5)',
     imagem_fundo: null,
     imagem_fundo_opacidade: DEFAULT_BACKGROUND_IMAGE_OPACITY,
@@ -216,7 +216,7 @@ const DEFAULT_APARENCIA: Aparencia = {
     cor_fundo_pagina: '#FFFFFF',
     cor_titulo: '#0C0C0C',
     cor_texto: '#1A1A1A',
-    cor_detalhes: '#F97316',
+    cor_detalhes: '#FFA300',
     cor_sombra: 'rgba(0,0,0,0.5)',
     imagem_fundo: null,
     imagem_fundo_opacidade: DEFAULT_BACKGROUND_IMAGE_OPACITY,
@@ -265,7 +265,7 @@ function buildDefaultPageAppearance(): SlideAppearanceState {
 }
 
 const DEFAULT_CORES: BrandColor[] = [
-  { id: 1, hex: '#F97316', rgb: '249, 115, 22', hsl: '25°, 95%, 53%', cmyk: '0, 54, 91, 2' },
+  { id: 1, hex: '#FFA300', rgb: '255, 163, 0', hsl: '38°, 100%, 50%', cmyk: '0, 54, 91, 2' },
   { id: 2, hex: '#0C0C0C', rgb: '12, 12, 12', hsl: '0°, 0%, 5%', cmyk: '0, 0, 0, 95' },
   { id: 3, hex: '#FFFFFF', rgb: '255, 255, 255', hsl: '0°, 0%, 100%', cmyk: '0, 0, 0, 0' },
 ]

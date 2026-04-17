@@ -40,14 +40,14 @@ export function SectionAssets() {
     <CollapsibleSection icon={<ImageIcon size={14} />} label="Logos & Assets" defaultOpen sectionId="assets">
       <div
         style={{
-          background: 'rgba(249,115,22,0.04)',
-          border: '1px solid rgba(249,115,22,0.12)',
+          background: 'rgba(255,163,0,0.04)',
+          border: '1px solid rgba(255,163,0,0.12)',
           borderRadius: 8,
           padding: '10px 12px',
           marginBottom: 4,
         }}
       >
-        <p style={{ fontSize: 11, color: '#fb923c', fontWeight: 600, marginBottom: 2 }}>
+        <p style={{ fontSize: 11, color: '#ffb833', fontWeight: 600, marginBottom: 2 }}>
           Logo principal atualiza a paleta automaticamente
         </p>
         <p style={{ fontSize: 10, color: '#a1a1aa', lineHeight: 1.5 }}>

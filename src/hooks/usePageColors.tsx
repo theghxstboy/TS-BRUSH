@@ -18,7 +18,7 @@ export function usePageColors(slideType?: SlideAppearanceKey) {
   const pageColor = pageAppearance?.cor_fundo_pagina || globalApp.cor_fundo_pagina || '#FFFFFF'
   const titleColor = pageAppearance?.cor_titulo || globalApp.cor_titulo || '#0C0C0C'
   const textColor = pageAppearance?.cor_texto || globalApp.cor_texto || '#1A1A1A'
-  const detailColor = pageAppearance?.cor_detalhes || globalApp.cor_detalhes || '#F97316'
+  const detailColor = pageAppearance?.cor_detalhes || globalApp.cor_detalhes || '#FFA300'
   const shadowColor = pageAppearance?.cor_sombra || globalApp.cor_sombra || 'rgba(0,0,0,0.5)'
 
 

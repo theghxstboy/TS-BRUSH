@@ -1,12 +1,12 @@
 import React, { useState } from 'react'
-import { motion } from 'framer-motion'
+import { motion, Variants } from 'framer-motion'
 import { BookOpen, Image, Sparkles, ArrowRight, Lock } from 'lucide-react'
 import { useAppStore } from '../../store/useAppStore'
 import { NewProjectModal } from './NewProjectModal'
 import brushLogo from '../../logos/TS-BRUSH-PEN-WHITE.svg'
 import tssLogo from '../../logos/TSS.svg'
 
-const itemVariants = {
+const itemVariants: Variants = {
   hidden: { opacity: 0, filter: 'blur(4px)' },
   visible: { 
     opacity: 1, 
@@ -15,7 +15,7 @@ const itemVariants = {
   }
 }
 
-const textVariants = {
+const textVariants: Variants = {
   hidden: { opacity: 0 },
   visible: { 
     opacity: 1, 
@@ -24,7 +24,7 @@ const textVariants = {
 }
 
 
-const logoVariants = {
+const logoVariants: Variants = {
   hidden: { opacity: 0, scale: 0.95, filter: 'blur(10px)' },
   visible: { 
     opacity: 1, 

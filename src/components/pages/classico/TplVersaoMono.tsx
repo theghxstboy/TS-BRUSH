@@ -63,9 +63,18 @@ export function TplVersaoMono({ pageNumber }: TplVersaoMonoProps) {
             <div style={{ ...metaStyle(12), fontWeight: 400, color: darkColor, letterSpacing: '0.05em', fontFamily: 'monospace' }}>Escala de Cinza</div>
             <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', background: '#FFFFFF', border: '1px solid #ddd', borderRadius: 4 }}>
               {src ? (
-                <img src={src} style={{ maxWidth: '80%', maxHeight: 110, objectFit: 'contain', filter: 'grayscale(1)' }} alt="Grayscale" />
+                <img 
+                  src={src} 
+                  style={{ 
+                    maxWidth: '80%', 
+                    maxHeight: 110, 
+                    objectFit: 'contain', 
+                    filter: 'grayscale(1) contrast(1.1) brightness(0.95)' 
+                  }} 
+                  alt="Grayscale" 
+                />
               ) : (
-                <div style={{ fontSize: 52, fontWeight: 900, color: '#888', textAlign: 'center', lineHeight: 1 }}>LOGO<br />AQUU</div>
+                <div style={{ fontSize: 52, fontWeight: 900, color: '#888', textAlign: 'center', lineHeight: 1 }}>LOGO<br />AQUI</div>
               )}
             </div>
           </div>

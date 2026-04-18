@@ -65,3 +65,16 @@ export function buildColorMeta(hex: string) {
     cmyk: '',
   }
 }
+
+export function getLuminance(hex: string): number {
+  const rgbStr = hexToRgb(hex)
+  if (!rgbStr) return 0
+  const [r, g, b] = rgbStr.split(',').map((v) => parseInt(v.trim()))
+  // Perceived luminance formula: 0.299*R + 0.587*G + 0.114*B
+  return (0.299 * r + 0.587 * g + 0.114 * b) / 255
+}
+
+export function isDark(hex: string): boolean {
+  return getLuminance(hex) < 0.5
+}
+

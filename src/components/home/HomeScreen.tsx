@@ -1,9 +1,39 @@
 import React, { useState } from 'react'
+import { motion } from 'framer-motion'
 import { BookOpen, Image, Sparkles, ArrowRight, Lock } from 'lucide-react'
 import { useAppStore } from '../../store/useAppStore'
 import { NewProjectModal } from './NewProjectModal'
 import brushLogo from '../../logos/TS-BRUSH-PEN-WHITE.svg'
 import tssLogo from '../../logos/TSS.svg'
+
+const itemVariants = {
+  hidden: { opacity: 0, filter: 'blur(4px)' },
+  visible: { 
+    opacity: 1, 
+    filter: 'blur(0px)',
+    transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] }
+  }
+}
+
+const textVariants = {
+  hidden: { opacity: 0 },
+  visible: { 
+    opacity: 1, 
+    transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] } 
+  }
+}
+
+
+const logoVariants = {
+  hidden: { opacity: 0, scale: 0.95, filter: 'blur(10px)' },
+  visible: { 
+    opacity: 1, 
+    scale: 1, 
+    filter: 'blur(0px)',
+    transition: { duration: 1.2, ease: [0.22, 1, 0.36, 1] } 
+  }
+}
+
 
 function PresentationCard({
   icon,
@@ -23,7 +53,10 @@ function PresentationCard({
   onClick?: () => void
 }) {
   return (
-    <button
+    <motion.button
+      variants={itemVariants}
+      whileHover={!disabled ? { scale: 1.02, transition: { duration: 0.1 } } : {}}
+      whileTap={!disabled ? { scale: 0.98 } : {}}
       type="button"
       className={`home-card ${disabled ? 'home-card-disabled' : 'home-card-active'}`}
       onClick={!disabled ? onClick : undefined}
@@ -46,18 +79,28 @@ function PresentationCard({
       </div>
 
       <div className="home-card-footer">
-        {tag && <span className="home-card-tag">{tag}</span>}
         {!disabled && (
           <span className="home-card-arrow">
-            <ArrowRight size={16} />
+            <ArrowRight size={20} />
           </span>
         )}
         {disabled && (
           <span className="home-card-soon">Em breve</span>
         )}
       </div>
-    </button>
+    </motion.button>
   )
+}
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1,
+      delayChildren: 0.1
+    }
+  }
 }
 
 export function HomeScreen() {
@@ -65,33 +108,41 @@ export function HomeScreen() {
   const [showNewProjectModal, setShowNewProjectModal] = useState(false)
 
   return (
-    <div className="home-screen">
+    <motion.div 
+      className="home-screen"
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+    >
       {/* Backgrounds */}
       <div className="home-bg-gradient" />
       <div className="home-bg-grid" />
 
       {/* Header */}
-      <header className="home-header">
+      <motion.header 
+        className="home-header"
+        variants={logoVariants}
+      >
         <div className="home-logo">
           <img src={brushLogo} alt="TS BRUSH" style={{ height: 54 }} />
         </div>
         <div className="home-header-badge">BETA</div>
-      </header>
+      </motion.header>
 
       {/* Hero */}
       <main className="home-main">
         <div className="home-hero">
-          <div className="home-hero-eyebrow">
+          <motion.div className="home-hero-eyebrow" variants={textVariants}>
             <Sparkles size={12} />
             Ferramenta de Apresentações
-          </div>
-          <h1 className="home-hero-title">
+          </motion.div>
+          <motion.h1 className="home-hero-title" variants={textVariants}>
             Crie apresentações<br />
             <span className="home-hero-accent">profissionais.</span>
-          </h1>
-          <p className="home-hero-subtitle">
+          </motion.h1>
+          <motion.p className="home-hero-subtitle" variants={textVariants}>
             Escolha o tipo de apresentação que deseja criar e comece a construir sua identidade visual.
-          </p>
+          </motion.p>
         </div>
 
         {/* Cards */}
@@ -101,7 +152,6 @@ export function HomeScreen() {
             eyebrow="01 — DISPONÍVEL"
             title="Manual de Marca"
             description="Crie um brand manual completo com capa, cores, tipografia, aplicações, mockups e muito mais."
-            tag="Brand Manual"
             onClick={() => setShowNewProjectModal(true)}
           />
 
@@ -110,7 +160,6 @@ export function HomeScreen() {
             eyebrow="02 — EM BREVE"
             title="Apresentação de Logo"
             description="Apresente a identidade visual da marca com foco no logotipo, variações e aplicações principais."
-            tag="Logo Deck"
             disabled
           />
 
@@ -119,24 +168,23 @@ export function HomeScreen() {
             eyebrow="03 — EM BREVE"
             title="Apresentação Personalizada"
             description="Monte uma apresentação do zero com total liberdade de estrutura, layout e conteúdo."
-            tag="Custom"
             disabled
           />
         </div>
 
         {/* Footer */}
-        <footer className="home-footer">
+        <motion.footer className="home-footer" variants={textVariants}>
           <p className="home-footer-text">
             TS BRUSH v1.0 &nbsp;·&nbsp; Desenvolvido por
           </p>
           <img src={tssLogo} alt="TSS" className="home-footer-logo" />
-        </footer>
+        </motion.footer>
       </main>
 
       {/* New Project Modal */}
       {showNewProjectModal && (
         <NewProjectModal onClose={() => setShowNewProjectModal(false)} />
       )}
-    </div>
+    </motion.div>
   )
 }

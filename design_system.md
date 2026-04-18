@@ -1,57 +1,75 @@
-DESIGN SYSTEM — TS-BRAND MANUAL
-Adaptação do padrão TS TOOLS para o Gerador de Manual de Marca.
-Mantém a identidade visual na interface (UI) — dark-only, accent laranja, tipografia Geist — mas introduz uma "Área de Canvas" com fundo neutro para o preview do documento A4.
+# DESIGN SYSTEM — TS-BRAND MANUAL (PREMIUM GLASS)
 
-1 — Identidade Visual & Cores (Interface)
-A paleta aplica-se apenas ao painel de controle. O PDF gerado respeita as cores definidas pelo usuário.
+O TS-BRAND MANUAL evoluiu de uma interface flat para uma estetica **Glassmorphism Premium**, focada em profundidade, transparencia e interacoes snappy. Este sistema define as regras para manter a autenticidade e o padrao visual da plataforma.
 
+---
+
+## 1 — Design Philosophy: Glassmorphism
+
+A interface deve parecer composta por camadas de vidro fosco sobrepostas. 
+- **Transparência**: `rgba(20, 20, 20, 0.4)` para containers principais.
+- **Desfoque (Blur)**: `backdrop-filter: blur(20px)` é o padrão para profundidade.
+- **Bordas Reflexivas**: Bordas finas (`1px`) com baixa opacidade e `inset box-shadow` para simular o brilho da borda do vidro.
+
+---
+
+## 2 — Identidade Visual & Cores
+
+### Paleta de Interface (Dark-Only)
+```css
 :root {
-  /* Fundos da Interface (Dark Mode) */
-  --bg-base:    #0c0c0c;
-  --bg-sidebar: #161616;
-  --bg-input:   #1a1a1a;
-  --bg-elevated:#202020;
-
-  /* Canvas do PDF */
-  --bg-canvas:  #27272a;
-
-  /* Accent — Laranja TS TOOLS */
-  --accent:         #f97316;
-  --accent-hover:   #fb923c;
-  --accent-muted:   #f9731620;
-  --accent-border:  #f9731640;
-
-  /* Texto da Interface */
-  --text-primary:   #ffffff;
+  --bg-base:      #0c0c0c; /* Fundo absoluto */
+  --accent:       #ffa300; /* Laranja Oficial TS */
+  --accent-hover: #ffb833;
+  --text-primary: #ffffff;
   --text-secondary: #a1a1aa;
-  --border:         #27272a;   
+  
+  /* Glass Tokens */
+  --glass-bg:     rgba(20, 20, 20, 0.4);
+  --glass-border: rgba(255, 255, 255, 0.08);
 }
+```
 
-2 — Layout & Navegação (Split-Screen)
-Sidebar de Controle (Esquerda): Fixa, w-[400px], overflow-y-auto. Contém os formulários e botões de ação (Exportar, Importar, Imprimir).
+### Contextos de Alerta
+Popups e Toasts utilizam cores semânticas para feedback imediato:
+- **Sucesso**: `#10b981` (Emerald)
+- **Erro**: `#f43f5e` (Rose)
+- **Aviso/Confirm**: `#f59e0b` (Amber)
+- **Info**: `#3b82f6` (Blue)
 
-Área de Canvas (Direita): Flex-1, centralizada, com scroll. Fundo --bg-canvas. Contém as folhas A4 renderizadas em tempo real.
+---
 
-3 — Regras de Impressão (@media print)
-Obrigatório para o funcionamento do sistema. O navegador deve ignorar a UI escura e imprimir apenas o canvas A4.
+## 3 — Animações e Coreografia
 
-@media print {
-  @page { size: A4 landscape; margin: 0; }
-  aside, .ui-controls, .toast-container { display: none !important; }
-  .pagina-pdf {
-    box-shadow: none !important;
-    page-break-after: always;
-    page-break-inside: avoid;
-  }
-  * {
-    -webkit-print-color-adjust: exact !important;
-    print-color-adjust: exact !important;
-  }
-}
+O feeling da interface deve ser "snappy" e elegante.
+- **Curva de Easing**: `cubic-bezier(0.22, 1, 0.36, 1)` (Saída rápida, desaceleração suave).
+- **Entrada em Escadinha (Stagger)**: Telas principais (como a Home) devem animar os elementos em sequência:
+  1. Logo / Header
+  2. Textos Hero
+  3. Cards de ação
+- **Hover Responsivo**: Transições de hover devem ser rápidas (`0.1s` ou `0.15s`) para feedback tátil instantâneo.
 
-4 — UX & Feedback
-Toast: Sonner em toda ação concluída ou erro.
+---
 
-Alertas: AlertDialog (shadcn) para ações destrutivas (ex: Limpar dados).
+## 4 — Componentes Padronizados
 
-Focus ring: ring-2 ring-accent/50 nos inputs da sidebar.
+### Home Cards
+- **Estrutura**: Sem tags ou badges redundantes. 
+- **Ações**: Botão de seta (`ArrowRight`) posicionado obrigatoriamente no **canto inferior direito**, com tamanho de container `40px` e ícone `20px`.
+
+### Sistema de Alertas (Híbrido)
+- **Notificações (Sonner)**: Toasts no canto inferior direito. Devem ter fundo glass e bordas coloridas translúcidas baseadas no contexto.
+- **Escolhas (GlobalAlert)**: Popups centralizados com backdrop blur intenso. Usados exclusivamente para decisões críticas (Ex: Resetar projeto, Fechar sem salvar).
+
+### Sidebar & Context Drawer
+- **Drawer Lateral**: Trilho ultra-fino com ícone de configurações posicionado ao final (`flex-end`) para uma estética minimalista.
+- **Preenchimento**: Uso de `glass-style` em todos os painéis expansíveis.
+
+---
+
+## 5 — Regras de Impressão (@media print)
+
+O sistema de editor deve ser completamente ocultado durante a impressão, mantendo apenas o Canvas A4.
+- **Margem**: Zero.
+- **Cores**: `-webkit-print-color-adjust: exact`.
+- **Quebras**: `page-break-after: always` em cada seção do manual.

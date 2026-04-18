@@ -3,6 +3,7 @@ import { Download, Upload, Printer, RotateCcw, Sparkles, Clipboard, Wand2 } from
 import { toast } from 'sonner'
 import { useBrandStore } from '../../store/useBrandStore'
 import { resolveFontName } from '../../lib/fontUtils'
+import { useAppStore } from '../../store/useAppStore'
 
 export function ActionButtons() {
   const {
@@ -16,6 +17,8 @@ export function ActionButtons() {
     setTipografia,
     setConteudoPdf,
   } = useBrandStore()
+
+  const { showAlert } = useAppStore()
 
   const importRef = useRef<HTMLInputElement>(null)
   const [aiPanelOpen, setAiPanelOpen] = useState(false)
@@ -133,9 +136,14 @@ Agora analise a imagem anexada e devolva apenas o JSON final.`
   }
 
   const handleReset = () => {
-    if (confirm('Tem certeza? Todo o progresso não salvo será perdido.')) {
-      reset()
-    }
+    showAlert({
+      type: 'confirm',
+      title: 'Limpar Projeto',
+      message: 'Tem certeza? Todo o progresso não salvo será perdido e o manual voltará ao estado inicial.',
+      confirmLabel: 'Sim, limpar tudo',
+      cancelLabel: 'Manter projeto',
+      onConfirm: () => reset(),
+    })
   }
 
   const handleCopyPrompt = async () => {

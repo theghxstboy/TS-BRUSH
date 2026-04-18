@@ -25,6 +25,7 @@ type ModalView = 'choose' | 'create' | 'typography-brand' | 'style' | 'typograph
 type StyleTab = 'capa' | 'secao' | 'conteudo' | 'final' | 'fundos' | 'mockups'
 
 import { extractColorsFromDataUrl } from '../../lib/imageUtils'
+import { isDark, getLuminance } from '../../lib/colorUtils'
 import type { BrandColor } from '../../store/useBrandStore'
 
 // ─── Color extraction from logo ──────────────────────────────────────────────
@@ -364,20 +365,27 @@ export function NewProjectModal({ onClose }: NewProjectModalProps) {
 
   // Apply detected colors to all states
   const applyPalette = (colors: string[]) => {
-    const c0 = colors[0] || '#0C0C0C'
-    const c1 = colors[1] || '#FFFFFF'
-    const c2 = colors[2] || '#FFA300'
-    const c3 = colors[3] || c0
-    const c4 = colors[4] || '#D4D4D4'
-    // Logic: 
-    // Fundo usually dark/main (c0)
-    // Título/Text usually white/light (c1 or c4)
-    // Detalhe/Accent usually vibrant (c2)
+    if (colors.length === 0) return
+
+    // 1. Identify main color
+    const brandMain = colors[0]
     
-    setCapaFundo(c0); setCapaDetalhe(c2)
-    setSecaoFundo(c0); setSecaoTitulo(c1); setSecaoDetalhe(c2)
-    setConteudoFundo(c3 || c0); setConteudoTitulo(c1); setConteudoTexto(c4 || '#D4D4D4'); setConteudoDetalhe(c2)
-    setFinalFundo(c0); setFinalTitulo(c1); setFinalTexto(c4 || '#D4D4D4'); setFinalDetalhe(c2)
+    // 2. Decide background based on main color lightness
+    const mainIsDark = brandMain ? isDark(brandMain) : false
+    
+    // If brand is light (like yellow), use dark background. If brand is dark, use light background.
+    const defaultBg = mainIsDark ? '#FFFFFF' : '#0C0C0C'
+    const defaultTitle = mainIsDark ? '#0C0C0C' : '#FFFFFF'
+    const defaultText = mainIsDark ? '#1A1A1A' : '#D4D4D4'
+    const defaultAccent = brandMain
+    
+    // Content can have a slightly different feel (e.g. softer dark or silver light)
+    const contentBg = mainIsDark ? '#F5F5F5' : '#141414'
+    
+    setCapaFundo(defaultBg); setCapaDetalhe(defaultAccent)
+    setSecaoFundo(defaultBg); setSecaoTitulo(defaultTitle); setSecaoDetalhe(defaultAccent)
+    setConteudoFundo(contentBg); setConteudoTitulo(defaultTitle); setConteudoTexto(defaultText); setConteudoDetalhe(defaultAccent)
+    setFinalFundo(defaultBg); setFinalTitulo(defaultTitle); setFinalTexto(defaultText); setFinalDetalhe(defaultAccent)
   }
 
   // Extract colors from logo
@@ -394,12 +402,19 @@ export function NewProjectModal({ onClose }: NewProjectModalProps) {
 
   // ─── Handlers ───────────────────────────────────────────────────────────────
 
+  const { showAlert } = useAppStore()
+
   function handleConfirmClose() {
     const hasData = nomeMarca || conceito || caracteristicas || valores || sensacoes || elementos || responsavel || aiResponse;
     if (hasData) {
-      if (window.confirm('Você tem progresso não salvo. Deseja realmente fechar e perder os dados?')) {
-        onClose()
-      }
+      showAlert({
+        type: 'confirm',
+        title: 'Progresso não salvo',
+        message: 'Você tem progresso não salvo. Deseja realmente fechar e perder os dados?',
+        confirmLabel: 'Sim, fechar',
+        cancelLabel: 'Continuar editando',
+        onConfirm: () => onClose(),
+      })
     } else {
       onClose()
     }
@@ -418,13 +433,17 @@ export function NewProjectModal({ onClose }: NewProjectModalProps) {
         tipografia?: Record<string, unknown>
       }
       if (parsed.projeto) {
+        const brandName = typeof parsed.projeto.nome_marca === 'string' ? parsed.projeto.nome_marca : nomeMarca
+        setNomeMarca(brandName)
         setConceito(typeof parsed.projeto.conceito === 'string' ? parsed.projeto.conceito : conceito)
         setCaracteristicas(typeof parsed.projeto.caracteristicas_marca === 'string' ? parsed.projeto.caracteristicas_marca : caracteristicas)
         setValores(typeof parsed.projeto.valores_marca === 'string' ? parsed.projeto.valores_marca : valores)
         setSensacoes(typeof parsed.projeto.sensacoes_cores === 'string' ? parsed.projeto.sensacoes_cores : sensacoes)
         setElementos(typeof parsed.projeto.elementos_logo === 'string' ? parsed.projeto.elementos_logo : elementos)
         setResponsavel(typeof parsed.projeto.responsavel_manual === 'string' ? parsed.projeto.responsavel_manual : responsavel)
+        
         setProjeto({
+          nome_marca: brandName,
           conceito: typeof parsed.projeto.conceito === 'string' ? parsed.projeto.conceito : '',
           caracteristicas_marca: typeof parsed.projeto.caracteristicas_marca === 'string' ? parsed.projeto.caracteristicas_marca : '',
           valores_marca: typeof parsed.projeto.valores_marca === 'string' ? parsed.projeto.valores_marca : '',

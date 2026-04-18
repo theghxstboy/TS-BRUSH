@@ -864,12 +864,8 @@ export function ContextDrawer() {
         </>
       ) : (
         <button type="button" className="context-drawer-rail" onClick={() => setOpen(true)} aria-label="Abrir painel da pagina">
-          <div className="context-drawer-rail-icon">
-            <PanelRightOpen size={18} />
-          </div>
-
           <div className="context-drawer-rail-badge">
-            <SlidersHorizontal size={14} />
+            <SlidersHorizontal size={16} />
           </div>
         </button>
       )}

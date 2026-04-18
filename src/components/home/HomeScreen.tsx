@@ -3,6 +3,7 @@ import { motion, Variants } from 'framer-motion'
 import { BookOpen, Image, Sparkles, ArrowRight, Lock } from 'lucide-react'
 import { useAppStore } from '../../store/useAppStore'
 import { NewProjectModal } from './NewProjectModal'
+import { NewBrandPresentationModal } from './NewBrandPresentationModal'
 import brushLogo from '../../logos/TS-BRUSH-PEN-WHITE.svg'
 import tssLogo from '../../logos/TSS.svg'
 
@@ -106,6 +107,7 @@ const containerVariants = {
 export function HomeScreen() {
   const { setScreen } = useAppStore()
   const [showNewProjectModal, setShowNewProjectModal] = useState(false)
+  const [showNewBrandPresentationModal, setShowNewBrandPresentationModal] = useState(false)
 
   return (
     <motion.div 
@@ -157,10 +159,10 @@ export function HomeScreen() {
 
           <PresentationCard
             icon={<Image size={28} />}
-            eyebrow="02 — EM BREVE"
+            eyebrow="02 — DISPONÍVEL"
             title="Apresentação de Logo"
             description="Apresente a identidade visual da marca com foco no logotipo, variações e aplicações principais."
-            disabled
+            onClick={() => setShowNewBrandPresentationModal(true)}
           />
 
           <PresentationCard
@@ -184,6 +186,9 @@ export function HomeScreen() {
       {/* New Project Modal */}
       {showNewProjectModal && (
         <NewProjectModal onClose={() => setShowNewProjectModal(false)} />
+      )}
+      {showNewBrandPresentationModal && (
+        <NewBrandPresentationModal onClose={() => setShowNewBrandPresentationModal(false)} />
       )}
     </motion.div>
   )

@@ -80,7 +80,7 @@ export function PageLogoPrincipal({ pageNumber }: PageLogoPrincipalProps) {
             <div className="logo-info-label" style={{ color: '#71717a' }}>Uso Recomendado</div>
             <div className="logo-meta-row">
               {(usos.length ? usos : ['Alta Resolução', 'Digital & Print', 'Fundo Transparente']).map((tag) => (
-                <span key={tag} className="logo-meta-tag" style={{ color: '#1a1a1a', background: 'rgba(0,0,0,0.05)' }}>{tag}</span>
+                <span key={tag} className="logo-meta-tag">{tag}</span>
               ))}
             </div>
           </div>

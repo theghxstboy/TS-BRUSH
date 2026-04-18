@@ -655,10 +655,10 @@ export function NewProjectModal({ onClose }: NewProjectModalProps) {
               </div>
             </div>
 
-            <div className="np-form-footer">
-              <div className="np-footer-responsavel">
+            <div className="np-modal-footer">
+              <div className="np-modal-footer-left">
                 <label className="np-label" htmlFor="np-responsavel">Responsável pelo Manual</label>
-                <input id="np-responsavel" className="np-input" type="text" placeholder="Ex: TS Tools" value={responsavel} onChange={(e) => setResponsavel(e.target.value)} />
+                <input id="np-responsavel" className="np-input" type="text" placeholder="Ex: TS Tools" value={responsavel} onChange={(e) => setResponsavel(e.target.value)} style={{ height: '40px' }} />
               </div>
               <button type="button" className="home-modal-btn home-modal-btn-primary" onClick={handleAdvanceToBrandTypography}>
                 Próximo: Tipografia <ArrowRight size={14} />
@@ -874,11 +874,11 @@ export function NewProjectModal({ onClose }: NewProjectModalProps) {
               )}
             </div>
 
-            {/* Tab navigation arrows */}
-            <div className="np-style-tab-nav">
+            <div className="np-modal-footer" style={{ justifyContent: 'space-between' }}>
               <button
                 type="button"
                 className="np-style-tab-prev"
+                style={{ height: '40px', padding: '0 20px' }}
                 onClick={() => {
                   const idx = STYLE_TABS.findIndex(t => t.id === styleTab)
                   if (idx > 0) setStyleTab(STYLE_TABS[idx - 1].id)
@@ -888,7 +888,7 @@ export function NewProjectModal({ onClose }: NewProjectModalProps) {
                 <ChevronLeft size={14} />
                 {STYLE_TABS[Math.max(0, STYLE_TABS.findIndex(t => t.id === styleTab) - 1)].label}
               </button>
-
+              
               <div className="np-style-tab-dots">
                 {STYLE_TABS.map((t) => (
                   <button
@@ -905,6 +905,7 @@ export function NewProjectModal({ onClose }: NewProjectModalProps) {
                 <button
                   type="button"
                   className="np-style-tab-next"
+                  style={{ height: '40px', padding: '0 20px' }}
                   onClick={() => {
                     const idx = STYLE_TABS.findIndex(t => t.id === styleTab)
                     if (idx < STYLE_TABS.length - 1) setStyleTab(STYLE_TABS[idx + 1].id)
@@ -917,11 +918,9 @@ export function NewProjectModal({ onClose }: NewProjectModalProps) {
                 <button
                   type="button"
                   className="home-modal-btn home-modal-btn-primary"
-                  style={{ padding: '10px 24px', fontSize: 13, flex: '0 0 auto', width: 'auto' }}
                   onClick={handleAdvanceToLayoutTypography}
                 >
-                  Próximo
-                  <ArrowRight size={14} />
+                  Próximo <ArrowRight size={14} />
                 </button>
               )}
             </div>
@@ -973,7 +972,6 @@ export function NewProjectModal({ onClose }: NewProjectModalProps) {
               <button
                 type="button"
                 className="home-modal-btn home-modal-btn-primary"
-                style={{ padding: '10px 24px', fontSize: 13, flex: '0 0 auto', width: 'auto', marginLeft: 'auto' }}
                 onClick={handleAdvanceToStyle}
               >
                 Próximo (Estilo Visual) <ArrowRight size={14} />
@@ -1022,7 +1020,6 @@ export function NewProjectModal({ onClose }: NewProjectModalProps) {
               <button
                 type="button"
                 className="home-modal-btn home-modal-btn-primary"
-                style={{ padding: '10px 24px', fontSize: 13, flex: '0 0 auto', width: 'auto', marginLeft: 'auto' }}
                 onClick={handleEnterEditor}
               >
                 Gerar Manual <ArrowRight size={14} />

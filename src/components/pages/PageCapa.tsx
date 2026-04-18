@@ -40,7 +40,15 @@ export function PageCapa({ pageNumber }: PageCapaProps) {
             </div>
           )}
         </div>
-        <div className="capa-badge" style={{ ...metaStyle(11), color: '#fff', background: `${primaryColor}22`, borderColor: `${primaryColor}55` }}>
+        <div className="capa-badge" style={{ 
+          ...metaStyle(11), 
+          color: '#fff', 
+          background: `${primaryColor}22`, 
+          borderColor: `${primaryColor}55`,
+          backdropFilter: 'blur(12px)',
+          WebkitBackdropFilter: 'blur(12px)',
+          boxShadow: '0 8px 32px rgba(0,0,0,0.1), inset 0 1px 0 rgba(255,255,255,0.1)'
+        }}>
           <span style={{ width: 6, height: 6, borderRadius: '50%', background: primaryColor, display: 'inline-block' }} />
           Manual de Marca
         </div>

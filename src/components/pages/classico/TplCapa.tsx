@@ -15,15 +15,19 @@ export function TplCapa({ pageNumber: _pageNumber }: TplCapaProps) {
   const badgeStyle: React.CSSProperties = {
     position: 'absolute',
     top: 28,
-    background: darkColor,
+    background: `${darkColor}33`,
+    backdropFilter: 'blur(10px)',
+    WebkitBackdropFilter: 'blur(10px)',
     color: '#fff',
     fontWeight: 800,
     ...metaStyle(13),
     letterSpacing: '0.08em',
-    padding: '10px 20px',
-    borderRadius: 24,
+    padding: '10px 24px',
+    borderRadius: 999,
+    border: `1px solid ${darkColor}66`,
     zIndex: 10,
     textTransform: 'uppercase',
+    boxShadow: '0 8px 32px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.1)',
   }
 
   if (alignment === 'center') {

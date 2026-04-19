@@ -68,6 +68,14 @@ const TITLES: Record<SlideType, string> = {
   'secao-construcao': 'Divisoria Construcao',
   'secao-usos-incorretos': 'Divisoria Usos Incorretos',
   'secao-aplicacoes': 'Divisoria Aplicacoes',
+  'pres-capa': 'Capa da Proposta',
+  'pres-intro': 'Introdução',
+  'pres-comparison': 'Comparativo de Logos',
+  'pres-concept-logo': 'Conceito da Versão',
+  'pres-color-chart': 'Paleta Chromatática',
+  'pres-typography': 'Tipografia Complementar',
+  'pres-mockup': 'Mockup da Proposta',
+  'pres-final': 'Encerramento da Proposta',
 }
 
 function DrawerColorField({
@@ -334,10 +342,12 @@ function ContextBody({
   slideType,
   pageLabel,
   mockupIndex,
+  versionIndex,
 }: {
   slideType: SlideType
   pageLabel: string | null
   mockupIndex: number | null
+  versionIndex: number | null
 }) {
   const {
     projeto,
@@ -348,9 +358,10 @@ function ContextBody({
     setTipografia,
     assets_base64,
     setAsset,
-    replaceCores,
     replaceMockup,
     removeMockup,
+    presentation_data,
+    setPresentationData,
   } = useBrandStore()
 
   const handleLogoPrincipalChange = async (value: string | null) => {
@@ -807,6 +818,109 @@ function ContextBody({
     )
   }
 
+  // --- BRAND PRESENTATION SLIDES ---
+  
+  if (slideType.startsWith('pres-capa')) {
+    return (
+      <>
+        <DrawerSection title="Conteúdo da Capa">
+          <div className="form-group">
+            <label className="form-label">Nome da Marca</label>
+            <input 
+              className="form-input" 
+              value={presentation_data.brand_name} 
+              onChange={(e) => setPresentationData({ ...presentation_data, brand_name: e.target.value })} 
+            />
+          </div>
+        </DrawerSection>
+        <AppearanceSection slideType={slideType} />
+      </>
+    )
+  }
+
+  if (slideType.startsWith('pres-concept-logo')) {
+    const vIdx = versionIndex ?? 0
+    const version = presentation_data.versions[vIdx]
+    if (!version) return <div className="context-empty">Versão {vIdx + 1} não encontrada</div>
+
+    return (
+      <>
+        <DrawerSection title={`Conceito da Versão ${vIdx + 1}`}>
+          <div className="form-group">
+            <label className="form-label">Explicação da Versão</label>
+            <textarea 
+              className="form-textarea" 
+              rows={6}
+              value={version.explanation} 
+              onChange={(e) => {
+                const newVersions = [...presentation_data.versions]
+                newVersions[vIdx] = { ...version, explanation: e.target.value }
+                setPresentationData({ ...presentation_data, versions: newVersions })
+              }}
+            />
+          </div>
+        </DrawerSection>
+        <AppearanceSection slideType={slideType} />
+      </>
+    )
+  }
+
+  if (slideType.startsWith('pres-mockup')) {
+    const vIdx = versionIndex ?? 0
+    const mIdx = mockupIndex ?? 0
+    const version = presentation_data.versions[vIdx]
+    const mockupSrc = version?.mockups[mIdx]
+    
+    if (!version) return <div className="context-empty">Versão do Mockup não encontrada</div>
+
+    return (
+      <>
+        <DrawerSection title={`Mockup da Proposta ${vIdx + 1} (Aplicação ${mIdx + 1})`}>
+          <div className="form-group">
+            <label className="form-label">Imagem do Mockup</label>
+            <UploadZone
+              label="Trocar Mockup"
+              hint="PNG, JPG ou WebP"
+              value={mockupSrc || null}
+              onChange={(val) => {
+                const newVersions = [...presentation_data.versions]
+                const newMockups = [...version.mockups]
+                newMockups[mIdx] = val ?? ''
+                newVersions[vIdx] = { ...version, mockups: newMockups }
+                setPresentationData({ ...presentation_data, versions: newVersions })
+              }}
+              accept="image/*"
+            />
+          </div>
+        </DrawerSection>
+        <AppearanceSection slideType={slideType} />
+      </>
+    )
+  }
+
+  if (slideType.startsWith('pres-final')) {
+    return (
+      <>
+        <DrawerSection title="Conteúdo do Encerramento">
+          <div className="form-group">
+            <label className="form-label">Responsável pela Branding</label>
+            <input 
+              className="form-input" 
+              value={presentation_data.responsible_name} 
+              onChange={(e) => setPresentationData({ ...presentation_data, responsible_name: e.target.value })} 
+              placeholder="Ex: Seu Nome / Sua Agência"
+            />
+          </div>
+        </DrawerSection>
+        <AppearanceSection slideType={slideType} />
+      </>
+    )
+  }
+
+  if (slideType.startsWith('pres-')) {
+    return <AppearanceSection slideType={slideType} />
+  }
+
   return <AppearanceSection slideType={slideType} />
 }
 
@@ -815,15 +929,23 @@ export function ContextDrawer() {
   const [slideType, setSlideType] = useState<SlideType | null>(null)
   const [pageLabel, setPageLabel] = useState<string | null>(null)
   const [mockupIndex, setMockupIndex] = useState<number | null>(null)
+  const [versionIndex, setVersionIndex] = useState<number | null>(null)
 
   useEffect(() => {
     const handler = (event: Event) => {
       const detail = (event as CustomEvent<ContextDrawerTarget>).detail
-      if (!detail?.slideType || !Object.prototype.hasOwnProperty.call(TITLES, detail.slideType)) return
+      if (!detail?.slideType) return
+
+      // For presentation slides (pres-type-index), we need to check the base type for TITLES
+      const isPres = detail.slideType.startsWith('pres-')
+      const baseType = isPres ? detail.slideType.split('-').slice(0, 2).join('-') : detail.slideType
+
+      if (!Object.prototype.hasOwnProperty.call(TITLES, baseType)) return
 
       setSlideType(detail.slideType as SlideType)
       setPageLabel(detail.pageLabel ?? null)
       setMockupIndex(typeof detail.mockupIndex === 'number' ? detail.mockupIndex : null)
+      setVersionIndex(typeof detail.versionIndex === 'number' ? detail.versionIndex : null)
       setOpen(true)
     }
 
@@ -831,7 +953,12 @@ export function ContextDrawer() {
     return () => window.removeEventListener('open-context-drawer', handler)
   }, [])
 
-  const title = useMemo(() => (slideType ? TITLES[slideType] : 'Pagina'), [slideType])
+  const title = useMemo(() => {
+    if (!slideType) return 'Pagina'
+    const isPres = slideType.startsWith('pres-')
+    const baseType = isPres ? slideType.split('-').slice(0, 2).join('-') : slideType
+    return TITLES[baseType as SlideType] || 'Pagina'
+  }, [slideType])
 
   return (
     <aside className={`context-drawer ${open ? 'open' : ''}`}>
@@ -852,7 +979,12 @@ export function ContextDrawer() {
 
           <div className="context-drawer-body">
             {slideType ? (
-              <ContextBody slideType={slideType} pageLabel={pageLabel} mockupIndex={mockupIndex} />
+              <ContextBody 
+                slideType={slideType} 
+                pageLabel={pageLabel} 
+                mockupIndex={mockupIndex} 
+                versionIndex={versionIndex}
+              />
             ) : (
               <div className="context-empty">
                 <p style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.6 }}>

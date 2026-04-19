@@ -1,5 +1,6 @@
 import { Palette, Plus, Trash2 } from 'lucide-react'
 import { useBrandStore } from '../../store/useBrandStore'
+import { useAppStore } from '../../store/useAppStore'
 import { CollapsibleSection } from './CollapsibleSection'
 import type { BrandColor } from '../../store/useBrandStore'
 import { hexToHsl, hexToRgb } from '../../lib/colorUtils'
@@ -81,25 +82,40 @@ function PaletteBlock({ title, description, colors, inputIdPrefix, onAdd, onChan
 }
 
 export function SectionCores() {
+  const { screen } = useAppStore()
   const {
     cores_logo,
+    cores_apresentacao,
     setCor,
     addCor,
     removeCor,
   } = useBrandStore()
 
-  return (
-    <CollapsibleSection icon={<Palette size={14} />} label="Cores" defaultOpen sectionId="cores">
-      <PaletteBlock
-        title="Cores da Logo"
-        description="Essas cores aparecem na página de padrão cromático. Ao subir a logo principal, tentamos preencher automaticamente."
-        colors={cores_logo}
-        inputIdPrefix="input-cor-logo"
-        onAdd={() => addCor('logo')}
-        onChange={(id, fields) => setCor('logo', id, fields)}
-        onRemove={(id) => removeCor('logo', id)}
-      />
+  const isPres = screen === 'brand-presentation'
 
+  return (
+    <CollapsibleSection icon={<Palette size={14} />} label="Paleta de Cores" defaultOpen sectionId="cores">
+      {isPres ? (
+        <PaletteBlock
+          title="Paleta da Proposta"
+          description="Cores utilizadas nos slides de gráfico de cores da apresentação."
+          colors={cores_apresentacao}
+          inputIdPrefix="input-cor-pres"
+          onAdd={() => addCor('apresentacao')}
+          onChange={(id, fields) => setCor('apresentacao', id, fields)}
+          onRemove={(id) => removeCor('apresentacao', id)}
+        />
+      ) : (
+        <PaletteBlock
+          title="Cores da Logo"
+          description="Essas cores aparecem na página de padrão cromático do manual."
+          colors={cores_logo}
+          inputIdPrefix="input-cor-logo"
+          onAdd={() => addCor('logo')}
+          onChange={(id, fields) => setCor('logo', id, fields)}
+          onRemove={(id) => removeCor('logo', id)}
+        />
+      )}
     </CollapsibleSection>
   )
 }

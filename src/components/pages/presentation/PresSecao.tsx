@@ -1,21 +1,24 @@
 import { useBrandStore } from '../../../store/useBrandStore'
+import { usePresentationAppearance } from '../../../hooks/usePresentationAppearance'
 
 interface PresSecaoProps {
+  pageId: string
   numero: string
   titulo: string
 }
 
-export function PresSecao({ numero, titulo }: PresSecaoProps) {
+export function PresSecao({ pageId, numero, titulo }: PresSecaoProps) {
   const { presentation_data } = useBrandStore()
-  const { appearance, typography } = presentation_data
-  const { fundo, titulo: colorTitulo, detalhe } = appearance.secao
+  const style = usePresentationAppearance(pageId, 'secao')
+  const { typography } = presentation_data
+  const { cor_fundo_pagina: fundo, cor_titulo: colorTitulo, cor_detalhes: detalhe, imagem_fundo } = style
 
   const titleFont = typography.titulosNome || 'inherit'
   const textFont = typography.textosNome || 'inherit'
 
   const bgStyle: React.CSSProperties = {
     backgroundColor: fundo,
-    backgroundImage: appearance.fundos.capaSecao ? `url(${appearance.fundos.capaSecao})` : 'none',
+    backgroundImage: imagem_fundo ? `url(${imagem_fundo})` : 'none',
     backgroundSize: 'cover',
     backgroundPosition: 'center',
     display: 'flex',
@@ -82,7 +85,7 @@ export function PresSecao({ numero, titulo }: PresSecaoProps) {
         color: 'rgba(255,255,255,0.3)',
         letterSpacing: '0.1em'
       }}>
-        {presentation_data.brand_name} / {presentation_data.client_name}
+        {presentation_data.brand_name} / {presentation_data.responsible_name}
       </div>
     </div>
   )

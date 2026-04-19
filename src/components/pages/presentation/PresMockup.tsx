@@ -1,21 +1,24 @@
 import { useBrandStore } from '../../../store/useBrandStore'
+import { usePresentationAppearance } from '../../../hooks/usePresentationAppearance'
 
 interface PresMockupProps {
+  pageId: string
   mockupSrc: string
   index: number
   total: number
 }
 
-export function PresMockup({ mockupSrc, index, total }: PresMockupProps) {
+export function PresMockup({ pageId, mockupSrc, index, total }: PresMockupProps) {
   const { presentation_data } = useBrandStore()
-  const { appearance, typography } = presentation_data
-  const { fundo } = appearance.capa
+  const style = usePresentationAppearance(pageId, 'secao')
+  const { typography } = presentation_data
+  const { cor_fundo_pagina: fundo, imagem_fundo } = style
 
   const textFont = typography.textosNome || 'inherit'
 
   const bgStyle: React.CSSProperties = {
     backgroundColor: fundo,
-    backgroundImage: appearance.fundos.conteudo ? `url(${appearance.fundos.conteudo})` : 'none',
+    backgroundImage: imagem_fundo ? `url(${imagem_fundo})` : 'none',
     backgroundSize: 'cover',
     backgroundPosition: 'center',
     display: 'flex',

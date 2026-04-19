@@ -306,7 +306,7 @@ export function NewBrandPresentationModal({ onClose }: NewBrandPresentationModal
   const [projectType, setProjectType] = useState<ProjectType>('new')
   const [showComparison, setShowComparison] = useState(false)
   const [brandName, setBrandName] = useState('')
-  const [clientName, setClientName] = useState('')
+  const [responsibleName, setResponsibleName] = useState('')
   const [logoAntigaGlobal, setLogoAntigaGlobal] = useState<string | null>(null)
   const [qtdVersions, setQtdVersions] = useState(3)
 
@@ -393,8 +393,9 @@ export function NewBrandPresentationModal({ onClose }: NewBrandPresentationModal
     // Save everything to the store before switching screens
     setPresentationData({
       brand_name: brandName,
-      client_name: clientName,
+      responsible_name: responsibleName,
       project_type: projectType,
+      show_comparison: showComparison,
       original_logo: logoAntigaGlobal,
       versions: versions.slice(0, qtdVersions).map(v => ({
         explanation: v.explanation,
@@ -584,13 +585,13 @@ export function NewBrandPresentationModal({ onClose }: NewBrandPresentationModal
               </div>
 
               <div className="np-field-group" style={{ margin: '0 auto', width: '100%', maxWidth: '540px' }}>
-                <label className="np-label">Nome do Cliente</label>
+                <label className="np-label">Responsável pela logo</label>
                 <input
                   className="np-input"
                   type="text"
                   placeholder="Ex: João Silva"
-                  value={clientName}
-                  onChange={(e) => setClientName(e.target.value)}
+                  value={responsibleName}
+                  onChange={(e) => setResponsibleName(e.target.value)}
                 />
               </div>
 

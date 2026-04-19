@@ -1,21 +1,24 @@
 import { useBrandStore } from '../../../store/useBrandStore'
+import { usePresentationAppearance } from '../../../hooks/usePresentationAppearance'
 
 interface PresConceptLogoProps {
+  pageId: string
   explanation: string
   logoSrc: string | null
 }
 
-export function PresConceptLogo({ explanation, logoSrc }: PresConceptLogoProps) {
+export function PresConceptLogo({ pageId, explanation, logoSrc }: PresConceptLogoProps) {
   const { presentation_data } = useBrandStore()
-  const { appearance, typography } = presentation_data
-  const { fundo, detalhe } = appearance.capa // Reusing cover style for consistency
+  const style = usePresentationAppearance(pageId, 'secao')
+  const { typography } = presentation_data
+  const { cor_fundo_pagina: fundo, cor_detalhes: detalhe, imagem_fundo } = style
 
   const titleFont = typography.titulosNome || 'inherit'
   const textFont = typography.textosNome || 'inherit'
 
   const bgStyle: React.CSSProperties = {
     backgroundColor: fundo,
-    backgroundImage: appearance.fundos.conteudo ? `url(${appearance.fundos.conteudo})` : 'none',
+    backgroundImage: imagem_fundo ? `url(${imagem_fundo})` : 'none',
     backgroundSize: 'cover',
     backgroundPosition: 'center',
     display: 'grid',

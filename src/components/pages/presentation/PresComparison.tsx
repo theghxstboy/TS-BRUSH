@@ -1,21 +1,24 @@
 import { useBrandStore } from '../../../store/useBrandStore'
+import { usePresentationAppearance } from '../../../hooks/usePresentationAppearance'
 
 interface PresComparisonProps {
+  pageId: string
   originalLogo: string | null
   newLogo: string | null
 }
 
-export function PresComparison({ originalLogo, newLogo }: PresComparisonProps) {
+export function PresComparison({ pageId, originalLogo, newLogo }: PresComparisonProps) {
   const { presentation_data } = useBrandStore()
-  const { appearance, typography } = presentation_data
-  const { fundo, detalhe } = appearance.capa
+  const style = usePresentationAppearance(pageId, 'secao')
+  const { typography } = presentation_data
+  const { cor_fundo_pagina: fundo, cor_detalhes: detalhe, imagem_fundo } = style
 
   const titleFont = typography.titulosNome || 'inherit'
   const textFont = typography.textosNome || 'inherit'
 
   const bgStyle: React.CSSProperties = {
     backgroundColor: fundo,
-    backgroundImage: appearance.fundos.conteudo ? `url(${appearance.fundos.conteudo})` : 'none',
+    backgroundImage: imagem_fundo ? `url(${imagem_fundo})` : 'none',
     backgroundSize: 'cover',
     backgroundPosition: 'center',
     display: 'grid',
@@ -53,7 +56,7 @@ export function PresComparison({ originalLogo, newLogo }: PresComparisonProps) {
           marginBottom: '40px',
           fontFamily: textFont
         }}>
-          Versão Original
+          Versão Antiga
         </h4>
         <div style={{ width: '100%', height: '300px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           {originalLogo ? (
@@ -82,7 +85,7 @@ export function PresComparison({ originalLogo, newLogo }: PresComparisonProps) {
           marginBottom: '40px',
           fontFamily: titleFont
         }}>
-          Nova Identidade
+          Nova Versão
         </h4>
         <div style={{ width: '100%', height: '300px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           {newLogo ? (

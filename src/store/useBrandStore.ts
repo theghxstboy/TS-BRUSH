@@ -89,7 +89,7 @@ export interface SlideAppearance {
   exibir_logo_fundo: boolean
 }
 
-export type SlideAppearanceState = Record<SlideAppearanceKey, SlideAppearance>
+export type SlideAppearanceState = Record<string, SlideAppearance>
 
 export type TemplateId = 'moderno' | 'classico'
 export interface PageOrderState {
@@ -167,8 +167,9 @@ export interface BrandStore {
   }
   presentation_data: {
     brand_name: string
-    client_name: string
+    responsible_name: string
     project_type: 'new' | 'rebranding'
+    show_comparison: boolean
     original_logo: string | null
     versions: Array<{
       explanation: string
@@ -202,7 +203,7 @@ export interface BrandStore {
   replaceMockup: (index: number, base64: string) => void
   removeMockup: (index: number) => void
   setAparencia: (fields: Partial<Aparencia>) => void
-  setPageAppearance: (slide: SlideAppearanceKey, fields: Partial<SlideAppearance>) => void
+  setPageAppearance: (slide: string, fields: Partial<SlideAppearance>) => void
   setTemplate: (t: TemplateId) => void
   setPresentationData: (data: BrandStore['presentation_data']) => void
   movePageBlock: (template: TemplateId, blockId: string, direction: 'up' | 'down') => void
@@ -374,8 +375,9 @@ function freshDefault(): Omit<BrandStore,
     },
     presentation_data: {
       brand_name: '',
-      client_name: '',
+      responsible_name: '',
       project_type: 'new',
+      show_comparison: false,
       original_logo: null,
       versions: [],
       appearance: {

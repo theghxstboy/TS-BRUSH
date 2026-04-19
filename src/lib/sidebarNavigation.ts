@@ -2,6 +2,7 @@ export interface ContextDrawerTarget {
   slideType: string
   pageLabel?: string
   mockupIndex?: number
+  versionIndex?: number
 }
 
 export function focusSidebarTarget(slideType: string, pageLabel?: string, meta?: Omit<ContextDrawerTarget, 'slideType' | 'pageLabel'>) {

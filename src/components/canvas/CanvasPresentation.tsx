@@ -3,6 +3,7 @@ import type { CSSProperties } from 'react'
 import { useBrandStore } from '../../store/useBrandStore'
 import { useCanvasScale } from './useCanvasScale'
 import { EmptyCanvas } from './EmptyCanvas'
+import { focusSidebarTarget } from '../../lib/sidebarNavigation'
 
 import { PresCapa } from '../pages/presentation/PresCapa'
 import { PresSecao } from '../pages/presentation/PresSecao'
@@ -14,9 +15,9 @@ import { PresFinal } from '../pages/presentation/PresFinal'
 type PresentationSlide =
   | { type: 'capa' }
   | { type: 'secao'; numero: string; titulo: string }
-  | { type: 'concept-logo'; explanation: string; logoNew: string | null }
-  | { type: 'comparison'; originalLogo: string | null; logoNew: string | null }
-  | { type: 'mockup'; src: string; index: number; total: number }
+  | { type: 'concept-logo'; explanation: string; logoNew: string | null; versionIndex: number }
+  | { type: 'comparison'; originalLogo: string | null; logoNew: string | null; versionIndex: number }
+  | { type: 'mockup'; src: string; index: number; total: number; versionIndex: number }
   | { type: 'final' }
 
 export function CanvasPresentation() {
@@ -42,15 +43,17 @@ export function CanvasPresentation() {
       list.push({ 
         type: 'concept-logo', 
         explanation: version.explanation, 
-        logoNew: version.logoNew 
+        logoNew: version.logoNew,
+        versionIndex: vIndex
       })
 
-      // Comparison (only if rebranding)
-      if (data.project_type === 'rebranding' && data.original_logo) {
+      // Comparison (only if enabled)
+      if (data.show_comparison) {
         list.push({ 
           type: 'comparison', 
-          originalLogo: data.original_logo, 
-          newLogo: version.logoNew 
+          originalLogo: data.original_logo || null, 
+          logoNew: version.logoNew,
+          versionIndex: vIndex
         })
       }
 
@@ -60,7 +63,8 @@ export function CanvasPresentation() {
           type: 'mockup', 
           src: mSrc, 
           index: mIndex, 
-          total: version.mockups.length 
+          total: version.mockups.length,
+          versionIndex: vIndex
         })
       })
     })
@@ -89,16 +93,27 @@ export function CanvasPresentation() {
             <div
               className={`pagina-pdf-wrapper pagina-pdf-clickable ${activeKey === key ? 'is-active' : ''}`}
               style={{ '--canvas-page-scale': pageScale } as CSSProperties}
-              onClick={() => setActiveKey(key)}
+              onClick={() => {
+                const pageId = `pres-${slide.type}-${i}`
+                setActiveKey(key)
+                
+                const label = slide.type === 'concept-logo' ? `Versão ${slide.versionIndex + 1}` : slide.type
+                const meta: any = {}
+                
+                if ('versionIndex' in slide) meta.versionIndex = slide.versionIndex
+                if ('index' in slide) meta.mockupIndex = slide.index
+                
+                focusSidebarTarget(pageId, label, meta)
+              }}
             >
               <div className="page-label">Página {i + 1} - {slide.type}</div>
 
-              {slide.type === 'capa' && <PresCapa />}
-              {slide.type === 'secao' && <PresSecao numero={slide.numero} titulo={slide.titulo} />}
-              {slide.type === 'concept-logo' && <PresConceptLogo explanation={slide.explanation} logoSrc={slide.logoNew} />}
-              {slide.type === 'comparison' && <PresComparison originalLogo={slide.originalLogo} newLogo={slide.logoNew} />}
-              {slide.type === 'mockup' && <PresMockup mockupSrc={slide.src} index={slide.index} total={slide.total} />}
-              {slide.type === 'final' && <PresFinal />}
+              {slide.type === 'capa' && <PresCapa pageId={pageId} />}
+              {slide.type === 'secao' && <PresSecao pageId={pageId} numero={slide.numero} titulo={slide.titulo} />}
+              {slide.type === 'concept-logo' && <PresConceptLogo pageId={pageId} explanation={slide.explanation} logoSrc={slide.logoNew} />}
+              {slide.type === 'comparison' && <PresComparison pageId={pageId} originalLogo={slide.originalLogo} newLogo={slide.logoNew} />}
+              {slide.type === 'mockup' && <PresMockup pageId={pageId} mockupSrc={slide.src} index={slide.index} total={slide.total} />}
+              {slide.type === 'final' && <PresFinal pageId={pageId} />}
             </div>
           </div>
         )

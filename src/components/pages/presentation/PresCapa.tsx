@@ -1,17 +1,23 @@
 import { useBrandStore } from '../../../store/useBrandStore'
+import { usePresentationAppearance } from '../../../hooks/usePresentationAppearance'
 import tsLogo from '../../../logos/TS.svg'
 
-export function PresCapa() {
+interface PresCapaProps {
+  pageId: string
+}
+
+export function PresCapa({ pageId }: PresCapaProps) {
   const { presentation_data } = useBrandStore()
-  const { brand_name, appearance, typography } = presentation_data
-  const { fundo, detalhe } = appearance.capa
+  const style = usePresentationAppearance(pageId, 'capa')
+  const { brand_name, typography } = presentation_data
+  const { cor_fundo_pagina: fundo, cor_detalhes: detalhe, imagem_fundo } = style
 
   const titleFont = typography.titulosNome || 'inherit'
   const textFont = typography.textosNome || 'inherit'
 
   const bgStyle: React.CSSProperties = {
     backgroundColor: fundo,
-    backgroundImage: appearance.fundos.capaSecao ? `url(${appearance.fundos.capaSecao})` : 'none',
+    backgroundImage: imagem_fundo ? `url(${imagem_fundo})` : 'none',
     backgroundSize: 'cover',
     backgroundPosition: 'center'
   }

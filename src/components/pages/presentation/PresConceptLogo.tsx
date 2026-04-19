@@ -1,0 +1,125 @@
+import { useBrandStore } from '../../../store/useBrandStore'
+
+interface PresConceptLogoProps {
+  explanation: string
+  logoSrc: string | null
+}
+
+export function PresConceptLogo({ explanation, logoSrc }: PresConceptLogoProps) {
+  const { presentation_data } = useBrandStore()
+  const { appearance, typography } = presentation_data
+  const { fundo, detalhe } = appearance.capa // Reusing cover style for consistency
+
+  const titleFont = typography.titulosNome || 'inherit'
+  const textFont = typography.textosNome || 'inherit'
+
+  const bgStyle: React.CSSProperties = {
+    backgroundColor: fundo,
+    backgroundImage: appearance.fundos.conteudo ? `url(${appearance.fundos.conteudo})` : 'none',
+    backgroundSize: 'cover',
+    backgroundPosition: 'center',
+    display: 'grid',
+    gridTemplateColumns: '1fr 1fr',
+    padding: '60px',
+    gap: '60px'
+  }
+
+  return (
+    <div className="pagina-pdf" style={bgStyle}>
+      {/* Left Side: Concept Text */}
+      <div style={{
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        paddingRight: '20px'
+      }}>
+        <div style={{
+          width: '40px',
+          height: '3px',
+          background: detalhe,
+          marginBottom: '24px'
+        }} />
+        <h3 style={{
+          fontSize: '12px',
+          fontWeight: 800,
+          color: detalhe,
+          textTransform: 'uppercase',
+          letterSpacing: '0.3em',
+          marginBottom: '16px',
+          fontFamily: titleFont
+        }}>
+          Conceito Criativo
+        </h3>
+        <p style={{
+          fontSize: '18px',
+          lineHeight: '1.7',
+          color: 'rgba(255,255,255,0.9)',
+          fontWeight: 500,
+          margin: 0,
+          whiteSpace: 'pre-wrap',
+          fontFamily: textFont
+        }}>
+          {explanation || 'Nenhuma explicação fornecida para esta versão.'}
+        </p>
+      </div>
+
+      {/* Right Side: Logo Display */}
+      <div style={{
+        background: 'rgba(255,255,255,0.03)',
+        border: '1px solid rgba(255,255,255,0.06)',
+        borderRadius: '24px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '40px',
+        backdropFilter: 'blur(20px)',
+        WebkitBackdropFilter: 'blur(20px)',
+        position: 'relative',
+        overflow: 'hidden'
+      }}>
+        {/* Subtle decorative background element */}
+        <div style={{
+          position: 'absolute',
+          top: '-20%',
+          right: '-20%',
+          width: '60%',
+          height: '60%',
+          background: `radial-gradient(circle, ${detalhe}22 0%, transparent 70%)`,
+          filter: 'blur(40px)',
+          zIndex: 1
+        }} />
+
+        {logoSrc ? (
+          <img
+            src={logoSrc}
+            alt="Logo"
+            style={{
+              maxWidth: '100%',
+              maxHeight: '100%',
+              objectFit: 'contain',
+              zIndex: 2,
+              filter: 'drop-shadow(0 20px 40px rgba(0,0,0,0.3))'
+            }}
+          />
+        ) : (
+          <div style={{ color: 'rgba(255,255,255,0.2)', fontSize: '14px', zIndex: 2 }}>
+            Logo não enviada
+          </div>
+        )}
+      </div>
+
+      <div style={{
+        position: 'absolute',
+        bottom: '40px',
+        left: '60px',
+        fontSize: '10px',
+        fontWeight: 600,
+        color: 'rgba(255,255,255,0.2)',
+        textTransform: 'uppercase',
+        letterSpacing: '0.1em'
+      }}>
+        {presentation_data.brand_name} / Identidade Visual
+      </div>
+    </div>
+  )
+}

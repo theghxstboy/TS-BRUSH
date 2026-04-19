@@ -165,6 +165,29 @@ export interface BrandStore {
     logo_simbolo: string | null
     mockups: string[]
   }
+  presentation_data: {
+    brand_name: string
+    client_name: string
+    project_type: 'new' | 'rebranding'
+    original_logo: string | null
+    versions: Array<{
+      explanation: string
+      logoNew: string | null
+      mockups: string[]
+    }>
+    appearance: {
+      capa: { fundo: string; detalhe: string }
+      secao: { fundo: string; titulo: string; detalhe: string }
+      final: { fundo: string; titulo: string; texto: string; detalhe: string }
+      fundos: { capaSecao: string | null; conteudo: string | null }
+    }
+    typography: {
+      titulosNome: string
+      titulosCustom: UploadedFontAsset
+      textosNome: string
+      textosCustom: UploadedFontAsset
+    }
+  }
 
   // Actions
   setProjeto: (fields: Partial<BrandStore['projeto']>) => void
@@ -181,6 +204,7 @@ export interface BrandStore {
   setAparencia: (fields: Partial<Aparencia>) => void
   setPageAppearance: (slide: SlideAppearanceKey, fields: Partial<SlideAppearance>) => void
   setTemplate: (t: TemplateId) => void
+  setPresentationData: (data: BrandStore['presentation_data']) => void
   movePageBlock: (template: TemplateId, blockId: string, direction: 'up' | 'down') => void
   exportJson: () => void
   importJson: (file: File) => void
@@ -347,6 +371,25 @@ function freshDefault(): Omit<BrandStore,
       logo_monocromatica: null,
       logo_simbolo: null,
       mockups: [],
+    },
+    presentation_data: {
+      brand_name: '',
+      client_name: '',
+      project_type: 'new',
+      original_logo: null,
+      versions: [],
+      appearance: {
+        capa: { fundo: '#0C0C0C', detalhe: '#FFA300' },
+        secao: { fundo: '#0C0C0C', titulo: '#FFFFFF', detalhe: '#FFA300' },
+        final: { fundo: '#0C0C0C', titulo: '#FFFFFF', texto: '#D4D4D4', detalhe: '#FFA300' },
+        fundos: { capaSecao: null, conteudo: null },
+      },
+      typography: {
+        titulosNome: '',
+        titulosCustom: { ...EMPTY_UPLOADED_FONT },
+        textosNome: '',
+        textosCustom: { ...EMPTY_UPLOADED_FONT },
+      },
     },
   }
 }
@@ -526,6 +569,8 @@ export const useBrandStore = create<BrandStore>((set, get) => ({
     }),
 
   setTemplate: (t) => set(() => ({ template: t })),
+
+  setPresentationData: (data) => set(() => ({ presentation_data: data })),
 
   movePageBlock: (template, blockId, direction) =>
     set((s) => {

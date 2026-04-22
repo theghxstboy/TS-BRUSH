@@ -10,7 +10,7 @@ export function PresCapa({ pageId }: PresCapaProps) {
   const { presentation_data } = useBrandStore()
   const style = usePresentationAppearance(pageId, 'capa')
   const { brand_name, typography } = presentation_data
-  const { cor_fundo_pagina: fundo, cor_detalhes: detalhe, imagem_fundo } = style
+  const { cor_fundo_pagina: fundo, cor_titulo: titulo, cor_detalhes: detalhe, imagem_fundo } = style
 
   const titleFont = typography.titulosNome || 'inherit'
   const textFont = typography.textosNome || 'inherit'
@@ -51,7 +51,7 @@ export function PresCapa({ pageId }: PresCapaProps) {
         <h1 style={{
           fontSize: '48px',
           fontWeight: 900,
-          color: '#fff',
+          color: titulo,
           textTransform: 'uppercase',
           letterSpacing: '0.15em',
           margin: 0,

@@ -227,7 +227,7 @@ Agora analise a imagem anexada e devolva apenas o JSON final.`
         <button
           id="btn-exportar-json"
           className="btn btn-secondary"
-          onClick={exportJson}
+          onClick={() => exportJson(screen)}
         >
           <Download size={14} />
           Exportar .json

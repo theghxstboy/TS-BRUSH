@@ -4,9 +4,13 @@ import { useAppStore } from '../../store/useAppStore'
 import { useBrandStore } from '../../store/useBrandStore'
 
 export function EditorNav() {
-  const { setScreen, hasUnsavedChanges } = useAppStore()
-  const { exportJson, projeto } = useBrandStore()
+  const { setScreen, hasUnsavedChanges, screen } = useAppStore()
+  const { exportJson, projeto, presentation_data } = useBrandStore()
   const [showExitModal, setShowExitModal] = useState(false)
+
+  const isPresentation = screen === 'brand-presentation'
+  const parentLabel = isPresentation ? 'Apresentação de Logo' : 'Manual de Marca'
+  const projectName = isPresentation ? presentation_data.brand_name : projeto.nome_marca
 
   const handleBackClick = () => {
     if (hasUnsavedChanges) {
@@ -17,7 +21,7 @@ export function EditorNav() {
   }
 
   const handleSaveAndExit = () => {
-    exportJson()
+    exportJson(screen)
     setShowExitModal(false)
     setScreen('home')
   }
@@ -43,11 +47,19 @@ export function EditorNav() {
         <div className="editor-nav-breadcrumb">
           <span className="editor-nav-crumb-parent">TS BRUSH</span>
           <span className="editor-nav-crumb-sep">/</span>
-          <span className="editor-nav-crumb-current">Manual de Marca</span>
-          {projeto.nome_marca && (
+          {isPresentation ? (
+            <span className="editor-nav-crumb-current">
+              Apresentação de Logo{projectName ? ` - ${projectName}` : ''}
+            </span>
+          ) : (
             <>
-              <span className="editor-nav-crumb-sep">/</span>
-              <span className="editor-nav-crumb-project">{projeto.nome_marca}</span>
+              <span className="editor-nav-crumb-current">Manual de Marca</span>
+              {projectName && (
+                <>
+                  <span className="editor-nav-crumb-sep">/</span>
+                  <span className="editor-nav-crumb-project">{projectName}</span>
+                </>
+              )}
             </>
           )}
         </div>
@@ -63,7 +75,7 @@ export function EditorNav() {
             <h3 className="home-modal-title">Sair sem salvar?</h3>
             <p className="home-modal-subtitle">
               Você tem alterações não salvas no projeto
-              {projeto.nome_marca ? <strong> "{projeto.nome_marca}"</strong> : ''}.
+              {projectName ? <strong> "{projectName}"</strong> : ''}.
               {' '}Exporte o arquivo .json para não perder seu trabalho.
             </p>
             <div className="home-modal-actions">

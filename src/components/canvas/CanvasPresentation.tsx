@@ -83,6 +83,7 @@ export function CanvasPresentation() {
     <div ref={canvasRef} className="canvas-area">
       {slides.map((slide, i) => {
         const key = `${slide.type}-${i}`
+        const pageId = `pres-${slide.type}-${i}`
         
         return (
           <div
@@ -94,7 +95,6 @@ export function CanvasPresentation() {
               className={`pagina-pdf-wrapper pagina-pdf-clickable ${activeKey === key ? 'is-active' : ''}`}
               style={{ '--canvas-page-scale': pageScale } as CSSProperties}
               onClick={() => {
-                const pageId = `pres-${slide.type}-${i}`
                 setActiveKey(key)
                 
                 const label = slide.type === 'concept-logo' ? `Versão ${slide.versionIndex + 1}` : slide.type

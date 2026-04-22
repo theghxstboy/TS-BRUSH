@@ -9,9 +9,9 @@ interface PresComparisonProps {
 
 export function PresComparison({ pageId, originalLogo, newLogo }: PresComparisonProps) {
   const { presentation_data } = useBrandStore()
-  const style = usePresentationAppearance(pageId, 'secao')
+  const style = usePresentationAppearance(pageId, 'conteudo')
   const { typography } = presentation_data
-  const { cor_fundo_pagina: fundo, cor_detalhes: detalhe, imagem_fundo } = style
+  const { cor_fundo_pagina: fundo, cor_titulo: colorTitulo, cor_texto: colorTexto, cor_detalhes: detalhe, imagem_fundo } = style
 
   const titleFont = typography.titulosNome || 'inherit'
   const textFont = typography.textosNome || 'inherit'
@@ -35,7 +35,7 @@ export function PresComparison({ pageId, originalLogo, newLogo }: PresComparison
         bottom: '20%',
         left: '50%',
         width: '1px',
-        background: 'rgba(255,255,255,0.1)',
+        background: `${colorTexto}15`,
         zIndex: 5
       }} />
 
@@ -50,7 +50,7 @@ export function PresComparison({ pageId, originalLogo, newLogo }: PresComparison
         <h4 style={{
           fontSize: '11px',
           fontWeight: 800,
-          color: 'rgba(255,255,255,0.4)',
+          color: `${colorTexto}60`,
           textTransform: 'uppercase',
           letterSpacing: '0.4em',
           marginBottom: '40px',
@@ -62,7 +62,7 @@ export function PresComparison({ pageId, originalLogo, newLogo }: PresComparison
           {originalLogo ? (
             <img src={originalLogo} alt="Original" style={{ maxWidth: '80%', maxHeight: '80%', objectFit: 'contain', opacity: 0.6 }} />
           ) : (
-            <div style={{ color: 'rgba(255,255,255,0.1)', fontSize: '13px' }}>Sem logo original</div>
+            <div style={{ color: `${colorTexto}20`, fontSize: '13px' }}>Sem logo original</div>
           )}
         </div>
       </div>
@@ -74,7 +74,7 @@ export function PresComparison({ pageId, originalLogo, newLogo }: PresComparison
         alignItems: 'center',
         justifyContent: 'center',
         padding: '60px',
-        background: 'rgba(255,255,255,0.02)'
+        background: `${colorTexto}05`
       }}>
         <h4 style={{
           fontSize: '11px',
@@ -100,7 +100,7 @@ export function PresComparison({ pageId, originalLogo, newLogo }: PresComparison
               }}
             />
           ) : (
-            <div style={{ color: 'rgba(255,255,255,0.1)', fontSize: '13px' }}>Logo nova não enviada</div>
+            <div style={{ color: `${colorTexto}20`, fontSize: '13px' }}>Logo nova não enviada</div>
           )}
         </div>
       </div>
@@ -112,7 +112,7 @@ export function PresComparison({ pageId, originalLogo, newLogo }: PresComparison
         transform: 'translateX(-50%)',
         fontSize: '10px',
         fontWeight: 700,
-        color: 'rgba(255,255,255,0.2)',
+        color: `${colorTexto}40`,
         textTransform: 'uppercase',
         letterSpacing: '0.2em'
       }}>

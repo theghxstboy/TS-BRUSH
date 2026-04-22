@@ -10,9 +10,9 @@ interface PresMockupProps {
 
 export function PresMockup({ pageId, mockupSrc, index, total }: PresMockupProps) {
   const { presentation_data } = useBrandStore()
-  const style = usePresentationAppearance(pageId, 'secao')
+  const style = usePresentationAppearance(pageId, 'conteudo')
   const { typography } = presentation_data
-  const { cor_fundo_pagina: fundo, imagem_fundo } = style
+  const { cor_fundo_pagina: fundo, cor_texto: colorTexto, cor_sombra: colorSombra, imagem_fundo } = style
 
   const textFont = typography.textosNome || 'inherit'
 
@@ -32,11 +32,11 @@ export function PresMockup({ pageId, mockupSrc, index, total }: PresMockupProps)
       <div style={{
         width: '100%',
         height: '100%',
-        background: 'rgba(255,255,255,0.02)',
-        border: '1px solid rgba(255,255,255,0.05)',
+        background: `${colorTexto}05`,
+        border: `1px solid ${colorTexto}10`,
         borderRadius: '32px',
         overflow: 'hidden',
-        boxShadow: '0 30px 60px rgba(0,0,0,0.5)',
+        boxShadow: `0 30px 60px ${colorSombra}`,
         position: 'relative'
       }}>
         {mockupSrc ? (
@@ -50,7 +50,7 @@ export function PresMockup({ pageId, mockupSrc, index, total }: PresMockupProps)
             }}
           />
         ) : (
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'rgba(255,255,255,0.2)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: `${colorTexto}40` }}>
             Mockup não disponível
           </div>
         )}

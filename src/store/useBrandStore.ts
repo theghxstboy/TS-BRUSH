@@ -177,9 +177,10 @@ export interface BrandStore {
       mockups: string[]
     }>
     appearance: {
-      capa: { fundo: string; detalhe: string }
+      capa: { fundo: string; titulo: string; detalhe: string }
       secao: { fundo: string; titulo: string; detalhe: string }
       final: { fundo: string; titulo: string; texto: string; detalhe: string }
+      conteudo: { fundo: string; titulo: string; texto: string; detalhe: string }
       fundos: { capaSecao: string | null; conteudo: string | null }
     }
     typography: {
@@ -207,7 +208,7 @@ export interface BrandStore {
   setTemplate: (t: TemplateId) => void
   setPresentationData: (data: BrandStore['presentation_data']) => void
   movePageBlock: (template: TemplateId, blockId: string, direction: 'up' | 'down') => void
-  exportJson: () => void
+  exportJson: (screen?: string) => void
   importJson: (file: File) => void
   reset: () => void
 }
@@ -379,11 +380,12 @@ function freshDefault(): Omit<BrandStore,
       project_type: 'new',
       show_comparison: false,
       original_logo: null,
-      versions: [],
+      versions: [{ explanation: '', logoNew: null, mockups: [] }],
       appearance: {
-        capa: { fundo: '#0C0C0C', detalhe: '#FFA300' },
+        capa: { fundo: '#0C0C0C', titulo: '#FFFFFF', detalhe: '#FFA300' },
         secao: { fundo: '#0C0C0C', titulo: '#FFFFFF', detalhe: '#FFA300' },
         final: { fundo: '#0C0C0C', titulo: '#FFFFFF', texto: '#D4D4D4', detalhe: '#FFA300' },
+        conteudo: { fundo: '#0C0C0C', titulo: '#FFFFFF', texto: '#D4D4D4', detalhe: '#FFA300' },
         fundos: { capaSecao: null, conteudo: null },
       },
       typography: {
@@ -594,7 +596,7 @@ export const useBrandStore = create<BrandStore>((set, get) => ({
       }
     }),
 
-  exportJson: () => {
+  exportJson: (screen) => {
     const s = get()
     const stateData = {
       projeto: s.projeto,
@@ -607,15 +609,19 @@ export const useBrandStore = create<BrandStore>((set, get) => ({
       template: s.template,
       page_order: s.page_order,
       assets_base64: s.assets_base64,
+      presentation_data: s.presentation_data,
     }
     const blob = new Blob([JSON.stringify(stateData, null, 2)], { type: 'application/json' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    const name = s.projeto.nome_marca
-      ? s.projeto.nome_marca.replace(/\s+/g, '-').toLowerCase()
-      : 'manual-de-marca'
-    a.download = `${name}.json`
+
+    const isPresentation = screen === 'brand-presentation'
+    const rawName = isPresentation ? s.presentation_data.brand_name : s.projeto.nome_marca
+    const slug = rawName ? rawName.replace(/\s+/g, '-').toLowerCase() : 'sem-nome'
+    const prefix = isPresentation ? 'apresentacao-logo' : 'manual-de-marca'
+
+    a.download = `${prefix}-${slug}.json`
     a.click()
     URL.revokeObjectURL(url)
     toast.success('Projeto exportado com sucesso!')
@@ -772,6 +778,7 @@ export const useBrandStore = create<BrandStore>((set, get) => ({
             logo_simbolo:     p.assets_base64?.logo_simbolo     ?? null,
             mockups:          p.assets_base64?.mockups           ?? [],
           },
+          presentation_data: p.presentation_data ?? fallback.presentation_data,
         }))
         nextColorId = Math.max(
           4,

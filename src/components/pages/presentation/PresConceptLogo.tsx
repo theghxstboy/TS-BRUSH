@@ -9,9 +9,9 @@ interface PresConceptLogoProps {
 
 export function PresConceptLogo({ pageId, explanation, logoSrc }: PresConceptLogoProps) {
   const { presentation_data } = useBrandStore()
-  const style = usePresentationAppearance(pageId, 'secao')
+  const style = usePresentationAppearance(pageId, 'conteudo')
   const { typography } = presentation_data
-  const { cor_fundo_pagina: fundo, cor_detalhes: detalhe, imagem_fundo } = style
+  const { cor_fundo_pagina: fundo, cor_titulo: colorTitulo, cor_texto: colorTexto, cor_detalhes: detalhe, imagem_fundo } = style
 
   const titleFont = typography.titulosNome || 'inherit'
   const textFont = typography.textosNome || 'inherit'
@@ -56,7 +56,7 @@ export function PresConceptLogo({ pageId, explanation, logoSrc }: PresConceptLog
         <p style={{
           fontSize: '18px',
           lineHeight: '1.7',
-          color: 'rgba(255,255,255,0.9)',
+          color: colorTexto,
           fontWeight: 500,
           margin: 0,
           whiteSpace: 'pre-wrap',
@@ -68,8 +68,8 @@ export function PresConceptLogo({ pageId, explanation, logoSrc }: PresConceptLog
 
       {/* Right Side: Logo Display */}
       <div style={{
-        background: 'rgba(255,255,255,0.03)',
-        border: '1px solid rgba(255,255,255,0.06)',
+        background: `${colorTexto}08`,
+        border: `1px solid ${colorTexto}10`,
         borderRadius: '24px',
         display: 'flex',
         alignItems: 'center',
@@ -105,7 +105,7 @@ export function PresConceptLogo({ pageId, explanation, logoSrc }: PresConceptLog
             }}
           />
         ) : (
-          <div style={{ color: 'rgba(255,255,255,0.2)', fontSize: '14px', zIndex: 2 }}>
+          <div style={{ color: `${colorTexto}40`, fontSize: '14px', zIndex: 2 }}>
             Logo não enviada
           </div>
         )}
@@ -117,7 +117,7 @@ export function PresConceptLogo({ pageId, explanation, logoSrc }: PresConceptLog
         left: '60px',
         fontSize: '10px',
         fontWeight: 600,
-        color: 'rgba(255,255,255,0.2)',
+        color: `${colorTexto}40`,
         textTransform: 'uppercase',
         letterSpacing: '0.1em'
       }}>

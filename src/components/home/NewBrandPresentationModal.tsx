@@ -24,7 +24,7 @@ import { EMPTY_UPLOADED_FONT } from '../../lib/fontUtils'
 
 type ModalView = 'choose' | 'info' | 'versions' | 'style' | 'typography'
 type ProjectType = 'new' | 'rebranding'
-type StyleTab = 'capa' | 'secao' | 'final' | 'fundos'
+type StyleTab = 'capa' | 'secao' | 'conteudo' | 'final' | 'fundos'
 
 interface VersionData {
   explanation: string
@@ -82,50 +82,66 @@ function SlidePreview({
   text,
   logoSrc,
   type,
+  backgroundImg,
 }: {
   bg: string
   accent: string
   title: string
   text?: string
   logoSrc?: string | null
-  type: 'cover' | 'section' | 'final'
+  type: 'cover' | 'section' | 'content' | 'final'
+  backgroundImg?: string | null
 }) {
   return (
     <div
       className="np-slide-preview"
-      style={{ background: bg }}
+      style={{ 
+        background: bg,
+        backgroundImage: backgroundImg ? `url(${backgroundImg})` : 'none',
+        backgroundSize: 'cover',
+        backgroundPosition: 'center'
+      }}
     >
       {type === 'cover' && (
-        <>
-          <div className="np-slide-preview-accent-bar" style={{ background: accent }} />
+        <div className="np-slide-preview-center">
           {logoSrc ? (
-            <img src={logoSrc} alt="logo" className="np-slide-preview-logo" />
+            <img src={logoSrc} alt="logo" className="np-slide-preview-logo-main" />
           ) : (
             <div className="np-slide-preview-logo-placeholder" style={{ borderColor: accent }} />
           )}
-          <div className="np-slide-preview-title-block" style={{ color: title }}>
-            <div className="np-slide-preview-brand-line" style={{ background: accent }} />
-            <div className="np-slide-preview-brand-txt" style={{ background: title }} />
+          <div className="np-slide-preview-brand-label" style={{ color: title }}>
+            Apresentação de Marca
           </div>
-        </>
+          <div className="np-slide-preview-accent-line" style={{ background: accent }} />
+        </div>
       )}
       {type === 'section' && (
-        <>
-          <div className="np-slide-preview-section-num" style={{ color: accent, borderColor: accent }}>01</div>
-          <div className="np-slide-preview-section-title" style={{ color: title }}>Apresentação</div>
+        <div className="np-slide-preview-section-layout">
+          <div className="np-slide-preview-section-num" style={{ color: accent }}>01</div>
+          <div className="np-slide-preview-section-title" style={{ color: title }}>Identidade Visual</div>
           <div className="np-slide-preview-section-bar" style={{ background: accent }} />
-        </>
+        </div>
+      )}
+      {type === 'content' && (
+        <div className="np-slide-preview-content-layout">
+          <div className="np-slide-preview-content-left">
+            <div className="np-slide-preview-content-rect" style={{ background: title, width: '40%' }} />
+            <div className="np-slide-preview-content-rect" style={{ background: text || '#ccc', width: '80%', opacity: 0.6 }} />
+            <div className="np-slide-preview-content-rect" style={{ background: text || '#ccc', width: '70%', opacity: 0.6 }} />
+          </div>
+          <div className="np-slide-preview-content-right">
+            <div className="np-slide-preview-glass-box" style={{ background: `${text || '#fff'}08`, borderColor: `${text || '#fff'}15` }}>
+              {logoSrc && <img src={logoSrc} alt="logo" style={{ maxWidth: '60%', maxHeight: '60%' }} />}
+            </div>
+          </div>
+        </div>
       )}
       {type === 'final' && (
-        <>
-          {logoSrc ? (
-            <img src={logoSrc} alt="logo" className="np-slide-preview-logo np-slide-preview-logo-final" />
-          ) : (
-            <div className="np-slide-preview-logo-placeholder" style={{ borderColor: accent }} />
-          )}
-          <div className="np-slide-preview-final-title" style={{ color: title }}>Obrigado</div>
-          <div className="np-slide-preview-final-bar" style={{ background: accent }} />
-        </>
+        <div className="np-slide-preview-center">
+          <div className="np-slide-preview-final-msg" style={{ color: title }}>Obrigado.</div>
+          <div className="np-slide-preview-final-label" style={{ color: accent }}>{text || 'TS Tools'}</div>
+          <div className="np-slide-preview-accent-line" style={{ background: accent }} />
+        </div>
       )}
     </div>
   )
@@ -319,6 +335,10 @@ export function NewBrandPresentationModal({ onClose }: NewBrandPresentationModal
     }))
   )
 
+  // Use default text when starting if not already set
+  const getInitialExplanation = () => projectType === 'new' ? TEXT_NEW : TEXT_REBRANDING
+
+
   const mockupRef = useRef<HTMLInputElement>(null)
 
   // ── Style & Design State ──
@@ -326,6 +346,7 @@ export function NewBrandPresentationModal({ onClose }: NewBrandPresentationModal
   const [sampledColors, setSampledColors] = useState<string[]>([])
   
   const [capaFundo, setCapaFundo] = useState('#0C0C0C')
+  const [capaTitulo, setCapaTitulo] = useState('#FFFFFF')
   const [capaDetalhe, setCapaDetalhe] = useState('#FFA300')
   const [secaoFundo, setSecaoFundo] = useState('#0C0C0C')
   const [secaoTitulo, setSecaoTitulo] = useState('#FFFFFF')
@@ -334,6 +355,11 @@ export function NewBrandPresentationModal({ onClose }: NewBrandPresentationModal
   const [finalTitulo, setFinalTitulo] = useState('#FFFFFF')
   const [finalTexto, setFinalTexto] = useState('#D4D4D4')
   const [finalDetalhe, setFinalDetalhe] = useState('#FFA300')
+
+  const [conteudoFundo, setConteudoFundo] = useState('#0C0C0C')
+  const [conteudoTitulo, setConteudoTitulo] = useState('#FFFFFF')
+  const [conteudoTexto, setConteudoTexto] = useState('#D4D4D4')
+  const [conteudoDetalhe, setConteudoDetalhe] = useState('#FFA300')
   const [bgCapaSecao, setBgCapaSecao] = useState<string | null>(null)
   const [bgConteudo, setBgConteudo] = useState<string | null>(null)
 
@@ -397,15 +423,16 @@ export function NewBrandPresentationModal({ onClose }: NewBrandPresentationModal
       project_type: projectType,
       show_comparison: showComparison,
       original_logo: logoAntigaGlobal,
-      versions: versions.slice(0, qtdVersions).map(v => ({
-        explanation: v.explanation,
+      versions: versions.slice(0, qtdVersions).map((v, idx) => ({
+        explanation: v.explanation || (idx === 0 ? getInitialExplanation() : ''),
         logoNew: v.logoNew,
         mockups: v.mockups
       })),
       appearance: {
-        capa: { fundo: capaFundo, detalhe: capaDetalhe },
+        capa: { fundo: capaFundo, titulo: capaTitulo, detalhe: capaDetalhe },
         secao: { fundo: secaoFundo, titulo: secaoTitulo, detalhe: secaoDetalhe },
         final: { fundo: finalFundo, titulo: finalTitulo, texto: finalTexto, detalhe: finalDetalhe },
+        conteudo: { fundo: conteudoFundo, titulo: conteudoTitulo, texto: conteudoTexto, detalhe: conteudoDetalhe },
         fundos: { capaSecao: bgCapaSecao, conteudo: bgConteudo },
       },
       typography: {
@@ -464,9 +491,10 @@ export function NewBrandPresentationModal({ onClose }: NewBrandPresentationModal
     const defaultText = dark ? '#1A1A1A' : '#D4D4D4'
     const defaultAccent = main
 
-    setCapaFundo(defaultBg); setCapaDetalhe(defaultAccent)
+    setCapaFundo(defaultBg); setCapaTitulo(defaultTitle); setCapaDetalhe(defaultAccent)
     setSecaoFundo(defaultBg); setSecaoTitulo(defaultTitle); setSecaoDetalhe(defaultAccent)
     setFinalFundo(defaultBg); setFinalTitulo(defaultTitle); setFinalTexto(defaultText); setFinalDetalhe(defaultAccent)
+    setConteudoFundo(defaultBg); setConteudoTitulo(defaultTitle); setConteudoTexto(defaultText); setConteudoDetalhe(defaultAccent)
   }
 
   const handleAddMockups = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -491,7 +519,8 @@ export function NewBrandPresentationModal({ onClose }: NewBrandPresentationModal
 
   const STYLE_TABS: { id: StyleTab; label: string; desc: string }[] = [
     { id: 'capa', label: 'Capa', desc: 'Primeiro slide da apresentação' },
-    { id: 'secao', label: 'Seção', desc: 'Slides divisórios de seção' },
+    { id: 'secao', label: 'Divisórias', desc: 'Slides divisórios de seção' },
+    { id: 'conteudo', label: 'Conteúdo', desc: 'Slides internos (Logo, Mockups)' },
     { id: 'final', label: 'Final', desc: 'Slide de encerramento' },
     { id: 'fundos', label: 'Fundos', desc: 'Texturas e imagens de fundo' },
   ]
@@ -531,6 +560,27 @@ export function NewBrandPresentationModal({ onClose }: NewBrandPresentationModal
                 icon={<FileText size={20} />} title="Projeto em branco"
                 description="Abra o editor com todos os campos vazios e configure tudo manualmente."
                 onClick={() => {
+                  setPresentationData({
+                    brand_name: '',
+                    responsible_name: '',
+                    project_type: 'new',
+                    show_comparison: false,
+                    original_logo: null,
+                    versions: [{ explanation: TEXT_NEW, logoNew: null, mockups: [] }],
+                    appearance: {
+                      capa: { fundo: '#0C0C0C', titulo: '#FFFFFF', detalhe: '#FFA300' },
+                      secao: { fundo: '#0C0C0C', titulo: '#FFFFFF', detalhe: '#FFA300' },
+                      final: { fundo: '#0C0C0C', titulo: '#FFFFFF', texto: '#D4D4D4', detalhe: '#FFA300' },
+                      conteudo: { fundo: '#0C0C0C', titulo: '#FFFFFF', texto: '#D4D4D4', detalhe: '#FFA300' },
+                      fundos: { capaSecao: null, conteudo: null },
+                    },
+                    typography: {
+                      titulosNome: '',
+                      titulosCustom: { ...EMPTY_UPLOADED_FONT },
+                      textosNome: '',
+                      textosCustom: { ...EMPTY_UPLOADED_FONT },
+                    }
+                  })
                   onClose()
                   setScreen('brand-presentation')
                 }}
@@ -752,16 +802,10 @@ export function NewBrandPresentationModal({ onClose }: NewBrandPresentationModal
             </div>
 
             <div className="np-style-tabs">
-              {STYLE_TABS.map((t) => (
-                <button
-                  key={t.id}
-                  type="button"
-                  className={`np-style-tab ${styleTab === t.id ? 'active' : ''}`}
-                  onClick={() => setStyleTab(t.id)}
-                >
-                  {t.label}
-                </button>
-              ))}
+              <button className={`np-style-tab ${styleTab === 'capa' ? 'active' : ''}`} onClick={() => setStyleTab('capa')}>Capa</button>
+              <button className={`np-style-tab ${styleTab === 'secao' ? 'active' : ''}`} onClick={() => setStyleTab('secao')}>Divisórias</button>
+              <button className={`np-style-tab ${styleTab === 'conteudo' ? 'active' : ''}`} onClick={() => setStyleTab('conteudo')}>Conteúdo</button>
+              <button className={`np-style-tab ${styleTab === 'final' ? 'active' : ''}`} onClick={() => setStyleTab('final')}>Final</button>
             </div>
 
             <div className="np-style-tabpanel">
@@ -785,11 +829,12 @@ export function NewBrandPresentationModal({ onClose }: NewBrandPresentationModal
                       </div>
                     )}
                     <ColorField label="Fundo da Página" color={capaFundo} onChange={setCapaFundo} presets={sampledColors} />
+                    <ColorField label="Cor do Título" color={capaTitulo} onChange={setCapaTitulo} presets={sampledColors} />
                     <ColorField label="Cor dos Detalhes" color={capaDetalhe} onChange={setCapaDetalhe} presets={sampledColors} />
                   </div>
                   <div className="np-style-preview-col">
                     <span className="np-style-preview-label">Preview</span>
-                    <SlidePreview type="cover" bg={capaFundo} accent={capaDetalhe} title={capaDetalhe} logoSrc={versions[0].logoNew} />
+                    <SlidePreview type="cover" bg={capaFundo} accent={capaDetalhe} title={capaTitulo} logoSrc={versions[0].logoNew} backgroundImg={bgCapaSecao} />
                   </div>
                 </div>
               )}
@@ -805,7 +850,23 @@ export function NewBrandPresentationModal({ onClose }: NewBrandPresentationModal
                   </div>
                   <div className="np-style-preview-col">
                     <span className="np-style-preview-label">Preview</span>
-                    <SlidePreview type="section" bg={secaoFundo} accent={secaoDetalhe} title={secaoTitulo} />
+                    <SlidePreview type="section" bg={secaoFundo} accent={secaoDetalhe} title={secaoTitulo} backgroundImg={bgCapaSecao} />
+                  </div>
+                </div>
+              )}
+
+              {styleTab === 'conteudo' && (
+                <div className="np-style-layout">
+                  <div className="np-style-fields">
+                    <p className="np-style-desc">{STYLE_TABS[2].desc}</p>
+                    <ColorField label="Fundo da Página" color={conteudoFundo} onChange={setConteudoFundo} presets={sampledColors} />
+                    <ColorField label="Cor do Título" color={conteudoTitulo} onChange={setConteudoTitulo} presets={sampledColors} />
+                    <ColorField label="Cor dos Textos" color={conteudoTexto} onChange={setConteudoTexto} presets={sampledColors} />
+                    <ColorField label="Cor dos Detalhes" color={conteudoDetalhe} onChange={setConteudoDetalhe} presets={sampledColors} />
+                  </div>
+                  <div className="np-style-preview-col">
+                    <span className="np-style-preview-label">Preview</span>
+                    <SlidePreview type="content" bg={conteudoFundo} accent={conteudoDetalhe} title={conteudoTitulo} text={conteudoTexto} logoSrc={versions[0].logoNew} backgroundImg={bgConteudo} />
                   </div>
                 </div>
               )}
@@ -822,29 +883,35 @@ export function NewBrandPresentationModal({ onClose }: NewBrandPresentationModal
                   </div>
                   <div className="np-style-preview-col">
                     <span className="np-style-preview-label">Preview</span>
-                    <SlidePreview type="final" bg={finalFundo} accent={finalDetalhe} title={finalTitulo} logoSrc={versions[0].logoNew} />
+                    <SlidePreview type="final" bg={finalFundo} accent={finalDetalhe} title={finalTitulo} text={brandName} backgroundImg={bgCapaSecao} />
                   </div>
                 </div>
               )}
 
               {/* ── FUNDOS ── */}
               {styleTab === 'fundos' && (
-                <div className="np-style-fundos">
-                  <p className="np-style-desc">{STYLE_TABS[3].desc}</p>
-                  <BgUploadRow
-                    label="Fundo de Destaque"
-                    hint="Capa, Seções e Final"
-                    value={bgCapaSecao}
-                    onUpload={setBgCapaSecao}
-                    onRemove={() => setBgCapaSecao(null)}
-                  />
-                  <BgUploadRow
-                    label="Fundo de Conteúdo"
-                    hint="Para slides informativos"
-                    value={bgConteudo}
-                    onUpload={setBgConteudo}
-                    onRemove={() => setBgConteudo(null)}
-                  />
+                <div className="np-style-layout">
+                  <div className="np-style-fields">
+                    <p className="np-style-desc">{STYLE_TABS[4].desc}</p>
+                    <BgUploadRow
+                      label="Fundo de Destaque"
+                      hint="Capa, Seções e Final"
+                      value={bgCapaSecao}
+                      onUpload={setBgCapaSecao}
+                      onRemove={() => setBgCapaSecao(null)}
+                    />
+                    <BgUploadRow
+                      label="Fundo de Conteúdo"
+                      hint="Para slides internos"
+                      value={bgConteudo}
+                      onUpload={setBgConteudo}
+                      onRemove={() => setBgConteudo(null)}
+                    />
+                  </div>
+                  <div className="np-style-preview-col">
+                    <span className="np-style-preview-label">Preview</span>
+                    <SlidePreview type="section" bg={secaoFundo} accent={secaoDetalhe} title={secaoTitulo} backgroundImg={bgCapaSecao} />
+                  </div>
                 </div>
               )}
             </div>

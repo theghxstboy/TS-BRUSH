@@ -77,6 +77,14 @@ export type SlideAppearanceKey =
   | 'secao-construcao'
   | 'secao-usos-incorretos'
   | 'secao-aplicacoes'
+  | 'pres-capa'
+  | 'pres-intro'
+  | 'pres-comparison'
+  | 'pres-concept-logo'
+  | 'pres-color-chart'
+  | 'pres-typography'
+  | 'pres-mockup'
+  | 'pres-final'
 
 export interface SlideAppearance {
   cor_fundo_pagina: string
@@ -285,6 +293,14 @@ function buildDefaultPageAppearance(): SlideAppearanceState {
     'secao-construcao',
     'secao-usos-incorretos',
     'secao-aplicacoes',
+    'pres-capa',
+    'pres-intro',
+    'pres-comparison',
+    'pres-concept-logo',
+    'pres-color-chart',
+    'pres-typography',
+    'pres-mockup',
+    'pres-final',
   ]
 
   return Object.fromEntries(keys.map((key) => [key, { ...DEFAULT_SLIDE_APPEARANCE }])) as SlideAppearanceState
@@ -300,7 +316,7 @@ const DEFAULT_CORES: BrandColor[] = [
 function freshDefault(): Omit<BrandStore,
   | 'setProjeto' | 'setConteudoPdf' | 'setTipografia' | 'setCor' | 'addCor' | 'removeCor' | 'replaceCores'
   | 'setAsset' | 'addMockup' | 'replaceMockup' | 'removeMockup' | 'setAparencia' | 'setTemplate' | 'movePageBlock'
-  | 'setPageAppearance'
+  | 'setPageAppearance' | 'setPresentationData'
   | 'exportJson' | 'importJson' | 'reset'
 > {
   return {

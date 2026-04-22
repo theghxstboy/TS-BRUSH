@@ -360,6 +360,7 @@ function ContextBody({
     setAsset,
     replaceMockup,
     removeMockup,
+    replaceCores,
     presentation_data,
     setPresentationData,
   } = useBrandStore()

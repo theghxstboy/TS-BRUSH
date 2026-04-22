@@ -18,7 +18,7 @@ export function ActionButtons() {
     setConteudoPdf,
   } = useBrandStore()
 
-  const { showAlert } = useAppStore()
+  const { showAlert, screen } = useAppStore()
 
   const importRef = useRef<HTMLInputElement>(null)
   const [aiPanelOpen, setAiPanelOpen] = useState(false)

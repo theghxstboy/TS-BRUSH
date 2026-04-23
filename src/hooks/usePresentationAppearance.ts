@@ -29,9 +29,9 @@ export function usePresentationAppearance(pageId: string, globalType: Presentati
   return {
     cor_fundo_pagina: local?.cor_fundo_pagina || globalRef.fundo || '#FFFFFF',
     cor_titulo: local?.cor_titulo || globalRef.titulo || '#000000',
-    cor_texto: local?.cor_texto || globalRef.texto || '#1A1A1A',
+    cor_texto: local?.cor_texto || globalRef.texto || globalRef.titulo || '#1A1A1A',
     cor_detalhes: local?.cor_detalhes || globalRef.detalhe || '#FFA300',
-    cor_sombra: local?.cor_sombra || DEFAULT_SLIDE_APPEARANCE.cor_sombra,
+    cor_sombra: local?.cor_sombra || '#00000040',
     imagem_fundo: local?.imagem_fundo || (globalType === 'capa' || globalType === 'secao' ? global.fundos.capaSecao : global.fundos.conteudo),
     imagem_fundo_opacidade: local?.imagem_fundo_opacidade ?? DEFAULT_SLIDE_APPEARANCE.imagem_fundo_opacidade,
     exibir_logo_fundo: local?.exibir_logo_fundo ?? true,

@@ -42,7 +42,17 @@ export function PresFinal({ pageId }: PresFinalProps) {
         }} />
       </div>
 
-      <div style={{ textAlign: 'center', zIndex: 10 }}>
+      <div style={{ 
+        textAlign: 'center', 
+        zIndex: 10,
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '60px',
+        maxHeight: 'calc(210mm - 120px)',
+        overflow: 'hidden'
+      }}>
         <h2 style={{
           fontSize: '84px',
           fontWeight: 900,
@@ -51,31 +61,38 @@ export function PresFinal({ pageId }: PresFinalProps) {
           letterSpacing: '-2px',
           margin: 0,
           lineHeight: 1,
-          fontFamily: titleFont
+          fontFamily: titleFont,
+          maxWidth: '1000px',
+          wordBreak: 'break-word',
+          marginBottom: '32px'
         }}>
           Obrigado.
         </h2>
+        
         <div style={{
-          marginTop: '32px',
-          padding: '12px 24px',
+          padding: '12px 32px',
           background: 'rgba(255,255,255,0.03)',
           border: '1px solid rgba(255,255,255,0.08)',
           borderRadius: '12px',
           display: 'inline-block',
           backdropFilter: 'blur(10px)',
-          WebkitBackdropFilter: 'blur(10px)'
+          WebkitBackdropFilter: 'blur(10px)',
+          maxWidth: '90%',
+          overflow: 'hidden'
         }}>
-          <p style={{
-            fontSize: '18px',
-            fontWeight: 700,
-            color: texto,
-            letterSpacing: '0.1em',
-            textTransform: 'uppercase',
-            margin: 0,
-            fontFamily: textFont
-          }}>
-            {brand_name || 'Projeto Concluído'}
-          </p>
+            <p style={{
+              fontSize: '18px',
+              fontWeight: 700,
+              color: texto,
+              letterSpacing: '0.1em',
+              textTransform: 'uppercase',
+              margin: 0,
+              fontFamily: textFont,
+              maxWidth: '600px',
+              wordBreak: 'break-word'
+            }}>
+              {brand_name || 'Projeto Concluído'}
+            </p>
         </div>
       </div>
 
@@ -101,8 +118,7 @@ export function PresFinal({ pageId }: PresFinalProps) {
           color: texto,
           fontFamily: textFont
         }}>
-          <strong>Desenvolvido por:</strong> Agência TS | Designer{' '}
-          <span style={{ color: detalhe, fontWeight: 700 }}>{presentation_data.responsible_name || 'Seu Nome'}</span>
+          {brand_name} / Agência TS / Autor da logo: {presentation_data.responsible_name || 'Não informado'}
         </div>
       </div>
 

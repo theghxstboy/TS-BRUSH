@@ -53,7 +53,7 @@ export function EditorNav() {
             </span>
           ) : (
             <>
-              <span className="editor-nav-crumb-current">Manual de Marca</span>
+              <span className="editor-nav-crumb-current">{parentLabel}</span>
               {projectName && (
                 <>
                   <span className="editor-nav-crumb-sep">/</span>

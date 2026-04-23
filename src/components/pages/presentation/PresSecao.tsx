@@ -44,7 +44,7 @@ export function PresSecao({ pageId, numero, titulo }: PresSecaoProps) {
         {numero}
       </div>
 
-      <div style={{ zIndex: 10, textAlign: 'center' }}>
+      <div style={{ zIndex: 10, textAlign: 'center', width: '100%', padding: '0 40px', maxHeight: 'calc(210mm - 120px)', overflow: 'hidden' }}>
         <p style={{
           color: detalhe,
           fontSize: '14px',
@@ -63,7 +63,11 @@ export function PresSecao({ pageId, numero, titulo }: PresSecaoProps) {
           textTransform: 'uppercase',
           letterSpacing: '0.05em',
           margin: 0,
-          fontFamily: titleFont
+          fontFamily: titleFont,
+          maxWidth: '1000px',
+          marginInline: 'auto',
+          wordBreak: 'break-word',
+          lineHeight: 1.1
         }}>
           {titulo}
         </h2>
@@ -85,7 +89,7 @@ export function PresSecao({ pageId, numero, titulo }: PresSecaoProps) {
         color: 'rgba(255,255,255,0.3)',
         letterSpacing: '0.1em'
       }}>
-        {presentation_data.brand_name} / {presentation_data.responsible_name}
+        {presentation_data.brand_name} / {presentation_data.responsible_name || 'Agência TS'}
       </div>
     </div>
   )

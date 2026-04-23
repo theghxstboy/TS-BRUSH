@@ -238,41 +238,41 @@ export function SectionAparencia() {
         )}
       </div>
 
-      {/* CONTEUDO (Apenas Manual) */}
-      {!isPres && (
-        <div style={{ marginBottom: 24 }}>
-          <h4 style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 12, paddingBottom: 8, borderBottom: '1px solid var(--border)' }}>
-            Conteúdo / Textos
-          </h4>
-          <p style={{ fontSize: 11, color: 'var(--text-secondary)', marginBottom: 16 }}>
-            Aplica-se à Bem Vindo, Sumário, Conceito, Tipografia, Cores, etc.
-          </p>
+      {/* CONTEUDO */}
+      <div style={{ marginBottom: 24 }}>
+        <h4 style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 12, paddingBottom: 8, borderBottom: '1px solid var(--border)' }}>
+          Conteúdo / Textos
+        </h4>
+        <p style={{ fontSize: 11, color: 'var(--text-secondary)', marginBottom: 16 }}>
+          Aplica-se à Sumário, Conceito, Tipografia, Cores, etc.
+        </p>
 
-          <ColorField
-            label="Cor do Fundo da Página"
-            description=""
-            color={aparencia.conteudo.cor_fundo_pagina}
-            onChange={(hex) => handleChange('conteudo', 'cor_fundo_pagina', hex)}
-          />
-          <ColorField
-            label="Cor do Título"
-            description=""
-            color={aparencia.conteudo.cor_titulo}
-            onChange={(hex) => handleChange('conteudo', 'cor_titulo', hex)}
-          />
-          <ColorField
-            label="Cor dos Textos"
-            description=""
-            color={aparencia.conteudo.cor_texto}
-            onChange={(hex) => handleChange('conteudo', 'cor_texto', hex)}
-          />
-          <ColorField
-            label="Cor dos Detalhes"
-            description="Usada em botões, badges, e elementos visuais de destaque."
-            color={aparencia.conteudo.cor_detalhes}
-            onChange={(hex) => handleChange('conteudo', 'cor_detalhes', hex)}
-          />
+        <ColorField
+          label="Cor do Fundo da Página"
+          description=""
+          color={isPres ? presentation_data.appearance.conteudo.fundo : aparencia.conteudo.cor_fundo_pagina}
+          onChange={(hex) => handleChange('conteudo', isPres ? 'fundo' : 'cor_fundo_pagina', hex)}
+        />
+        <ColorField
+          label="Cor do Título"
+          description=""
+          color={isPres ? presentation_data.appearance.conteudo.titulo : aparencia.conteudo.cor_titulo}
+          onChange={(hex) => handleChange('conteudo', isPres ? 'titulo' : 'cor_titulo', hex)}
+        />
+        <ColorField
+          label="Cor dos Textos"
+          description=""
+          color={isPres ? presentation_data.appearance.conteudo.texto : aparencia.conteudo.cor_texto}
+          onChange={(hex) => handleChange('conteudo', isPres ? 'texto' : 'cor_texto', hex)}
+        />
+        <ColorField
+          label="Cor dos Detalhes"
+          description="Usada em botões, badges, e elementos visuais de destaque."
+          color={isPres ? presentation_data.appearance.conteudo.detalhe : aparencia.conteudo.cor_detalhes}
+          onChange={(hex) => handleChange('conteudo', isPres ? 'detalhe' : 'cor_detalhes', hex)}
+        />
 
+        {!isPres && (
           <div style={{ marginTop: 12 }}>
             <UploadZone
               inputId="input-imagem-fundo-conteudo"
@@ -290,8 +290,8 @@ export function SectionAparencia() {
               />
             )}
           </div>
-        </div>
-      )}
+        )}
+      </div>
 
       {/* GLOBAL BACKGROUND SUPPORT */}
       <div className="form-group">

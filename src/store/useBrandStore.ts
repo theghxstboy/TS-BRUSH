@@ -175,6 +175,7 @@ export interface BrandStore {
   }
   presentation_data: {
     brand_name: string
+    subtitle: string
     responsible_name: string
     project_type: 'new' | 'rebranding'
     show_comparison: boolean
@@ -392,7 +393,8 @@ function freshDefault(): Omit<BrandStore,
     },
     presentation_data: {
       brand_name: '',
-      responsible_name: '',
+      subtitle: '',
+      responsible_name: 'Agência TS',
       project_type: 'new',
       show_comparison: false,
       original_logo: null,

@@ -4180,7 +4180,8 @@ select.form-input {
 
   html,
   body {
-    background: white !important;
+    background: none !important;
+    background-color: transparent !important;
     overflow: visible !important;
     height: auto !important;
   }
@@ -4196,7 +4197,7 @@ select.form-input {
   .canvas-area {
     padding: 0 !important;
     gap: 0 !important;
-    background: white !important;
+    background: transparent !important;
     overflow: visible !important;
     display: block !important;
   }
@@ -4238,6 +4239,18 @@ select.form-input {
   * {
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
+  }
+
+  /* Garante que o fundo das páginas PDF apareça corretamente no print */
+  .pagina-pdf {
+    -webkit-filter: none !important;
+    filter: none !important;
+  }
+
+  /* Remove scrollbars no print e permite que o texto se adapte */
+  .pagina-pdf div, 
+  .pagina-pdf p {
+    overflow: visible !important;
   }
 }
 

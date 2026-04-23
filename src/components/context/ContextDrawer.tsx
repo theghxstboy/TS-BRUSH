@@ -185,26 +185,52 @@ function DrawerSection({ title, description, children }: { title: string; descri
 }
 
 function AppearanceSection({ slideType }: { slideType: SlideType }) {
-  const { page_appearance, setPageAppearance, aparencia } = useBrandStore()
+  const { page_appearance, setPageAppearance, aparencia, presentation_data } = useBrandStore()
   const appearance = page_appearance[slideType] || DEFAULT_SLIDE_APPEARANCE
-  let globalApp: any = aparencia.conteudo
+  
+  const isPres = slideType.startsWith('pres-')
+  let globalApp: any = isPres ? presentation_data.appearance.conteudo : aparencia.conteudo
   let fields = STANDARD_APPEARANCE_FIELDS
 
-  if (slideType === 'capa') {
-    globalApp = aparencia.capa
-    fields = STANDARD_APPEARANCE_FIELDS.filter(f => ['cor_fundo_pagina', 'cor_detalhes'].includes(f.key))
-  } else if (slideType === 'final') {
-    globalApp = aparencia.final
-    fields = STANDARD_APPEARANCE_FIELDS
-  } else if (slideType?.startsWith('secao-')) {
-    globalApp = aparencia.secao
-    fields = STANDARD_APPEARANCE_FIELDS.filter(f => ['cor_fundo_pagina', 'cor_titulo', 'cor_detalhes'].includes(f.key))
-  } else if (slideType === 'mockup' || slideType === 'padrao-cromatico') {
-    globalApp = aparencia.conteudo
-    fields = STANDARD_APPEARANCE_FIELDS.filter(f => ['cor_fundo_pagina', 'cor_detalhes', 'cor_sombra'].includes(f.key))
+  if (isPres) {
+    if (slideType.startsWith('pres-capa')) {
+      globalApp = presentation_data.appearance.capa
+      fields = STANDARD_APPEARANCE_FIELDS.filter(f => ['cor_fundo_pagina', 'cor_detalhes'].includes(f.key))
+    } else if (slideType.startsWith('pres-final')) {
+      globalApp = presentation_data.appearance.final
+      fields = STANDARD_APPEARANCE_FIELDS
+    } else if (slideType.startsWith('pres-secao')) {
+      globalApp = presentation_data.appearance.secao
+      fields = STANDARD_APPEARANCE_FIELDS.filter(f => ['cor_fundo_pagina', 'cor_titulo', 'cor_detalhes'].includes(f.key))
+    }
+  } else {
+    if (slideType === 'capa') {
+      globalApp = aparencia.capa
+      fields = STANDARD_APPEARANCE_FIELDS.filter(f => ['cor_fundo_pagina', 'cor_detalhes'].includes(f.key))
+    } else if (slideType === 'final') {
+      globalApp = aparencia.final
+      fields = STANDARD_APPEARANCE_FIELDS
+    } else if (slideType?.startsWith('secao-')) {
+      globalApp = aparencia.secao
+      fields = STANDARD_APPEARANCE_FIELDS.filter(f => ['cor_fundo_pagina', 'cor_titulo', 'cor_detalhes'].includes(f.key))
+    } else if (slideType === 'mockup' || slideType === 'padrao-cromatico') {
+      globalApp = aparencia.conteudo
+      fields = STANDARD_APPEARANCE_FIELDS.filter(f => ['cor_fundo_pagina', 'cor_detalhes', 'cor_sombra'].includes(f.key))
+    }
   }
 
   const getInherited = (key: AppearanceFieldKey) => {
+    if (isPres) {
+      switch (key) {
+        case 'cor_detalhes': return globalApp.detalhe || '#FFA300'
+        case 'cor_titulo': return globalApp.titulo || '#0C0C0C'
+        case 'cor_fundo_pagina': return globalApp.fundo || '#FFFFFF'
+        case 'cor_texto': return globalApp.texto || '#1A1A1A'
+        case 'cor_sombra': return '#00000040'
+        default: return '#000000'
+      }
+    }
+
     switch (key) {
       case 'cor_detalhes': return globalApp.cor_detalhes || '#FFA300'
       case 'cor_titulo': return globalApp.cor_titulo || '#0C0C0C'
@@ -214,8 +240,6 @@ function AppearanceSection({ slideType }: { slideType: SlideType }) {
       default: return '#000000'
     }
   }
-
-
 
   return (
     <DrawerSection title="Aparencia deste slide" description="Somente os controles que afetam esta pagina em especifico.">
@@ -833,6 +857,15 @@ function ContextBody({
               onChange={(e) => setPresentationData({ ...presentation_data, brand_name: e.target.value })} 
             />
           </div>
+          <div className="form-group">
+            <label className="form-label">Subtítulo da Capa</label>
+            <input 
+              className="form-input" 
+              value={presentation_data.subtitle || ''} 
+              onChange={(e) => setPresentationData({ ...presentation_data, subtitle: e.target.value })} 
+              placeholder="Ex: Apresentação de Identidade Visual"
+            />
+          </div>
         </DrawerSection>
         <AppearanceSection slideType={slideType} />
       </>
@@ -939,7 +972,7 @@ export function ContextDrawer() {
 
       // For presentation slides (pres-type-index), we need to check the base type for TITLES
       const isPres = detail.slideType.startsWith('pres-')
-      const baseType = isPres ? detail.slideType.split('-').slice(0, 2).join('-') : detail.slideType
+      const baseType = isPres ? detail.slideType.replace(/-[0-9]+$/, '') : detail.slideType
 
       if (!Object.prototype.hasOwnProperty.call(TITLES, baseType)) return
 
@@ -957,7 +990,7 @@ export function ContextDrawer() {
   const title = useMemo(() => {
     if (!slideType) return 'Pagina'
     const isPres = slideType.startsWith('pres-')
-    const baseType = isPres ? slideType.split('-').slice(0, 2).join('-') : slideType
+    const baseType = isPres ? slideType.replace(/-[0-9]+$/, '') : slideType
     return TITLES[baseType as SlideType] || 'Pagina'
   }, [slideType])
 

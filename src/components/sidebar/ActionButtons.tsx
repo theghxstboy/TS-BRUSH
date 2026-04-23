@@ -125,7 +125,10 @@ Agora analise a imagem anexada e devolva apenas o JSON final.`
   const handlePrint = () => {
     const originalTitle = document.title
     const brandName = projeto.nome_marca || 'MARCA'
-    document.title = `MANUAL DE MARCA - ${brandName.toUpperCase()}`
+    
+    // Define o título do documento com base na tela atual
+    const prefix = screen === 'brand-presentation' ? 'APRESENTAÇÃO DE LOGO' : 'MANUAL DE MARCA'
+    document.title = `${prefix} - ${brandName.toUpperCase()}`
 
     setTimeout(() => {
       window.print()

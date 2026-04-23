@@ -13,7 +13,7 @@ import { useAppStore } from './store/useAppStore'
 export default function App() {
   useTypographyFontLoader()
   const { bodyFontFamily, titleFontFamily } = usePresentationTypography()
-  const { aparencia, tipografia } = useBrandStore()
+  const { aparencia, tipografia, presentation_data } = useBrandStore()
   const { screen, setHasUnsavedChanges } = useAppStore()
 
   const [sidebarWidth, setSidebarWidth] = useState(420)
@@ -78,12 +78,16 @@ export default function App() {
     }
   }, [isResizing, resize, stopResizing])
 
+  const isPres = screen === 'brand-presentation'
+  const currentBg = isPres ? presentation_data.appearance.fundos.conteudo : aparencia.imagem_fundo
+  const currentBgOpacity = isPres ? DEFAULT_BACKGROUND_IMAGE_OPACITY : (aparencia.imagem_fundo_opacidade ?? DEFAULT_BACKGROUND_IMAGE_OPACITY)
+
   const layoutStyle = {
     '--sidebar-width': `${sidebarWidth}px`,
     '--presentation-body-font': bodyFontFamily,
     '--presentation-title-font': titleFontFamily,
-    '--presentation-bg-image': aparencia.imagem_fundo ? `url(${aparencia.imagem_fundo})` : 'none',
-    '--presentation-bg-opacity': aparencia.imagem_fundo ? String(aparencia.imagem_fundo_opacidade ?? DEFAULT_BACKGROUND_IMAGE_OPACITY) : '0',
+    '--presentation-bg-image': currentBg ? `url(${currentBg})` : 'none',
+    '--presentation-bg-opacity': String(currentBg ? currentBgOpacity : 0),
     '--presentation-text-align': tipografia.apresentacao_alinhamento,
     '--presentation-title-scale': String(tipografia.apresentacao_tamanho_titulo || 1),
     '--presentation-page-title-scale': String(tipografia.apresentacao_tamanho_titulo_pagina || 1),

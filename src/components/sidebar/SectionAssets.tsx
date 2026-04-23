@@ -77,6 +77,9 @@ export function SectionAssets() {
             ? 'Envie a logo antiga do cliente para gerar os slides de "Versão Antiga vs Nova Versão".'
             : 'SVG ou PNG com fundo transparente funcionam melhor para preview e extração das cores da marca.'}
         </p>
+        <div style={{ marginTop: '8px', fontSize: '9px', color: '#71717a', borderTop: '1px solid rgba(255,163,0,0.1)', paddingTop: '4px' }}>
+          {presentation_data.brand_name} / Agência TS
+        </div>
       </div>
 
       <div className="form-group">
@@ -90,6 +93,18 @@ export function SectionAssets() {
           onChange={handleLogoPrincipalChange}
         />
       </div>
+
+      {isPres && presentation_data.original_logo && (
+        <div className="form-group" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 12px', background: 'rgba(255,163,0,0.06)', borderRadius: 8, border: '1px solid rgba(255,163,0,0.1)' }}>
+          <label className="form-label" style={{ margin: 0, fontSize: 11, fontWeight: 700 }}>Gerar Comparativo Antiga vs Nova</label>
+          <input
+            type="checkbox"
+            checked={presentation_data.show_comparison}
+            onChange={(e) => setPresentationData({ ...presentation_data, show_comparison: e.target.checked })}
+            style={{ width: 16, height: 16, cursor: 'pointer' }}
+          />
+        </div>
+      )}
 
       {!isPres && (
         <>

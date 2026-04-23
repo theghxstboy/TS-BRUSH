@@ -33,14 +33,17 @@ export function PresConceptLogo({ pageId, explanation, logoSrc }: PresConceptLog
       <div style={{
         display: 'flex',
         flexDirection: 'column',
-        justifyContent: 'center',
-        paddingRight: '20px'
+        justifyContent: 'flex-start', // Começa do topo para não sumir o início do texto longo
+        paddingRight: '20px',
+        maxHeight: 'calc(210mm - 120px)', // Altura total menos padding
+        overflow: 'hidden'
       }}>
         <div style={{
           width: '40px',
           height: '3px',
           background: detalhe,
-          marginBottom: '24px'
+          marginBottom: '24px',
+          flexShrink: 0
         }} />
         <h3 style={{
           fontSize: '12px',
@@ -49,21 +52,28 @@ export function PresConceptLogo({ pageId, explanation, logoSrc }: PresConceptLog
           textTransform: 'uppercase',
           letterSpacing: '0.3em',
           marginBottom: '16px',
-          fontFamily: titleFont
+          fontFamily: titleFont,
+          flexShrink: 0
         }}>
           Conceito Criativo
         </h3>
-        <p style={{
-          fontSize: '18px',
-          lineHeight: '1.7',
-          color: colorTexto,
-          fontWeight: 500,
-          margin: 0,
-          whiteSpace: 'pre-wrap',
-          fontFamily: textFont
+        <div style={{
+          flex: 1,
+          overflowY: 'auto',
+          paddingRight: '10px'
         }}>
-          {explanation || 'Nenhuma explicação fornecida para esta versão.'}
-        </p>
+          <p style={{
+            fontSize: explanation.length > 1500 ? '11px' : explanation.length > 1000 ? '13px' : explanation.length > 600 ? '15px' : '18px',
+            lineHeight: '1.6',
+            color: colorTexto,
+            fontWeight: 500,
+            margin: 0,
+            whiteSpace: 'pre-wrap',
+            fontFamily: textFont
+          }}>
+            {explanation || 'Nenhuma explicação fornecida para esta versão.'}
+          </p>
+        </div>
       </div>
 
       {/* Right Side: Logo Display */}
@@ -121,7 +131,7 @@ export function PresConceptLogo({ pageId, explanation, logoSrc }: PresConceptLog
         textTransform: 'uppercase',
         letterSpacing: '0.1em'
       }}>
-        {presentation_data.brand_name} / Identidade Visual
+        {presentation_data.brand_name} / {presentation_data.responsible_name || 'Agência TS'}
       </div>
     </div>
   )

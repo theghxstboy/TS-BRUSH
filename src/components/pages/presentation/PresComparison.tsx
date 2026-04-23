@@ -45,7 +45,9 @@ export function PresComparison({ pageId, originalLogo, newLogo }: PresComparison
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
-        padding: '60px'
+        padding: '60px',
+        height: '210mm',
+        overflow: 'hidden'
       }}>
         <h4 style={{
           fontSize: '11px',
@@ -54,13 +56,14 @@ export function PresComparison({ pageId, originalLogo, newLogo }: PresComparison
           textTransform: 'uppercase',
           letterSpacing: '0.4em',
           marginBottom: '40px',
-          fontFamily: textFont
+          fontFamily: textFont,
+          flexShrink: 0
         }}>
           Versão Antiga
         </h4>
-        <div style={{ width: '100%', height: '300px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ width: '100%', flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
           {originalLogo ? (
-            <img src={originalLogo} alt="Original" style={{ maxWidth: '80%', maxHeight: '80%', objectFit: 'contain', opacity: 0.6 }} />
+            <img src={originalLogo} alt="Original" style={{ maxWidth: '80%', maxHeight: '100%', objectFit: 'contain', opacity: 0.6 }} />
           ) : (
             <div style={{ color: `${colorTexto}20`, fontSize: '13px' }}>Sem logo original</div>
           )}
@@ -74,7 +77,9 @@ export function PresComparison({ pageId, originalLogo, newLogo }: PresComparison
         alignItems: 'center',
         justifyContent: 'center',
         padding: '60px',
-        background: `${colorTexto}05`
+        background: `${colorTexto}05`,
+        height: 'calc(210mm - 120px)',
+        overflow: 'hidden'
       }}>
         <h4 style={{
           fontSize: '11px',
@@ -83,18 +88,19 @@ export function PresComparison({ pageId, originalLogo, newLogo }: PresComparison
           textTransform: 'uppercase',
           letterSpacing: '0.4em',
           marginBottom: '40px',
-          fontFamily: titleFont
+          fontFamily: titleFont,
+          flexShrink: 0
         }}>
           Nova Versão
         </h4>
-        <div style={{ width: '100%', height: '300px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ width: '100%', flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
           {newLogo ? (
             <img
               src={newLogo}
               alt="Nova"
               style={{
                 maxWidth: '90%',
-                maxHeight: '90%',
+                maxHeight: '100%',
                 objectFit: 'contain',
                 filter: 'drop-shadow(0 20px 40px rgba(0,0,0,0.4))'
               }}
@@ -116,7 +122,7 @@ export function PresComparison({ pageId, originalLogo, newLogo }: PresComparison
         textTransform: 'uppercase',
         letterSpacing: '0.2em'
       }}>
-        Comparativo / Evolução
+        {presentation_data.brand_name} / {presentation_data.responsible_name || 'Agência TS'}
       </div>
     </div>
   )

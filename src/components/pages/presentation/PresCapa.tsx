@@ -9,9 +9,9 @@ interface PresCapaProps {
 export function PresCapa({ pageId }: PresCapaProps) {
   const { presentation_data } = useBrandStore()
   const style = usePresentationAppearance(pageId, 'capa')
-  const { brand_name, typography } = presentation_data
+  const { brand_name, typography, subtitle } = presentation_data
   const { cor_fundo_pagina: fundo, cor_titulo: titulo, cor_detalhes: detalhe, imagem_fundo } = style
-
+  
   const titleFont = typography.titulosNome || 'inherit'
   const textFont = typography.textosNome || 'inherit'
 
@@ -26,11 +26,11 @@ export function PresCapa({ pageId }: PresCapaProps) {
     <div className="pagina-pdf" style={bgStyle}>
       <div style={{
         position: 'absolute',
-        top: '35%',
+        top: '40%',
         left: '50%',
         transform: 'translate(-50%, -50%)',
-        width: '120px',
-        height: '120px',
+        width: '180px',
+        height: '180px',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
@@ -41,7 +41,7 @@ export function PresCapa({ pageId }: PresCapaProps) {
 
       <div style={{
         position: 'absolute',
-        top: '55%',
+        top: '65%',
         left: '0',
         right: '0',
         textAlign: 'center',
@@ -49,34 +49,42 @@ export function PresCapa({ pageId }: PresCapaProps) {
         zIndex: 10
       }}>
         <h1 style={{
-          fontSize: '48px',
+          fontSize: '52px',
           fontWeight: 900,
           color: titulo,
           textTransform: 'uppercase',
-          letterSpacing: '0.15em',
+          letterSpacing: '0.12em',
           margin: 0,
-          marginBottom: '10px',
-          fontFamily: titleFont
+          marginBottom: '24px',
+          fontFamily: titleFont,
+          maxWidth: '1000px',
+          marginInline: 'auto',
+          wordBreak: 'break-word',
+          lineHeight: 1.05
         }}>
           {brand_name || 'Sua Marca'}
         </h1>
         <div style={{
-          width: '60px',
+          width: '40px',
           height: '4px',
           background: detalhe,
           margin: '0 auto',
-          borderRadius: '2px'
+          borderRadius: '2px',
+          flexShrink: 0
         }} />
         <p style={{
-          marginTop: '24px',
-          fontSize: '14px',
-          fontWeight: 600,
-          color: 'rgba(255,255,255,0.6)',
+          marginTop: '32px',
+          fontSize: '12px',
+          fontWeight: 700,
+          color: `${titulo}80`,
           textTransform: 'uppercase',
-          letterSpacing: '0.3em',
-          fontFamily: textFont
+          letterSpacing: '0.4em',
+          fontFamily: textFont,
+          maxWidth: '600px',
+          marginInline: 'auto',
+          wordBreak: 'break-word'
         }}>
-          Apresentação de Identidade Visual
+          {subtitle || 'Apresentação de Identidade Visual'}
         </p>
       </div>
 

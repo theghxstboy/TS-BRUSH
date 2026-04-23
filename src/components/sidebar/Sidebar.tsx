@@ -39,7 +39,7 @@ export function Sidebar() {
         {!isPres && <SectionOrdemPaginas />}
         <SectionProjeto />
         <SectionAssets />
-        <SectionCores />
+        {!isPres && <SectionCores />}
         <SectionAparencia />
         <SectionTipografia />
       </div>

@@ -96,7 +96,7 @@ function SlidePreview({
     <div
       className="np-slide-preview"
       style={{ 
-        background: bg,
+        backgroundColor: bg,
         backgroundImage: backgroundImg ? `url(${backgroundImg})` : 'none',
         backgroundSize: 'cover',
         backgroundPosition: 'center'
@@ -112,25 +112,25 @@ function SlidePreview({
           <div className="np-slide-preview-brand-label" style={{ color: title }}>
             Apresentação de Marca
           </div>
-          <div className="np-slide-preview-accent-line" style={{ background: accent }} />
+          <div className="np-slide-preview-accent-line" style={{ backgroundColor: accent }} />
         </div>
       )}
       {type === 'section' && (
         <div className="np-slide-preview-section-layout">
           <div className="np-slide-preview-section-num" style={{ color: accent }}>01</div>
           <div className="np-slide-preview-section-title" style={{ color: title }}>Identidade Visual</div>
-          <div className="np-slide-preview-section-bar" style={{ background: accent }} />
+          <div className="np-slide-preview-section-bar" style={{ backgroundColor: accent }} />
         </div>
       )}
       {type === 'content' && (
         <div className="np-slide-preview-content-layout">
           <div className="np-slide-preview-content-left">
-            <div className="np-slide-preview-content-rect" style={{ background: title, width: '40%' }} />
-            <div className="np-slide-preview-content-rect" style={{ background: text || '#ccc', width: '80%', opacity: 0.6 }} />
-            <div className="np-slide-preview-content-rect" style={{ background: text || '#ccc', width: '70%', opacity: 0.6 }} />
+            <div className="np-slide-preview-content-rect" style={{ backgroundColor: title, width: '40%' }} />
+            <div className="np-slide-preview-content-rect" style={{ backgroundColor: text || '#ccc', width: '80%', opacity: 0.6 }} />
+            <div className="np-slide-preview-content-rect" style={{ backgroundColor: text || '#ccc', width: '70%', opacity: 0.6 }} />
           </div>
           <div className="np-slide-preview-content-right">
-            <div className="np-slide-preview-glass-box" style={{ background: `${text || '#fff'}08`, borderColor: `${text || '#fff'}15` }}>
+            <div className="np-slide-preview-glass-box" style={{ backgroundColor: `${text || '#fff'}08`, borderColor: `${text || '#fff'}15` }}>
               {logoSrc && <img src={logoSrc} alt="logo" style={{ maxWidth: '60%', maxHeight: '60%' }} />}
             </div>
           </div>
@@ -140,7 +140,7 @@ function SlidePreview({
         <div className="np-slide-preview-center">
           <div className="np-slide-preview-final-msg" style={{ color: title }}>Obrigado.</div>
           <div className="np-slide-preview-final-label" style={{ color: accent }}>{text || 'TS Tools'}</div>
-          <div className="np-slide-preview-accent-line" style={{ background: accent }} />
+          <div className="np-slide-preview-accent-line" style={{ backgroundColor: accent }} />
         </div>
       )}
     </div>
@@ -189,7 +189,7 @@ function ColorField({
               key={c}
               type="button"
               className={`np-color-preset-dot ${color === c ? 'active' : ''}`}
-              style={{ background: c }}
+              style={{ backgroundColor: c }}
               title={c}
               onClick={() => onChange(c)}
             />
@@ -312,7 +312,8 @@ function AssetUploadCard({
 
 export function NewBrandPresentationModal({ onClose }: NewBrandPresentationModalProps) {
   const { setScreen } = useAppStore()
-  const { setPresentationData } = useBrandStore()
+  const { setPresentationData, importJson } = useBrandStore()
+  const importRef = useRef<HTMLInputElement>(null)
 
   // Navigation State
   const [view, setView] = useState<ModalView>('choose')
@@ -554,7 +555,7 @@ export function NewBrandPresentationModal({ onClose }: NewBrandPresentationModal
               <OptionCard
                 icon={<Upload size={20} />} title="Importar projeto"
                 description="Carregue um arquivo .json exportado anteriormente e continue de onde parou."
-                onClick={() => { }}
+                onClick={() => importRef.current?.click()}
               />
               <OptionCard
                 icon={<FileText size={20} />} title="Projeto em branco"
@@ -586,6 +587,22 @@ export function NewBrandPresentationModal({ onClose }: NewBrandPresentationModal
                 }}
               />
             </div>
+            
+            <input
+              ref={importRef}
+              type="file"
+              accept=".json,application/json"
+              style={{ display: 'none' }}
+              onChange={(e) => {
+                const file = e.target.files?.[0]
+                if (file) {
+                  importJson(file)
+                  onClose()
+                  setScreen('brand-presentation')
+                }
+                e.target.value = ''
+              }}
+            />
           </>
         )}
 
@@ -819,7 +836,7 @@ export function NewBrandPresentationModal({ onClose }: NewBrandPresentationModal
                         <span className="np-sampled-label">Da marca:</span>
                         <div className="np-sampled-dots">
                           {sampledColors.map((c) => (
-                            <div key={c} className="np-sampled-dot" style={{ background: c }} title={c} />
+                            <div key={c} className="np-sampled-dot" style={{ backgroundColor: c }} title={c} />
                           ))}
                         </div>
                         <button type="button" className="np-sampled-apply" onClick={() => applyPalette(sampledColors)}>

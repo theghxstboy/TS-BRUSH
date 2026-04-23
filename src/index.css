@@ -4171,6 +4171,7 @@ select.form-input {
   .context-drawer,
   .ui-controls,
   .toast-container,
+  [data-sonner-toaster],
   .page-label,
   .btn-float-container,
   .pagina-pdf-clickable::before,
@@ -4228,7 +4229,6 @@ select.form-input {
     border-radius: 0 !important;
     border: none !important;
     margin: 0 !important;
-    display: block !important;
   }
 
   .canvas-page-shell:last-child .pagina-pdf-wrapper {
@@ -4250,7 +4250,7 @@ select.form-input {
   /* Remove scrollbars no print e permite que o texto se adapte */
   .pagina-pdf div, 
   .pagina-pdf p {
-    overflow: visible !important;
+    /* overflow: visible !important; removed to preserve border-radius clipping */
   }
 }
 

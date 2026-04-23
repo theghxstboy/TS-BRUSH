@@ -13,6 +13,7 @@ export function ActionButtons() {
     projeto,
     tipografia,
     conteudo_pdf,
+    presentation_data,
     setProjeto,
     setTipografia,
     setConteudoPdf,
@@ -124,10 +125,13 @@ Agora analise a imagem anexada e devolva apenas o JSON final.`
 
   const handlePrint = () => {
     const originalTitle = document.title
-    const brandName = projeto.nome_marca || 'MARCA'
+    const isPresentation = screen === 'brand-presentation'
+    const brandName = isPresentation 
+      ? (presentation_data.brand_name || 'MARCA')
+      : (projeto.nome_marca || 'MARCA')
     
     // Define o título do documento com base na tela atual
-    const prefix = screen === 'brand-presentation' ? 'APRESENTAÇÃO DE LOGO' : 'MANUAL DE MARCA'
+    const prefix = isPresentation ? 'APRESENTAÇÃO DE LOGO' : 'MANUAL DE MARCA'
     document.title = `${prefix} - ${brandName.toUpperCase()}`
 
     setTimeout(() => {

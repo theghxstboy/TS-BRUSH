@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import { useAppStore } from './useAppStore'
 import { toast } from 'sonner'
 import { hexToHsl, hexToRgb, normalizeHex } from '../lib/colorUtils'
 import { EMPTY_UPLOADED_FONT } from '../lib/fontUtils'
@@ -617,6 +618,7 @@ export const useBrandStore = create<BrandStore>((set, get) => ({
   exportJson: (screen) => {
     const s = get()
     const stateData = {
+      _exported_screen: screen,
       projeto: s.projeto,
       conteudo_pdf: s.conteudo_pdf,
       tipografia: s.tipografia,
@@ -659,6 +661,14 @@ export const useBrandStore = create<BrandStore>((set, get) => ({
         const importedPresentationColors = Array.isArray(p.cores_apresentacao)
           ? p.cores_apresentacao
           : fallback.cores_apresentacao
+
+        // Automatically determine which screen to go into
+        requestAnimationFrame(() => {
+          const targetScreen = p._exported_screen 
+            ? p._exported_screen 
+            : (p.presentation_data?.brand_name ? 'brand-presentation' : 'brand-manual')
+          useAppStore.getState().setScreen(targetScreen)
+        })
 
         set(() => ({
           projeto:    { ...fallback.projeto, ...p.projeto },

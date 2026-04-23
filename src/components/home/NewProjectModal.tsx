@@ -63,19 +63,19 @@ function SlidePreview({
   return (
     <div
       className="np-slide-preview"
-      style={{ background: bg }}
+      style={{ backgroundColor: bg }}
     >
       {type === 'cover' && (
         <>
-          <div className="np-slide-preview-accent-bar" style={{ background: accent }} />
+          <div className="np-slide-preview-accent-bar" style={{ backgroundColor: accent }} />
           {logoSrc ? (
             <img src={logoSrc} alt="logo" className="np-slide-preview-logo" />
           ) : (
             <div className="np-slide-preview-logo-placeholder" style={{ borderColor: accent }} />
           )}
           <div className="np-slide-preview-title-block" style={{ color: title }}>
-            <div className="np-slide-preview-brand-line" style={{ background: accent }} />
-            <div className="np-slide-preview-brand-txt" style={{ background: title }} />
+            <div className="np-slide-preview-brand-line" style={{ backgroundColor: accent }} />
+            <div className="np-slide-preview-brand-txt" style={{ backgroundColor: title }} />
           </div>
         </>
       )}
@@ -83,15 +83,15 @@ function SlidePreview({
         <>
           <div className="np-slide-preview-section-num" style={{ color: accent, borderColor: accent }}>01</div>
           <div className="np-slide-preview-section-title" style={{ color: title }}>Tipografia</div>
-          <div className="np-slide-preview-section-bar" style={{ background: accent }} />
+          <div className="np-slide-preview-section-bar" style={{ backgroundColor: accent }} />
         </>
       )}
       {type === 'content' && (
         <>
-          <div className="np-slide-preview-content-header" style={{ background: accent }} />
-          <div className="np-slide-preview-content-title" style={{ background: title }} />
-          <div className="np-slide-preview-content-text" style={{ background: text ?? '#888' }} />
-          <div className="np-slide-preview-content-text np-slide-preview-content-text-sm" style={{ background: text ?? '#888' }} />
+          <div className="np-slide-preview-content-header" style={{ backgroundColor: accent }} />
+          <div className="np-slide-preview-content-title" style={{ backgroundColor: title }} />
+          <div className="np-slide-preview-content-text" style={{ backgroundColor: text ?? '#888' }} />
+          <div className="np-slide-preview-content-text np-slide-preview-content-text-sm" style={{ backgroundColor: text ?? '#888' }} />
         </>
       )}
       {type === 'final' && (
@@ -102,7 +102,7 @@ function SlidePreview({
             <div className="np-slide-preview-logo-placeholder" style={{ borderColor: accent }} />
           )}
           <div className="np-slide-preview-final-title" style={{ color: title }}>Obrigado</div>
-          <div className="np-slide-preview-final-bar" style={{ background: accent }} />
+          <div className="np-slide-preview-final-bar" style={{ backgroundColor: accent }} />
         </>
       )}
     </div>
@@ -153,7 +153,7 @@ function ColorField({
               key={c}
               type="button"
               className={`np-color-preset-dot ${color === c ? 'active' : ''}`}
-              style={{ background: c }}
+              style={{ backgroundColor: c }}
               title={c}
               onClick={() => onChange(c)}
             />
@@ -708,7 +708,7 @@ export function NewProjectModal({ onClose }: NewProjectModalProps) {
                         <span className="np-sampled-label">Da logo:</span>
                         <div className="np-sampled-dots">
                           {sampledColors.map((c) => (
-                            <div key={c} className="np-sampled-dot" style={{ background: c }} title={c} />
+                            <div key={c} className="np-sampled-dot" style={{ backgroundColor: c }} title={c} />
                           ))}
                         </div>
                         <button type="button" className="np-sampled-apply" onClick={() => applyPalette(sampledColors)}>
@@ -737,7 +737,7 @@ export function NewProjectModal({ onClose }: NewProjectModalProps) {
                         <span className="np-sampled-label">Da logo:</span>
                         <div className="np-sampled-dots">
                           {sampledColors.map((c) => (
-                            <div key={c} className="np-sampled-dot" style={{ background: c }} title={c} />
+                            <div key={c} className="np-sampled-dot" style={{ backgroundColor: c }} title={c} />
                           ))}
                         </div>
                         <button type="button" className="np-sampled-apply" onClick={() => applyPalette(sampledColors)}>
@@ -767,7 +767,7 @@ export function NewProjectModal({ onClose }: NewProjectModalProps) {
                         <span className="np-sampled-label">Da logo:</span>
                         <div className="np-sampled-dots">
                           {sampledColors.map((c) => (
-                            <div key={c} className="np-sampled-dot" style={{ background: c }} title={c} />
+                            <div key={c} className="np-sampled-dot" style={{ backgroundColor: c }} title={c} />
                           ))}
                         </div>
                         <button type="button" className="np-sampled-apply" onClick={() => applyPalette(sampledColors)}>
@@ -798,7 +798,7 @@ export function NewProjectModal({ onClose }: NewProjectModalProps) {
                         <span className="np-sampled-label">Da logo:</span>
                         <div className="np-sampled-dots">
                           {sampledColors.map((c) => (
-                            <div key={c} className="np-sampled-dot" style={{ background: c }} title={c} />
+                            <div key={c} className="np-sampled-dot" style={{ backgroundColor: c }} title={c} />
                           ))}
                         </div>
                         <button type="button" className="np-sampled-apply" onClick={() => applyPalette(sampledColors)}>

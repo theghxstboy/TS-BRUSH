@@ -44,6 +44,8 @@ export function FontUploadControl({
 }: FontUploadControlProps) {
   const inputRef = useRef<HTMLInputElement>(null)
   const [showUpload, setShowUpload] = useState(!!customFont.data_url)
+  const [isDragging, setIsDragging] = useState(false)
+
   const effectiveName = resolveFontName(name, customFont.file_name)
   const previewFontFamily = getFontFamilyStack(effectiveName, previewFallback, previewGeneric)
 
@@ -110,7 +112,22 @@ export function FontUploadControl({
       </label>
 
       {showUpload && (
-        <div className="font-upload-card" style={{ marginTop: '4px', padding: '10px' }}>
+        <div 
+          className={`font-upload-card ${isDragging ? 'drag-active' : ''}`} 
+          style={{ marginTop: '4px', padding: '10px' }}
+          onDragOver={(e) => { e.preventDefault(); setIsDragging(true) }}
+          onDragLeave={() => setIsDragging(false)}
+          onDrop={(e) => {
+            e.preventDefault()
+            setIsDragging(false)
+            const file = e.dataTransfer.files?.[0]
+            if (file && (file.name.endsWith('.ttf') || file.name.endsWith('.otf') || file.name.endsWith('.woff') || file.name.endsWith('.woff2'))) {
+              handleFontFile(file)
+            } else {
+              toast.error('Formato de fonte inválido (.ttf, .otf, .woff, .woff2)')
+            }
+          }}
+        >
           <p className="font-helper-text" style={{ marginBottom: '8px', fontSize: '10px' }}>{sourceHint}</p>
 
           <div className="font-upload-actions" style={{ marginTop: 0 }}>

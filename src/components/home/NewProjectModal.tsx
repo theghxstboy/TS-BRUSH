@@ -180,13 +180,35 @@ function AssetUploadCard({
   onRemove: () => void
 }) {
   const fileRef = useRef<HTMLInputElement>(null)
+  const [isDragging, setIsDragging] = useState(false)
+
   const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
     onUpload(await readFileAsBase64(file))
   }
+
+  const onDragOver = (e: React.DragEvent) => {
+    e.preventDefault()
+    setIsDragging(true)
+  }
+  const onDragLeave = () => setIsDragging(false)
+  const onDrop = async (e: React.DragEvent) => {
+    e.preventDefault()
+    setIsDragging(false)
+    const file = e.dataTransfer.files?.[0]
+    if (file && file.type.startsWith('image/')) {
+      onUpload(await readFileAsBase64(file))
+    }
+  }
+
   return (
-    <div className="np-asset-card">
+    <div 
+      className={`np-asset-card ${isDragging ? 'drag-active' : ''}`}
+      onDragOver={onDragOver}
+      onDragLeave={onDragLeave}
+      onDrop={onDrop}
+    >
       <div className="np-asset-header">
         <span className="np-asset-title">{title}</span>
         {optional && <span className="np-asset-optional">(Opcional)</span>}
@@ -225,13 +247,35 @@ function BgUploadRow({
   onRemove: () => void
 }) {
   const ref = useRef<HTMLInputElement>(null)
+  const [isDragging, setIsDragging] = useState(false)
+
   const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
     onUpload(await readFileAsBase64(file))
   }
+
+  const onDragOver = (e: React.DragEvent) => {
+    e.preventDefault()
+    setIsDragging(true)
+  }
+  const onDragLeave = () => setIsDragging(false)
+  const onDrop = async (e: React.DragEvent) => {
+    e.preventDefault()
+    setIsDragging(false)
+    const file = e.dataTransfer.files?.[0]
+    if (file && file.type.startsWith('image/')) {
+      onUpload(await readFileAsBase64(file))
+    }
+  }
+
   return (
-    <div className="np-bg-row">
+    <div 
+      className={`np-bg-row ${isDragging ? 'drag-active' : ''}`}
+      onDragOver={onDragOver}
+      onDragLeave={onDragLeave}
+      onDrop={onDrop}
+    >
       <div className="np-bg-row-info">
         <span className="np-bg-row-label">{label}</span>
         <span className="np-bg-row-hint">{hint}</span>
@@ -345,6 +389,7 @@ export function NewProjectModal({ onClose }: NewProjectModalProps) {
 
   // ── Step 3: mockups ────────────────────────────────────────────────────────
   const [mockups, setMockups] = useState<string[]>([])
+  const [isDraggingMockup, setIsDraggingMockup] = useState(false)
 
   // ── Step 2: tipografia da marca ─────────────────────────────────────────────
   const [tipoPrincipalNome, setTipoPrincipalNome] = useState('')
@@ -661,7 +706,7 @@ export function NewProjectModal({ onClose }: NewProjectModalProps) {
                 <input id="np-responsavel" className="np-input" type="text" placeholder="Ex: TS Tools" value={responsavel} onChange={(e) => setResponsavel(e.target.value)} style={{ height: '40px' }} />
               </div>
               <button type="button" className="home-modal-btn home-modal-btn-primary" onClick={handleAdvanceToBrandTypography}>
-                Próximo: Tipografia <ArrowRight size={14} />
+                Próximo: Tipografia<ArrowRight size={16} />
               </button>
             </div>
           </>
@@ -857,7 +902,24 @@ export function NewProjectModal({ onClose }: NewProjectModalProps) {
                         </button>
                       </div>
                     ))}
-                    <button type="button" className="np-mockup-add" onClick={() => mockupRef.current?.click()}>
+                    <button 
+                      type="button" 
+                      className={`np-mockup-add ${isDraggingMockup ? 'drag-active' : ''}`}
+                      onClick={() => mockupRef.current?.click()}
+                      onDragOver={(e) => { e.preventDefault(); setIsDraggingMockup(true) }}
+                      onDragLeave={() => setIsDraggingMockup(false)}
+                      onDrop={async (e) => {
+                        e.preventDefault()
+                        setIsDraggingMockup(false)
+                        const files = Array.from(e.dataTransfer.files)
+                        for (const file of files) {
+                          if (file.type.startsWith('image/')) {
+                            const b64 = await readFileAsBase64(file)
+                            setMockups((prev) => [...prev, b64])
+                          }
+                        }
+                      }}
+                    >
                       <Plus size={20} />
                       <span>Adicionar</span>
                     </button>
@@ -920,7 +982,7 @@ export function NewProjectModal({ onClose }: NewProjectModalProps) {
                   className="home-modal-btn home-modal-btn-primary"
                   onClick={handleAdvanceToLayoutTypography}
                 >
-                  Próximo <ArrowRight size={14} />
+                  Próximo<ArrowRight size={16} />
                 </button>
               )}
             </div>
@@ -974,7 +1036,7 @@ export function NewProjectModal({ onClose }: NewProjectModalProps) {
                 className="home-modal-btn home-modal-btn-primary"
                 onClick={handleAdvanceToStyle}
               >
-                Próximo (Estilo Visual) <ArrowRight size={14} />
+                Próximo (Estilo Visual)<ArrowRight size={16} />
               </button>
             </div>
           </>
@@ -1022,7 +1084,7 @@ export function NewProjectModal({ onClose }: NewProjectModalProps) {
                 className="home-modal-btn home-modal-btn-primary"
                 onClick={handleEnterEditor}
               >
-                Gerar Manual <ArrowRight size={14} />
+                Gerar Manual<ArrowRight size={16} />
               </button>
             </div>
           </>

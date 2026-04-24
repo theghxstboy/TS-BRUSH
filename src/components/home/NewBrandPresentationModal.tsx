@@ -26,6 +26,18 @@ type ModalView = 'choose' | 'info' | 'versions' | 'style' | 'typography'
 type ProjectType = 'new' | 'rebranding'
 type StyleTab = 'capa' | 'secao' | 'conteudo' | 'final' | 'fundos'
 
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+function readFileAsBase64(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = (e) => resolve(e.target?.result as string)
+    reader.onerror = reject
+    reader.readAsDataURL(file)
+  })
+}
+
+
 interface VersionData {
   explanation: string
   logoNew: string | null
@@ -214,17 +226,35 @@ function BgUploadRow({
   onRemove: () => void
 }) {
   const ref = useRef<HTMLInputElement>(null)
+  const [isDragging, setIsDragging] = useState(false)
   
   const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
-    const reader = new FileReader()
-    reader.onload = (ev) => onUpload(ev.target?.result as string)
-    reader.readAsDataURL(file)
+    onUpload(await readFileAsBase64(file))
+  }
+
+  const onDragOver = (e: React.DragEvent) => {
+    e.preventDefault()
+    setIsDragging(true)
+  }
+  const onDragLeave = () => setIsDragging(false)
+  const onDrop = async (e: React.DragEvent) => {
+    e.preventDefault()
+    setIsDragging(false)
+    const file = e.dataTransfer.files?.[0]
+    if (file && file.type.startsWith('image/')) {
+      onUpload(await readFileAsBase64(file))
+    }
   }
 
   return (
-    <div className="np-bg-row">
+    <div 
+      className={`np-bg-row ${isDragging ? 'drag-active' : ''}`}
+      onDragOver={onDragOver}
+      onDragLeave={onDragLeave}
+      onDrop={onDrop}
+    >
       <div className="np-bg-row-info">
         <span className="np-bg-row-label">{label}</span>
         <span className="np-bg-row-hint">{hint}</span>
@@ -263,17 +293,36 @@ function AssetUploadCard({
   compact?: boolean
 }) {
   const fileRef = useRef<HTMLInputElement>(null)
+  const [isDragging, setIsDragging] = useState(false)
 
   const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
-    const reader = new FileReader()
-    reader.onload = (ev) => onUpload(ev.target?.result as string)
-    reader.readAsDataURL(file)
+    onUpload(await readFileAsBase64(file))
+  }
+
+  const onDragOver = (e: React.DragEvent) => {
+    e.preventDefault()
+    setIsDragging(true)
+  }
+  const onDragLeave = () => setIsDragging(false)
+  const onDrop = async (e: React.DragEvent) => {
+    e.preventDefault()
+    setIsDragging(false)
+    const file = e.dataTransfer.files?.[0]
+    if (file && file.type.startsWith('image/')) {
+      onUpload(await readFileAsBase64(file))
+    }
   }
 
   return (
-    <div className={`np-asset-card ${value ? 'has-value' : ''}`} style={compact ? { padding: '10px 14px' } : {}}>
+    <div 
+      className={`np-asset-card ${value ? 'has-value' : ''} ${isDragging ? 'drag-active' : ''}`} 
+      style={compact ? { padding: '10px 14px' } : {}}
+      onDragOver={onDragOver}
+      onDragLeave={onDragLeave}
+      onDrop={onDrop}
+    >
       <div className="np-asset-header">
         <span className="np-asset-title">{title}</span>
         {optional && <span className="np-asset-optional">Opcional</span>}
@@ -318,11 +367,14 @@ export function NewBrandPresentationModal({ onClose }: NewBrandPresentationModal
   // Navigation State
   const [view, setView] = useState<ModalView>('choose')
   const [currentVersionIndex, setCurrentVersionIndex] = useState(0)
+  const [isDraggingMockup, setIsDraggingMockup] = useState(false)
+
 
   // Project Info State
   const [projectType, setProjectType] = useState<ProjectType>('new')
   const [showComparison, setShowComparison] = useState(false)
   const [brandName, setBrandName] = useState('')
+  const [subtitle, setSubtitle] = useState('')
   const [responsibleName, setResponsibleName] = useState('')
   const [logoAntigaGlobal, setLogoAntigaGlobal] = useState<string | null>(null)
   const [qtdVersions, setQtdVersions] = useState(3)
@@ -420,6 +472,7 @@ export function NewBrandPresentationModal({ onClose }: NewBrandPresentationModal
     // Save everything to the store before switching screens
     setPresentationData({
       brand_name: brandName,
+      subtitle: subtitle,
       responsible_name: responsibleName,
       project_type: projectType,
       show_comparison: showComparison,
@@ -500,12 +553,12 @@ export function NewBrandPresentationModal({ onClose }: NewBrandPresentationModal
 
   const handleAddMockups = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || [])
+    const newB64s: string[] = []
     for (const file of files) {
-      const reader = new FileReader()
-      reader.onload = (ev) => {
-        updateVersion({ mockups: [...versions[currentVersionIndex].mockups, ev.target?.result as string] })
-      }
-      reader.readAsDataURL(file)
+      newB64s.push(await readFileAsBase64(file))
+    }
+    if (newB64s.length > 0) {
+      updateVersion({ mockups: [...versions[currentVersionIndex].mockups, ...newB64s] })
     }
     e.target.value = ''
   }
@@ -563,6 +616,7 @@ export function NewBrandPresentationModal({ onClose }: NewBrandPresentationModal
                 onClick={() => {
                   setPresentationData({
                     brand_name: '',
+                    subtitle: '',
                     responsible_name: '',
                     project_type: 'new',
                     show_comparison: false,
@@ -619,91 +673,110 @@ export function NewBrandPresentationModal({ onClose }: NewBrandPresentationModal
               <button type="button" className="np-close-btn" onClick={handleSafeClose}><X size={16} /></button>
             </div>
 
-            <div className="np-form-centered">
-              <div className="np-field-group">
-                <label className="np-label">Tipo de Projeto</label>
-                <div className="np-segmented-control">
-                  <button
-                    type="button"
-                    className={`np-segment ${projectType === 'new' ? 'active' : ''}`}
-                    onClick={() => handleProjectTypeChange('new')}
-                  >
-                    <Sparkles size={14} /> Nova Versão
-                  </button>
-                  <button
-                    type="button"
-                    className={`np-segment ${projectType === 'rebranding' ? 'active' : ''}`}
-                    onClick={() => handleProjectTypeChange('rebranding')}
-                  >
-                    <RefreshCcw size={14} /> Rebranding
-                  </button>
-                </div>
-              </div>
-
-              <div className="np-field-group" style={{ margin: '0 auto', width: '100%', maxWidth: '540px' }}>
-                <label className="np-label">Nome da Marca</label>
-                <input
-                  className="np-input"
-                  type="text"
-                  placeholder="Ex: TS Tools"
-                  value={brandName}
-                  onChange={(e) => setBrandName(e.target.value)}
-                />
-              </div>
-
-              <div className="np-field-group" style={{ margin: '0 auto', width: '100%', maxWidth: '540px' }}>
-                <label className="np-label">Responsável pela logo</label>
-                <input
-                  className="np-input"
-                  type="text"
-                  placeholder="Ex: João Silva"
-                  value={responsibleName}
-                  onChange={(e) => setResponsibleName(e.target.value)}
-                />
-              </div>
-
-              <div className="np-field-group">
-                <label className="np-label">Quantas versões desenvolvidas?</label>
-                <div className="np-version-selector" style={{ margin: '0 auto' }}>
-                  {[1, 2, 3, 4, 5].map(n => (
+            <div className="np-form-info-layout">
+              <div className="np-form-column">
+                <div className="np-field-group">
+                  <label className="np-label">Tipo de Projeto</label>
+                  <div className="np-segmented-control">
                     <button
-                      key={n}
                       type="button"
-                      className={`np-version-btn ${qtdVersions === n ? 'active' : ''}`}
-                      onClick={() => setQtdVersions(n)}
-                      style={{ width: '44px' }}
+                      className={`np-segment ${projectType === 'new' ? 'active' : ''}`}
+                      onClick={() => handleProjectTypeChange('new')}
                     >
-                      {n}
+                      <Sparkles size={14} /> Nova Versão
                     </button>
-                  ))}
+                    <button
+                      type="button"
+                      className={`np-segment ${projectType === 'rebranding' ? 'active' : ''}`}
+                      onClick={() => handleProjectTypeChange('rebranding')}
+                    >
+                      <RefreshCcw size={14} /> Rebranding
+                    </button>
+                  </div>
+                </div>
+
+                <div className="np-field-group">
+                  <label className="np-label">Nome da Marca</label>
+                  <input
+                    className="np-input"
+                    type="text"
+                    placeholder="Ex: TS Tools"
+                    value={brandName}
+                    onChange={(e) => setBrandName(e.target.value)}
+                  />
+                </div>
+
+                <div className="np-field-group">
+                  <label className="np-label">Legenda da Apresentação</label>
+                  <input
+                    className="np-input"
+                    type="text"
+                    placeholder="Ex: Apresentação de Identidade Visual"
+                    value={subtitle}
+                    onChange={(e) => setSubtitle(e.target.value)}
+                  />
+                </div>
+
+                <div className="np-field-group">
+                  <label className="np-label">Responsável pela logo</label>
+                  <input
+                    className="np-input"
+                    type="text"
+                    placeholder="Ex: João Silva"
+                    value={responsibleName}
+                    onChange={(e) => setResponsibleName(e.target.value)}
+                  />
                 </div>
               </div>
 
-              <div className="np-checkbox-group" onClick={() => setShowComparison(!showComparison)}>
-                <div className={`np-checkbox-box ${showComparison ? 'checked' : ''}`}>
-                  <Check size={14} strokeWidth={3} />
+              <div className="np-form-column">
+                <div className="np-field-group">
+                  <label className="np-label">Quantas versões desenvolvidas?</label>
+                  <div className="np-version-selector">
+                    {[1, 2, 3, 4, 5].map(n => (
+                      <button
+                        key={n}
+                        type="button"
+                        className={`np-version-btn ${qtdVersions === n ? 'active' : ''}`}
+                        onClick={() => setQtdVersions(n)}
+                      >
+                        {n}
+                      </button>
+                    ))}
+                  </div>
                 </div>
-                <span className="np-checkbox-label">Habilitar comparativo de logos</span>
-              </div>
 
-              <AnimatePresence>
-                {showComparison && (
-                  <motion.div
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: 'auto' }}
-                    exit={{ opacity: 0, height: 0 }}
-                    style={{ width: '100%', maxWidth: '280px', margin: '0 auto' }}
-                  >
-                    <AssetUploadCard
-                      compact
-                      title="Logo Antiga (Referência)"
-                      value={logoAntigaGlobal}
-                      onUpload={setLogoAntigaGlobal}
-                      onRemove={() => setLogoAntigaGlobal(null)}
-                    />
-                  </motion.div>
-                )}
-              </AnimatePresence>
+                <div className="np-field-group">
+                  <label className="np-label">Configurações Extras</label>
+                  <div className="np-card-glass" style={{ padding: '20px', borderRadius: '12px' }}>
+                    <div className="np-checkbox-group" style={{ marginBottom: showComparison ? '16px' : '0' }} onClick={() => setShowComparison(!showComparison)}>
+                      <div className={`np-checkbox-box ${showComparison ? 'checked' : ''}`}>
+                        <Check size={14} strokeWidth={3} />
+                      </div>
+                      <span className="np-checkbox-label">Habilitar comparativo de logos</span>
+                    </div>
+
+                    <AnimatePresence>
+                      {showComparison && (
+                        <motion.div
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: 'auto' }}
+                          exit={{ opacity: 0, height: 0 }}
+                          className="np-comparison-upload-wrap"
+                        >
+                          <AssetUploadCard
+                            compact
+                            title="Logo Antiga (Referência)"
+                            value={logoAntigaGlobal}
+                            onUpload={setLogoAntigaGlobal}
+                            onRemove={() => setLogoAntigaGlobal(null)}
+                          />
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                </div>
+              </div>
             </div>
 
             <div className="np-modal-footer">
@@ -712,7 +785,7 @@ export function NewBrandPresentationModal({ onClose }: NewBrandPresentationModal
                 className="home-modal-btn home-modal-btn-primary"
                 onClick={handleAdvanceFromInfo}
               >
-                Avançar <ArrowRight size={14} />
+                Avançar<ArrowRight size={16} />
               </button>
             </div>
           </>
@@ -783,7 +856,27 @@ export function NewBrandPresentationModal({ onClose }: NewBrandPresentationModal
                     ))}
 
                     {versions[currentVersionIndex].mockups.length < 10 && (
-                      <button type="button" className="np-mockup-add-v3" onClick={() => mockupRef.current?.click()}>
+                      <button 
+                        type="button" 
+                        className={`np-mockup-add-v3 ${isDraggingMockup ? 'drag-active' : ''}`}
+                        onClick={() => mockupRef.current?.click()}
+                        onDragOver={(e) => { e.preventDefault(); setIsDraggingMockup(true) }}
+                        onDragLeave={() => setIsDraggingMockup(false)}
+                        onDrop={async (e) => {
+                          e.preventDefault()
+                          setIsDraggingMockup(false)
+                          const files = Array.from(e.dataTransfer.files)
+                          const b64s: string[] = []
+                          for (const file of files) {
+                            if (file.type.startsWith('image/')) {
+                              b64s.push(await readFileAsBase64(file))
+                            }
+                          }
+                          if (b64s.length > 0) {
+                            updateVersion({ mockups: [...versions[currentVersionIndex].mockups, ...b64s] })
+                          }
+                        }}
+                      >
                         <Plus size={24} />
                         <span>Adicionar Mockup</span>
                       </button>
@@ -794,13 +887,33 @@ export function NewBrandPresentationModal({ onClose }: NewBrandPresentationModal
               </div>
             </div>
 
-            <div className="np-modal-footer">
+            <div className="np-modal-footer" style={{ justifyContent: 'space-between' }}>
+              <button 
+                type="button" 
+                className="np-style-tab-prev"
+                onClick={handleVersionBack}
+              >
+                <ChevronLeft size={16} />
+                {currentVersionIndex === 0 ? 'Voltar: Config.' : `Versão ${currentVersionIndex}`}
+              </button>
+
+              <div className="np-style-tab-dots">
+                {Array.from({ length: qtdVersions }).map((_, i) => (
+                  <button 
+                    key={i}
+                    type="button"
+                    className={`np-style-tab-dot ${i === currentVersionIndex ? 'active' : ''}`}
+                    onClick={() => setCurrentVersionIndex(i)}
+                  />
+                ))}
+              </div>
+
               <button
                 type="button"
                 className="home-modal-btn home-modal-btn-primary"
                 onClick={handleVersionNext}
               >
-                {currentVersionIndex < qtdVersions - 1 ? 'Próxima Versão' : 'Próximo (Layout)'} <ArrowRight size={14} />
+                {currentVersionIndex < qtdVersions - 1 ? 'Próxima Versão' : 'Próximo (Layout)'}<ArrowRight size={16} />
               </button>
             </div>
           </>
@@ -933,9 +1046,47 @@ export function NewBrandPresentationModal({ onClose }: NewBrandPresentationModal
               )}
             </div>
 
-            <div className="np-modal-footer">
-              <button type="button" className="home-modal-btn home-modal-btn-primary" onClick={handleStyleNext}>
-                Próximo: Fonte <ArrowRight size={14} />
+            <div className="np-modal-footer" style={{ justifyContent: 'space-between' }}>
+              <button 
+                type="button" 
+                className="np-style-tab-prev"
+                onClick={() => {
+                  const idx = STYLE_TABS.findIndex(t => t.id === styleTab)
+                  if (idx > 0) {
+                    setStyleTab(STYLE_TABS[idx - 1].id)
+                  } else {
+                    handleStyleBack()
+                  }
+                }}
+              >
+                <ChevronLeft size={16} />
+                {styleTab === STYLE_TABS[0].id ? 'Voltar: Versões' : STYLE_TABS[STYLE_TABS.findIndex(t => t.id === styleTab) - 1].label}
+              </button>
+
+              <div className="np-style-tab-dots">
+                {STYLE_TABS.map((t) => (
+                  <button 
+                    key={t.id}
+                    type="button"
+                    className={`np-style-tab-dot ${t.id === styleTab ? 'active' : ''}`}
+                    onClick={() => setStyleTab(t.id)}
+                  />
+                ))}
+              </div>
+
+              <button
+                type="button"
+                className="home-modal-btn home-modal-btn-primary"
+                onClick={() => {
+                  const idx = STYLE_TABS.findIndex(t => t.id === styleTab)
+                  if (idx < STYLE_TABS.length - 1) {
+                    setStyleTab(STYLE_TABS[idx + 1].id)
+                  } else {
+                    handleStyleNext()
+                  }
+                }}
+              >
+                {styleTab === STYLE_TABS[STYLE_TABS.length - 1].id ? 'Próximo: Fonte' : STYLE_TABS[STYLE_TABS.findIndex(t => t.id === styleTab) + 1].label}<ArrowRight size={16} />
               </button>
             </div>
           </>
@@ -979,7 +1130,7 @@ export function NewBrandPresentationModal({ onClose }: NewBrandPresentationModal
 
             <div className="np-modal-footer">
               <button type="button" className="home-modal-btn home-modal-btn-primary" onClick={handleEnterEditor}>
-                Gerar Apresentação <Sparkles size={14} />
+                Gerar Apresentação<Sparkles size={16} />
               </button>
             </div>
           </>
@@ -987,13 +1138,26 @@ export function NewBrandPresentationModal({ onClose }: NewBrandPresentationModal
       </motion.div>
 
       <style>{`
+        .np-form-info-layout {
+          display: grid;
+          grid-template-columns: 1.2fr 0.8fr;
+          gap: 48px;
+          padding: 20px 48px;
+          flex: 1;
+          align-items: start;
+        }
+        .np-form-column {
+          display: flex;
+          flex-direction: column;
+          gap: 24px;
+        }
         .np-version-selector {
           display: flex;
           gap: 8px;
         }
         .np-version-btn {
           flex: 1;
-          height: 36px;
+          height: 44px;
           border-radius: 8px;
           border: 1px solid var(--glass-border);
           background: rgba(255,255,255,0.03);
@@ -1008,7 +1172,11 @@ export function NewBrandPresentationModal({ onClose }: NewBrandPresentationModal
           border-color: var(--accent);
           box-shadow: 0 0 10px rgba(255, 163, 0, 0.3);
         }
+        .np-comparison-upload-wrap {
+          overflow: hidden;
+        }
         .np-mockup-list {
+
           display: grid;
           grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
           gap: 12px;

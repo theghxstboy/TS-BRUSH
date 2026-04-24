@@ -600,14 +600,21 @@ body,
 }
 
 .home-modal-btn-primary {
-  background: var(--accent);
+  background: linear-gradient(135deg, var(--accent) 0%, #e69200 100%);
   color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 15px rgba(255, 163, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
 .home-modal-btn-primary:hover {
-  background: var(--accent-hover);
-  transform: translateY(-1px);
-  box-shadow: 0 6px 20px rgba(255, 163, 0, 0.35);
+  background: linear-gradient(135deg, var(--accent-hover) 0%, var(--accent) 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(255, 163, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.home-modal-btn-primary:active {
+  transform: translateY(0);
+  box-shadow: 0 4px 10px rgba(255, 163, 0, 0.2);
 }
 
 .home-modal-btn-secondary {
@@ -1276,7 +1283,7 @@ body,
   align-items: center;
   justify-content: flex-end;
   gap: 24px;
-  padding: 20px 0 0;
+  padding: 24px 0;
   margin-top: 16px;
   border-top: 1px solid rgba(255, 255, 255, 0.08);
   box-shadow: 0 -1px 0 rgba(255, 255, 255, 0.02);
@@ -1294,10 +1301,11 @@ body,
 .np-modal-footer .home-modal-btn {
   width: auto;
   min-width: 140px;
-  height: 40px;
-  padding: 0 24px;
-  font-size: 13px;
+  height: 44px;
+  padding: 0 28px;
+  font-size: 14px;
   flex: 0 0 auto;
+  border-radius: 12px;
 }
 
 .np-form-footer-right {
@@ -2407,6 +2415,21 @@ body,
   width: 18px;
   border-radius: 4px;
 }
+
+/* ── Drag & Drop States ── */
+.np-asset-card.drag-active,
+.np-bg-row.drag-active,
+.font-upload-card.drag-active,
+.np-mockup-add.drag-active,
+.np-mockup-add-v2.drag-active,
+.np-mockup-add-v3.drag-active {
+  border-color: var(--accent) !important;
+  background: rgba(255, 163, 0, 0.08) !important;
+  transform: scale(1.02);
+  box-shadow: 0 0 20px rgba(255, 163, 0, 0.15);
+  transition: all 0.2s ease;
+}
+
 
 
 

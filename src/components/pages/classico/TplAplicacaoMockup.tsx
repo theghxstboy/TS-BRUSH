@@ -1,4 +1,5 @@
 import { useBrandStore } from '../../../store/useBrandStore'
+import type { SlideAppearance } from '../../../store/useBrandStore'
 import { usePageColors } from '../../../hooks/usePageColors'
 import { usePresentationTextStyles } from '../../../hooks/usePresentationTextStyles'
 
@@ -6,11 +7,12 @@ interface TplAplicacaoMockupProps {
   mockupIndex: number
   pageNumber: number
   totalMockups: number
+  overrideAppearance?: SlideAppearance
 }
 
-export function TplAplicacaoMockup({ mockupIndex, pageNumber, totalMockups }: TplAplicacaoMockupProps) {
+export function TplAplicacaoMockup({ mockupIndex, pageNumber, totalMockups, overrideAppearance }: TplAplicacaoMockupProps) {
   const { assets_base64 } = useBrandStore()
-  const { primaryColor, darkColor, textColor, pageBackgroundStyle } = usePageColors('mockup')
+  const { primaryColor, darkColor, textColor, pageBackgroundStyle } = usePageColors('mockup', overrideAppearance)
   const { bodyStyle, metaStyle } = usePresentationTextStyles()
   const src = assets_base64.mockups[mockupIndex]
   if (!src) return null

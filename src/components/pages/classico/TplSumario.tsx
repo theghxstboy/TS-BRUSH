@@ -1,5 +1,6 @@
 import { usePageColors } from '../../../hooks/usePageColors'
 import { usePresentationTextStyles } from '../../../hooks/usePresentationTextStyles'
+import type { SlideAppearance } from '../../../store/useBrandStore'
 
 interface TplSumarioProps {
   pageNumber: number
@@ -8,10 +9,11 @@ interface TplSumarioProps {
     titulo: string
     itens: Array<{ pagina: string; titulo: string }>
   }>
+  overrideAppearance?: SlideAppearance
 }
 
-export function TplSumario({ pageNumber, grupos }: TplSumarioProps) {
-  const { pageColor, titleColor, textColor, detailColor, pageBackgroundStyle } = usePageColors('sumario')
+export function TplSumario({ pageNumber, grupos, overrideAppearance }: TplSumarioProps) {
+  const { pageColor, titleColor, textColor, detailColor, pageBackgroundStyle } = usePageColors('sumario', overrideAppearance)
   const { pageTitleStyle, bodyStyle, metaStyle } = usePresentationTextStyles()
 
   return (

@@ -1,24 +1,25 @@
 import React from 'react'
 import { useBrandStore } from '../store/useBrandStore'
-import type { SlideAppearanceKey } from '../store/useBrandStore'
+import type { SlideAppearanceKey, SlideAppearance } from '../store/useBrandStore'
 
 /**
  * Returns the two key colors and the aparencia-based background helpers
  * used across all PDF pages.
  */
-export function usePageColors(slideType?: SlideAppearanceKey) {
-  const { aparencia, page_appearance } = useBrandStore()
-  const pageAppearance = slideType ? page_appearance[slideType] : null
+export function usePageColors(slideType?: SlideAppearanceKey, override?: SlideAppearance) {
+  const { aparencia, page_appearance, custom_presentation_data } = useBrandStore()
+  const pageAppearance = override || (slideType ? page_appearance[slideType] : null)
 
+  const globalCustom = custom_presentation_data.appearance
   let globalApp = aparencia.conteudo
   if (slideType === 'capa') globalApp = aparencia.capa as any
   else if (slideType === 'final') globalApp = aparencia.final as any
   else if (slideType?.startsWith('secao-')) globalApp = aparencia.secao as any
 
-  const pageColor = pageAppearance?.cor_fundo_pagina || globalApp.cor_fundo_pagina || '#FFFFFF'
-  const titleColor = pageAppearance?.cor_titulo || globalApp.cor_titulo || '#0C0C0C'
-  const textColor = pageAppearance?.cor_texto || globalApp.cor_texto || '#1A1A1A'
-  const detailColor = pageAppearance?.cor_detalhes || globalApp.cor_detalhes || '#FFA300'
+  const pageColor = pageAppearance?.cor_fundo_pagina || globalCustom.fundo || globalApp.cor_fundo_pagina || '#FFFFFF'
+  const titleColor = pageAppearance?.cor_titulo || globalCustom.titulo || globalApp.cor_titulo || '#0C0C0C'
+  const textColor = pageAppearance?.cor_texto || globalCustom.texto || globalApp.cor_texto || '#1A1A1A'
+  const detailColor = pageAppearance?.cor_detalhes || globalCustom.detalhe || globalApp.cor_detalhes || '#FFA300'
   const shadowColor = pageAppearance?.cor_sombra || globalApp.cor_sombra || 'rgba(0,0,0,0.5)'
 
 

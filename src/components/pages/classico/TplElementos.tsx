@@ -1,12 +1,16 @@
 import { useBrandStore } from '../../../store/useBrandStore'
+import type { SlideAppearance } from '../../../store/useBrandStore'
 import { usePageColors } from '../../../hooks/usePageColors'
 import { usePresentationTextStyles } from '../../../hooks/usePresentationTextStyles'
 
-interface TplElementosProps { pageNumber: number }
+interface TplElementosProps { 
+  pageNumber: number 
+  overrideAppearance?: SlideAppearance
+}
 
-export function TplElementos({ pageNumber }: TplElementosProps) {
+export function TplElementos({ pageNumber, overrideAppearance }: TplElementosProps) {
   const { projeto, assets_base64, conteudo_pdf } = useBrandStore()
-  const { darkColor, contentTitleColor, textColor, pageColor, logoBackdropColor, pageBackgroundStyle } = usePageColors('elementos')
+  const { darkColor, contentTitleColor, textColor, pageColor, logoBackdropColor, pageBackgroundStyle } = usePageColors('elementos', overrideAppearance)
   const { pageTitleStyle, bodyStyle, metaStyle } = usePresentationTextStyles()
 
   const uploadedAssets = [

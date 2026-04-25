@@ -9,7 +9,7 @@ interface CollapsibleSectionProps {
   children: React.ReactNode
 }
 
-export function CollapsibleSection({ icon, label, defaultOpen = true, sectionId, children }: CollapsibleSectionProps) {
+export function CollapsibleSection({ icon, label, defaultOpen = false, sectionId, children }: CollapsibleSectionProps) {
   const [open, setOpen] = useState(defaultOpen)
 
   useEffect(() => {

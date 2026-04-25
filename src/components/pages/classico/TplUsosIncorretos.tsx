@@ -1,13 +1,17 @@
 import type { CSSProperties } from 'react'
 import { useBrandStore } from '../../../store/useBrandStore'
+import type { SlideAppearance } from '../../../store/useBrandStore'
 import { usePageColors } from '../../../hooks/usePageColors'
 import { usePresentationTextStyles } from '../../../hooks/usePresentationTextStyles'
 
-interface TplUsosIncorretosProps { pageNumber: number }
+interface TplUsosIncorretosProps { 
+  pageNumber: number 
+  overrideAppearance?: SlideAppearance
+}
 
-export function TplUsosIncorretos({ pageNumber }: TplUsosIncorretosProps) {
+export function TplUsosIncorretos({ pageNumber, overrideAppearance }: TplUsosIncorretosProps) {
   const { assets_base64 } = useBrandStore()
-  const { darkColor, contentTitleColor, textColor, pageColor, pageBackgroundStyle } = usePageColors('usos-incorretos')
+  const { darkColor, contentTitleColor, textColor, pageColor, pageBackgroundStyle } = usePageColors('usos-incorretos', overrideAppearance)
   const { pageTitleStyle, bodyStyle, metaStyle } = usePresentationTextStyles()
   const src = assets_base64.logo_principal
 

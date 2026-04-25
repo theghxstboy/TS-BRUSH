@@ -106,6 +106,13 @@ export interface PageOrderState {
   classico: string[]
 }
 
+export interface CustomSlide {
+  id: string
+  templateId: string // The key used to identify the layout/template (e.g. 'capa', 'cores')
+  content: Record<string, any>
+  appearance: SlideAppearance
+}
+
 export interface BrandStore {
   projeto: {
     nome_marca: string
@@ -200,6 +207,21 @@ export interface BrandStore {
       textosCustom: UploadedFontAsset
     }
   }
+  custom_presentation_data: {
+    slides: CustomSlide[]
+    appearance: {
+      fundo: string
+      titulo: string
+      texto: string
+      detalhe: string
+    }
+    typography: {
+      titulosNome: string
+      titulosCustom: UploadedFontAsset
+      textosNome: string
+      textosCustom: UploadedFontAsset
+    }
+  }
 
   // Actions
   setProjeto: (fields: Partial<BrandStore['projeto']>) => void
@@ -218,6 +240,15 @@ export interface BrandStore {
   setTemplate: (t: TemplateId) => void
   setPresentationData: (data: BrandStore['presentation_data']) => void
   movePageBlock: (template: TemplateId, blockId: string, direction: 'up' | 'down') => void
+  
+  // Custom Presentation Actions
+  addCustomSlide: (templateId: string) => void
+  removeCustomSlide: (id: string) => void
+  reorderCustomSlide: (fromIndex: number, toIndex: number) => void
+  updateCustomSlideContent: (id: string, fields: Record<string, any>) => void
+  updateCustomSlideAppearance: (id: string, fields: Partial<SlideAppearance>) => void
+  setCustomPresentationData: (fields: Partial<BrandStore['custom_presentation_data']>) => void
+
   exportJson: (screen?: string) => void
   importJson: (file: File) => void
   reset: () => void
@@ -319,6 +350,7 @@ function freshDefault(): Omit<BrandStore,
   | 'setProjeto' | 'setConteudoPdf' | 'setTipografia' | 'setCor' | 'addCor' | 'removeCor' | 'replaceCores'
   | 'setAsset' | 'addMockup' | 'replaceMockup' | 'removeMockup' | 'setAparencia' | 'setTemplate' | 'movePageBlock'
   | 'setPageAppearance' | 'setPresentationData'
+  | 'addCustomSlide' | 'removeCustomSlide' | 'reorderCustomSlide' | 'updateCustomSlideContent' | 'updateCustomSlideAppearance' | 'setCustomPresentationData'
   | 'exportJson' | 'importJson' | 'reset'
 > {
   return {
@@ -414,6 +446,21 @@ function freshDefault(): Omit<BrandStore,
         textosCustom: { ...EMPTY_UPLOADED_FONT },
       },
     },
+    custom_presentation_data: {
+      slides: [],
+      appearance: {
+        fundo: '#0C0C0C',
+        titulo: '#FFFFFF',
+        texto: '#D4D4D4',
+        detalhe: '#FFA300',
+      },
+      typography: {
+        titulosNome: '',
+        titulosCustom: { ...EMPTY_UPLOADED_FONT },
+        textosNome: '',
+        textosCustom: { ...EMPTY_UPLOADED_FONT },
+      },
+    }
   }
 }
 
@@ -513,7 +560,7 @@ function sanitizeSlideAppearanceFields(fields: Partial<SlideAppearance>, current
   return next
 }
 
-// ─── Store ────────────────────────────────────────────────────────────────────
+// ─── Store Instance ───────────────────────────────────────────────────────────
 
 export const useBrandStore = create<BrandStore>((set, get) => ({
   ...freshDefault(),
@@ -615,6 +662,74 @@ export const useBrandStore = create<BrandStore>((set, get) => ({
       }
     }),
 
+  addCustomSlide: (templateId) =>
+    set((s) => {
+      const newSlide: CustomSlide = {
+        id: crypto.randomUUID(),
+        templateId,
+        content: {}, // Default content can be added later
+        appearance: { 
+          ...DEFAULT_SLIDE_APPEARANCE,
+          cor_fundo_pagina: '',
+          cor_titulo: '',
+          cor_texto: '',
+          cor_detalhes: '',
+        },
+      }
+      return {
+        custom_presentation_data: {
+          ...s.custom_presentation_data,
+          slides: [...s.custom_presentation_data.slides, newSlide],
+        },
+      }
+    }),
+
+  removeCustomSlide: (id) =>
+    set((s) => ({
+      custom_presentation_data: {
+        ...s.custom_presentation_data,
+        slides: s.custom_presentation_data.slides.filter((slide) => slide.id !== id),
+      },
+    })),
+
+  reorderCustomSlide: (fromIndex, toIndex) =>
+    set((s) => {
+      const next = [...s.custom_presentation_data.slides]
+      const [moved] = next.splice(fromIndex, 1)
+      next.splice(toIndex, 0, moved)
+      return {
+        custom_presentation_data: {
+          ...s.custom_presentation_data,
+          slides: next,
+        },
+      }
+    }),
+
+  updateCustomSlideContent: (id, fields) =>
+    set((s) => ({
+      custom_presentation_data: {
+        ...s.custom_presentation_data,
+        slides: s.custom_presentation_data.slides.map((slide) =>
+          slide.id === id ? { ...slide, content: { ...slide.content, ...fields } } : slide
+        ),
+      },
+    })),
+
+  updateCustomSlideAppearance: (id, fields) =>
+    set((s) => ({
+      custom_presentation_data: {
+        ...s.custom_presentation_data,
+        slides: s.custom_presentation_data.slides.map((slide) =>
+          slide.id === id ? { ...slide, appearance: { ...slide.appearance, ...sanitizeSlideAppearanceFields(fields, slide.appearance) } } : slide
+        ),
+      },
+    })),
+
+  setCustomPresentationData: (fields) =>
+    set((s) => ({
+      custom_presentation_data: { ...s.custom_presentation_data, ...fields },
+    })),
+
   exportJson: (screen) => {
     const s = get()
     const stateData = {
@@ -630,6 +745,7 @@ export const useBrandStore = create<BrandStore>((set, get) => ({
       page_order: s.page_order,
       assets_base64: s.assets_base64,
       presentation_data: s.presentation_data,
+      custom_presentation_data: s.custom_presentation_data,
     }
     const blob = new Blob([JSON.stringify(stateData, null, 2)], { type: 'application/json' })
     const url = URL.createObjectURL(blob)
@@ -806,7 +922,22 @@ export const useBrandStore = create<BrandStore>((set, get) => ({
             logo_simbolo:     p.assets_base64?.logo_simbolo     ?? null,
             mockups:          p.assets_base64?.mockups           ?? [],
           },
-          presentation_data: p.presentation_data ?? fallback.presentation_data,
+          presentation_data: {
+            ...fallback.presentation_data,
+            ...p.presentation_data,
+            appearance: {
+              ...fallback.presentation_data.appearance,
+              ...(p.presentation_data?.appearance ?? {}),
+            },
+            typography: {
+              ...fallback.presentation_data.typography,
+              ...(p.presentation_data?.typography ?? {}),
+            },
+          },
+          custom_presentation_data: {
+            ...fallback.custom_presentation_data,
+            ...(p.custom_presentation_data ?? { slides: [] }),
+          },
         }))
         nextColorId = Math.max(
           4,

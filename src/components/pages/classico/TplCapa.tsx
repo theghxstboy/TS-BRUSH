@@ -1,13 +1,21 @@
 import { useBrandStore } from '../../../store/useBrandStore'
+import type { SlideAppearance } from '../../../store/useBrandStore'
 import { usePageColors } from '../../../hooks/usePageColors'
 import { usePresentationTextStyles } from '../../../hooks/usePresentationTextStyles'
 
-interface TplCapaProps { pageNumber: number }
+interface TplCapaProps { 
+  pageNumber: number 
+  overrideAppearance?: SlideAppearance
+  overrideContent?: Record<string, any>
+}
 
-export function TplCapa({ pageNumber: _pageNumber }: TplCapaProps) {
-  const { assets_base64, tipografia, aparencia } = useBrandStore()
-  const { pageColor, darkColor, textColor, pageBackgroundStyle } = usePageColors('capa')
+export function TplCapa({ pageNumber: _pageNumber, overrideAppearance, overrideContent }: TplCapaProps) {
+  const { assets_base64, tipografia } = useBrandStore()
+  const { pageColor, darkColor, textColor, pageBackgroundStyle } = usePageColors('capa', overrideAppearance)
   const { metaStyle } = usePresentationTextStyles()
+
+  const logoToUse = overrideContent?.logo || assets_base64.logo_principal
+  const titleToUse = overrideContent?.title || 'Manual de Marca'
 
   const bgToUse = pageColor
 
@@ -39,8 +47,6 @@ export function TplCapa({ pageNumber: _pageNumber }: TplCapaProps) {
     badgeStyle.left = 28
   }
 
-  if (!assets_base64.logo_principal) return null
-
   return (
     <div
       className="pagina-pdf"
@@ -48,7 +54,7 @@ export function TplCapa({ pageNumber: _pageNumber }: TplCapaProps) {
     >
       {/* Badge MANUAL DE MARCA */}
       <div style={badgeStyle}>
-        Manual de Marca
+        {titleToUse}
       </div>
 
       {/* Logo centralizado */}
@@ -60,11 +66,13 @@ export function TplCapa({ pageNumber: _pageNumber }: TplCapaProps) {
         justifyContent: 'center',
         zIndex: 5,
       }}>
-        <img
-          src={assets_base64.logo_principal}
-          alt="Logo"
-          style={{ maxWidth: '60%', maxHeight: '55%', objectFit: 'contain' }}
-        />
+        {logoToUse && (
+          <img
+            src={logoToUse}
+            alt="Logo"
+            style={{ maxWidth: '60%', maxHeight: '55%', objectFit: 'contain' }}
+          />
+        )}
       </div>
 
       {/* Linha inferior */}

@@ -3,12 +3,21 @@ import { usePageColors } from '../../../hooks/usePageColors'
 import { usePresentationTextStyles } from '../../../hooks/usePresentationTextStyles'
 import { MonochromeLogo } from '../../common/MonochromeLogo'
 
-interface TplVersaoMonoProps { pageNumber: number }
+import type { SlideAppearance } from '../../../store/useBrandStore'
 
-export function TplVersaoMono({ pageNumber }: TplVersaoMonoProps) {
+interface TplVersaoMonoProps { 
+  pageNumber: number 
+  overrideAppearance?: SlideAppearance
+  overrideContent?: Record<string, any>
+}
+
+export function TplVersaoMono({ pageNumber, overrideAppearance, overrideContent }: TplVersaoMonoProps) {
   const { assets_base64 } = useBrandStore()
-  const { darkColor, pageColor, logoBackdropColor, contentTitleColor, textColor, pageBackgroundStyle } = usePageColors('versao-mono')
+  const { darkColor, pageColor, logoBackdropColor, contentTitleColor, textColor, pageBackgroundStyle, exibirLogoFundo } = usePageColors('versao-mono', overrideAppearance)
   const { pageTitleStyle, bodyStyle, metaStyle } = usePresentationTextStyles()
+  
+  const titulo = overrideContent?.title || 'Versao Monocromatica'
+  const description = overrideContent?.description || `&nbsp;&nbsp;Para garantir a flexibilidade da identidade visual, o logo pode ser aplicado em versoes monocromaticas (preto ou branco). Essas variacoes devem ser usadas em casos especificos, como fundos que comprometam a legibilidade da versao original.`
   const src = assets_base64.logo_monocromatica || assets_base64.logo_principal
 
   return (
@@ -16,6 +25,11 @@ export function TplVersaoMono({ pageNumber }: TplVersaoMonoProps) {
       className="pagina-pdf"
       style={{ background: pageColor, position: 'relative', overflow: 'hidden', color: textColor, ...pageBackgroundStyle }}
     >
+      {exibirLogoFundo && assets_base64.logo_simbolo && (
+        <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: 0.04, pointerEvents: 'none', zIndex: 1 }}>
+          <img src={assets_base64.logo_simbolo} style={{ width: '60%', height: '60%', objectFit: 'contain', filter: darkColor === '#FFFFFF' ? 'invert(1) brightness(2)' : 'none' }} alt="" />
+        </div>
+      )}
       <div
         style={{
           position: 'absolute',
@@ -27,13 +41,11 @@ export function TplVersaoMono({ pageNumber }: TplVersaoMonoProps) {
         }}
       >
         <h2 style={{ fontWeight: 900, color: contentTitleColor, margin: '0 0 12px 0', ...pageTitleStyle(40) }}>
-          Versao Monocromatica
+          {titulo}
         </h2>
 
         <p style={{ color: textColor, margin: '0 0 24px 0', maxWidth: '90%', ...bodyStyle(13.5, { lineHeight: 1.75 }) }}>
-          &nbsp;&nbsp;Para garantir a flexibilidade da identidade visual, o logo pode ser aplicado em versoes monocromaticas
-          (preto ou branco). Essas variacoes devem ser usadas em casos especificos, como fundos que comprometam
-          a legibilidade da versao original.
+          {description}
         </p>
 
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 20, flex: 1 }}>

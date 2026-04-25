@@ -9,6 +9,7 @@ import {
   FileText,
   Palette,
   Layers,
+  Check,
   Image as ImageIcon
 } from 'lucide-react'
 import { toast } from 'sonner'
@@ -18,6 +19,7 @@ import { hexToHsl, hexToRgb } from '../../lib/colorUtils'
 import { extractColorsFromDataUrl } from '../../lib/imageUtils'
 import type { ContextDrawerTarget } from '../../lib/sidebarNavigation'
 import { DEFAULT_BACKGROUND_IMAGE_OPACITY, DEFAULT_SLIDE_APPEARANCE, useBrandStore } from '../../store/useBrandStore'
+import { useAppStore } from '../../store/useAppStore'
 import type { BrandColor, SlideAppearanceKey } from '../../store/useBrandStore'
 import {
   DEFAULT_BODY_FONT,
@@ -367,11 +369,13 @@ function ContextBody({
   pageLabel,
   mockupIndex,
   versionIndex,
+  slideId,
 }: {
   slideType: SlideType
   pageLabel: string | null
   mockupIndex: number | null
   versionIndex: number | null
+  slideId: string | null
 }) {
   const {
     projeto,
@@ -387,6 +391,10 @@ function ContextBody({
     replaceCores,
     presentation_data,
     setPresentationData,
+    custom_presentation_data,
+    updateCustomSlideContent,
+    updateCustomSlideAppearance,
+    removeCustomSlide,
   } = useBrandStore()
 
   const handleLogoPrincipalChange = async (value: string | null) => {
@@ -462,6 +470,181 @@ function ContextBody({
       )}
     </DrawerSection>
   )
+
+  const isMockup = slideType === 'mockup'
+  const isPres = slideType.startsWith('pres-')
+  const isCustom = slideType.startsWith('custom-')
+  
+  const currentSlideId = slideId
+  const customSlide = isCustom ? custom_presentation_data.slides.find(s => s.id === currentSlideId) : null
+
+  if (isCustom && customSlide) {
+    const { showAlert } = useAppStore.getState()
+
+    return (
+      <>
+        <DrawerSection title="Conteúdo do Slide">
+          <p style={{ fontSize: 11, color: 'var(--text-secondary)', marginBottom: 12 }}>
+            Este slide ({customSlide.templateId}) permite customização individual de conteúdo.
+          </p>
+          
+          <div className="form-group">
+            <label className="form-label">Título</label>
+            <input 
+              className="form-input" 
+              value={customSlide.content.title || ''} 
+              placeholder="Ex: Título Customizado"
+              onChange={(e) => updateCustomSlideContent(customSlide.id, { title: e.target.value })} 
+            />
+          </div>
+
+          {customSlide.templateId === 'capa' && (
+            <div className="form-group" style={{ marginTop: 12 }}>
+              <label className="form-label">Logo da Capa</label>
+              <UploadZone 
+                label="Upload Logo" 
+                hint="Substitui a logo global nesta capa" 
+                value={customSlide.content.logo || null} 
+                onChange={(val) => updateCustomSlideContent(customSlide.id, { logo: val })} 
+                accept={LOGO_ACCEPT} 
+              />
+            </div>
+          )}
+
+          {['bem-vindo', 'conceito', 'logo-principal', 'pres-concept-logo'].includes(customSlide.templateId) && (
+            <>
+              <div className="form-group">
+                <label className="form-label">Texto 1 / Explicação</label>
+                <textarea className="form-textarea" value={customSlide.content.text1 || customSlide.content.explanation || ''} onChange={(e) => updateCustomSlideContent(customSlide.id, { text1: e.target.value, explanation: e.target.value })} />
+              </div>
+              <div className="form-group">
+                <label className="form-label">Texto 2</label>
+                <textarea className="form-textarea" value={customSlide.content.text2 || ''} onChange={(e) => updateCustomSlideContent(customSlide.id, { text2: e.target.value })} />
+              </div>
+              <div className="form-group">
+                <label className="form-label">Texto 3</label>
+                <textarea className="form-textarea" value={customSlide.content.text3 || ''} onChange={(e) => updateCustomSlideContent(customSlide.id, { text3: e.target.value })} />
+              </div>
+            </>
+          )}
+
+          {['padrao-cromatico', 'tipografia', 'cores', 'logo-mono', 'final', 'pres-final'].includes(customSlide.templateId) && (
+            <div className="form-group">
+              <label className="form-label">Descrição / Subtítulo</label>
+              <textarea className="form-textarea" value={customSlide.content.description || ''} onChange={(e) => updateCustomSlideContent(customSlide.id, { description: e.target.value })} />
+            </div>
+          )}
+
+          {customSlide.templateId === 'pres-mockup' && (
+            <div className="form-group">
+               <label className="form-label">Mockup Customizado</label>
+               <UploadZone
+                 label="Upload Mockup"
+                 hint="Substitui o mockup padrão para este slide"
+                 value={customSlide.content.mockup || null}
+                 onChange={(val) => updateCustomSlideContent(customSlide.id, { mockup: val })}
+                 accept="image/*"
+               />
+            </div>
+          )}
+
+          {customSlide.templateId === 'pres-comparison' && (
+            <>
+              <div className="form-group">
+                <label className="form-label">Logo Original (Antes)</label>
+                <UploadZone
+                  label="Upload Original"
+                  value={customSlide.content.logo1 || null}
+                  onChange={(val) => updateCustomSlideContent(customSlide.id, { logo1: val })}
+                  accept="image/*"
+                />
+              </div>
+              <div className="form-group" style={{ marginTop: 12 }}>
+                <label className="form-label">Logo Novo (Depois)</label>
+                <UploadZone
+                  label="Upload Novo"
+                  value={customSlide.content.logo2 || null}
+                  onChange={(val) => updateCustomSlideContent(customSlide.id, { logo2: val })}
+                  accept="image/*"
+                />
+              </div>
+            </>
+          )}
+
+          <div style={{ marginTop: 16 }}>
+            <button
+              type="button"
+              className="btn-danger"
+              style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '8px', fontSize: 12 }}
+              onClick={() => {
+                showAlert({
+                  type: 'confirm',
+                  title: 'Remover Slide',
+                  message: 'Tem certeza que deseja remover este slide permanentemente?',
+                  confirmLabel: 'Remover',
+                  onConfirm: () => removeCustomSlide(customSlide.id)
+                })
+              }}
+            >
+              <Trash2 size={14} /> Remover Slide
+            </button>
+          </div>
+        </DrawerSection>
+
+        <DrawerSection title="Aparência Customizada" description="Cores e fundo específicos para este slide.">
+           {STANDARD_APPEARANCE_FIELDS.map((field) => {
+             const globalApp = custom_presentation_data.appearance
+             let inherited = '#FFFFFF'
+             if (field.key === 'cor_fundo_pagina') inherited = globalApp.fundo
+             if (field.key === 'cor_titulo') inherited = globalApp.titulo
+             if (field.key === 'cor_texto') inherited = globalApp.texto
+             if (field.key === 'cor_detalhes') inherited = globalApp.detalhe
+             
+             return (
+               <DrawerColorField
+                 key={`custom-${customSlide.id}-${field.key}`}
+                 label={field.label}
+                 value={customSlide.appearance[field.key]}
+                 inheritedValue={inherited}
+                 onChange={(hex) => updateCustomSlideAppearance(customSlide.id, { [field.key]: hex })}
+               />
+             )
+           })}
+
+          <div className="form-group">
+            <label className="form-label">Fundo do Slide</label>
+            <UploadZone
+              label="Upload Fundo"
+              hint="JPG, PNG ou WebP"
+              value={customSlide.appearance.imagem_fundo}
+              onChange={(value) => updateCustomSlideAppearance(customSlide.id, { imagem_fundo: value })}
+              accept="image/*"
+            />
+          </div>
+
+          <DrawerOpacityField
+            label="Opacidade do Fundo"
+            value={customSlide.appearance.imagem_fundo ? customSlide.appearance.imagem_fundo_opacidade : DEFAULT_BACKGROUND_IMAGE_OPACITY}
+            onChange={(value) => updateCustomSlideAppearance(customSlide.id, { imagem_fundo_opacidade: value })}
+          />
+
+          {/* Background Logo Checkbox - Show only for slides that usually support it */}
+          {!isPres && (
+            <div 
+              className="np-checkbox-group" 
+              style={{ marginTop: 12, marginBottom: 8, cursor: 'pointer', padding: '8px 0' }} 
+              onClick={() => updateCustomSlideAppearance(customSlide.id, { exibir_logo_fundo: customSlide.appearance.exibir_logo_fundo === false })}
+            >
+              <div className={`np-checkbox-box ${customSlide.appearance.exibir_logo_fundo !== false ? 'checked' : ''}`}>
+                <Check size={12} strokeWidth={3} />
+              </div>
+              <span className="np-checkbox-label" style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary)' }}>Exibir Logo de Fundo</span>
+            </div>
+          )}
+        </DrawerSection>
+      </>
+    )
+  }
 
   if (slideType === 'capa') {
     return (
@@ -964,6 +1147,7 @@ export function ContextDrawer() {
   const [pageLabel, setPageLabel] = useState<string | null>(null)
   const [mockupIndex, setMockupIndex] = useState<number | null>(null)
   const [versionIndex, setVersionIndex] = useState<number | null>(null)
+  const [slideId, setSlideId] = useState<string | null>(null)
 
   useEffect(() => {
     const handler = (event: Event) => {
@@ -972,7 +1156,14 @@ export function ContextDrawer() {
 
       // For presentation slides (pres-type-index), we need to check the base type for TITLES
       const isPres = detail.slideType.startsWith('pres-')
-      const baseType = isPres ? detail.slideType.replace(/-[0-9]+$/, '') : detail.slideType
+      const isCustom = detail.slideType.startsWith('custom-')
+      let baseType = detail.slideType
+      
+      if (isPres) {
+        baseType = detail.slideType.replace(/-[0-9]+$/, '')
+      } else if (isCustom) {
+        baseType = detail.slideType.replace('custom-', '')
+      }
 
       if (!Object.prototype.hasOwnProperty.call(TITLES, baseType)) return
 
@@ -980,6 +1171,7 @@ export function ContextDrawer() {
       setPageLabel(detail.pageLabel ?? null)
       setMockupIndex(typeof detail.mockupIndex === 'number' ? detail.mockupIndex : null)
       setVersionIndex(typeof detail.versionIndex === 'number' ? detail.versionIndex : null)
+      setSlideId(detail.slideId ?? null)
       setOpen(true)
     }
 
@@ -990,6 +1182,13 @@ export function ContextDrawer() {
   const title = useMemo(() => {
     if (!slideType) return 'Pagina'
     const isPres = slideType.startsWith('pres-')
+    const isCustom = slideType.startsWith('custom-')
+    
+    if (isCustom) {
+      const tpl = slideType.replace('custom-', '')
+      return TITLES[tpl as SlideType] || `Slide (${tpl})`
+    }
+
     const baseType = isPres ? slideType.replace(/-[0-9]+$/, '') : slideType
     return TITLES[baseType as SlideType] || 'Pagina'
   }, [slideType])
@@ -1018,6 +1217,7 @@ export function ContextDrawer() {
                 pageLabel={pageLabel} 
                 mockupIndex={mockupIndex} 
                 versionIndex={versionIndex}
+                slideId={slideId}
               />
             ) : (
               <div className="context-empty">

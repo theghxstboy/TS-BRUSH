@@ -94,7 +94,7 @@ export function SectionCores() {
   const isPres = screen === 'brand-presentation'
 
   return (
-    <CollapsibleSection icon={<Palette size={14} />} label="Paleta de Cores" defaultOpen sectionId="cores">
+    <CollapsibleSection icon={<Palette size={14} />} label="Paleta de Cores" sectionId="cores">
       {isPres ? (
         <PaletteBlock
           title="Paleta da Proposta"

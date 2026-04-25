@@ -59,7 +59,7 @@ export function SectionAssets() {
   }
 
   return (
-    <CollapsibleSection icon={<ImageIcon size={14} />} label="Logos & Assets" defaultOpen sectionId="assets">
+    <CollapsibleSection icon={<ImageIcon size={14} />} label="Logos & Assets" sectionId="assets">
       <div
         style={{
           background: 'rgba(255,163,0,0.04)',

@@ -1,13 +1,21 @@
 import { useBrandStore } from '../../../store/useBrandStore'
+import type { SlideAppearance } from '../../../store/useBrandStore'
 import { usePageColors } from '../../../hooks/usePageColors'
 import { usePresentationTextStyles } from '../../../hooks/usePresentationTextStyles'
 
-export function TplFinal() {
+interface TplFinalProps {
+  overrideAppearance?: SlideAppearance
+  overrideContent?: Record<string, any>
+}
+
+export function TplFinal({ overrideAppearance, overrideContent }: TplFinalProps) {
   const { projeto } = useBrandStore()
-  const { pageColor, titleColor, textColor, detailColor, pageBackgroundStyle } = usePageColors('final')
+  const { pageColor, titleColor, textColor, detailColor, pageBackgroundStyle } = usePageColors('final', overrideAppearance)
   const { pageTitleStyle, bodyStyle } = usePresentationTextStyles()
 
   const currentYear = new Date().getFullYear()
+  const title = overrideContent?.title || 'OBRIGADO'
+  const description = overrideContent?.description || `© ${currentYear} Todos os Direitos Reservados`
   const responsibleName = projeto.responsavel_manual || projeto.nome_marca || 'Seu nome'
 
   return (
@@ -34,7 +42,7 @@ export function TplFinal() {
         }}
       >
         <div style={{ fontWeight: 900, color: titleColor, ...pageTitleStyle(72, { lineHeight: 1, letterSpacing: '-0.04em', textAlign: 'center' }) }}>
-          OBRIGADO
+          {title}
         </div>
       </div>
 
@@ -49,7 +57,7 @@ export function TplFinal() {
         }}
       >
         <div style={{ fontWeight: 800, color: textColor, marginBottom: 4, ...bodyStyle(13, { textAlign: 'center' }) }}>
-          © {currentYear} Todos os Direitos Reservados
+          {description}
         </div>
         <div style={{ color: textColor, ...bodyStyle(13, { textAlign: 'center' }) }}>
           <strong>Desenvolvido por:</strong> Agência TS | Designer{' '}

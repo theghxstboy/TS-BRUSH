@@ -368,6 +368,7 @@ export function NewProjectModal({ onClose }: NewProjectModalProps) {
   const [logoIcone, setLogoIcone] = useState<string | null>(null)
   const [aiResponse, setAiResponse] = useState('')
 
+
   // ── Step 2: colors ─────────────────────────────────────────────────────────
   const [sampledColors, setSampledColors] = useState<string[]>([])
   const [extractedBrandColors, setExtractedBrandColors] = useState<Omit<BrandColor, 'id'>[]>([])
@@ -449,25 +450,6 @@ export function NewProjectModal({ onClose }: NewProjectModalProps) {
 
   const { showAlert } = useAppStore()
 
-  function handleConfirmClose() {
-    const hasData = nomeMarca || conceito || caracteristicas || valores || sensacoes || elementos || responsavel || aiResponse;
-    if (hasData) {
-      showAlert({
-        type: 'confirm',
-        title: 'Progresso não salvo',
-        message: 'Você tem progresso não salvo. Deseja realmente fechar e perder os dados?',
-        confirmLabel: 'Sim, fechar',
-        cancelLabel: 'Continuar editando',
-        onConfirm: () => onClose(),
-      })
-    } else {
-      onClose()
-    }
-  }
-
-  function handleBlankProject() { reset(); onClose(); setScreen('brand-manual') }
-  function handleImportFile(file: File) { importJson(file); onClose(); setScreen('brand-manual') }
-
   function handleApplyAiResponse() {
     try {
       const cleaned = aiResponse.trim()
@@ -497,21 +479,33 @@ export function NewProjectModal({ onClose }: NewProjectModalProps) {
           responsavel_manual: typeof parsed.projeto.responsavel_manual === 'string' ? parsed.projeto.responsavel_manual : '',
         })
       }
-      if (parsed.tipografia) {
-        setTipoPrincipalEstilos(typeof parsed.tipografia.principal_estilos === 'string' ? parsed.tipografia.principal_estilos : '')
-        setTipoSecundariaEstilos(typeof parsed.tipografia.secundaria_estilos === 'string' ? parsed.tipografia.secundaria_estilos : '')
-      }
-      if (parsed.conteudo_pdf) {
-        setConteudoPdf(
-          (Object.fromEntries(Object.entries(parsed.conteudo_pdf).filter(([, v]) => typeof v === 'string'))) as Parameters<typeof setConteudoPdf>[0],
-        )
-      }
-      toast.success('Textos aplicados com sucesso!')
+      toast.success('Informações aplicadas com sucesso!')
       setAiResponse('')
-    } catch {
-      toast.error('Resposta inválida. Cole exatamente o JSON retornado pelo Gem.')
+    } catch (e) {
+      toast.error('Erro ao processar JSON. Verifique a formatação.')
     }
   }
+
+  function handleConfirmClose() {
+    const hasData = nomeMarca || conceito || caracteristicas || valores || sensacoes || elementos || responsavel || aiResponse;
+    if (hasData) {
+      showAlert({
+        type: 'confirm',
+        title: 'Progresso não salvo',
+        message: 'Você tem progresso não salvo. Deseja realmente fechar e perder os dados?',
+        confirmLabel: 'Sim, fechar',
+        cancelLabel: 'Continuar editando',
+        onConfirm: () => onClose(),
+      })
+    } else {
+      onClose()
+    }
+  }
+
+  function handleBlankProject() { reset(); onClose(); setScreen('brand-manual') }
+  function handleImportFile(file: File) { importJson(file); onClose(); setScreen('brand-manual') }
+
+
 
   function handleAdvanceToBrandTypography() {
     reset()
@@ -605,7 +599,7 @@ export function NewProjectModal({ onClose }: NewProjectModalProps) {
   const isWide = view !== 'choose'
 
   return (
-    <div className="home-modal-overlay">
+    <div className="home-modal-overlay" onClick={handleConfirmClose}>
       <div
         className={`np-modal ${isWide ? 'np-modal-wide' : ''}`}
         onClick={(e) => e.stopPropagation()}

@@ -9,8 +9,32 @@ export function EditorNav() {
   const [showExitModal, setShowExitModal] = useState(false)
 
   const isPresentation = screen === 'brand-presentation'
-  const parentLabel = isPresentation ? 'Apresentação de Logo' : 'Manual de Marca'
+  const isCustom = screen === 'custom-presentation'
   const projectName = isPresentation ? presentation_data.brand_name : projeto.nome_marca
+
+  const getBreadcrumbs = () => {
+    if (isCustom) {
+      return <span className="editor-nav-crumb-current">Apresentação Personalizada</span>
+    }
+    if (isPresentation) {
+      return (
+        <span className="editor-nav-crumb-current">
+          Apresentação de Logo{projectName ? ` - ${projectName}` : ''}
+        </span>
+      )
+    }
+    return (
+      <>
+        <span className="editor-nav-crumb-current">Manual de Marca</span>
+        {projectName && (
+          <>
+            <span className="editor-nav-crumb-sep">/</span>
+            <span className="editor-nav-crumb-project">{projectName}</span>
+          </>
+        )}
+      </>
+    )
+  }
 
   const handleBackClick = () => {
     if (hasUnsavedChanges) {
@@ -47,21 +71,7 @@ export function EditorNav() {
         <div className="editor-nav-breadcrumb">
           <span className="editor-nav-crumb-parent">TS BRUSH</span>
           <span className="editor-nav-crumb-sep">/</span>
-          {isPresentation ? (
-            <span className="editor-nav-crumb-current">
-              Apresentação de Logo{projectName ? ` - ${projectName}` : ''}
-            </span>
-          ) : (
-            <>
-              <span className="editor-nav-crumb-current">{parentLabel}</span>
-              {projectName && (
-                <>
-                  <span className="editor-nav-crumb-sep">/</span>
-                  <span className="editor-nav-crumb-project">{projectName}</span>
-                </>
-              )}
-            </>
-          )}
+          {getBreadcrumbs()}
         </div>
       </nav>
 

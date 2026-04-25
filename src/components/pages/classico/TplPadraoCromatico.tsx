@@ -1,8 +1,13 @@
 import { useBrandStore } from '../../../store/useBrandStore'
+import type { SlideAppearance } from '../../../store/useBrandStore'
 import { usePageColors } from '../../../hooks/usePageColors'
 import { usePresentationTextStyles } from '../../../hooks/usePresentationTextStyles'
 
-interface TplPadraoCromaticoProps { pageNumber: number }
+interface TplPadraoCromaticoProps { 
+  pageNumber: number 
+  overrideAppearance?: SlideAppearance
+  overrideContent?: Record<string, any>
+}
 
 function getCircleBorder(hex: string) {
   const normalized = hex.toUpperCase()
@@ -11,17 +16,24 @@ function getCircleBorder(hex: string) {
   return '2px solid rgba(0,0,0,0.04)'
 }
 
-export function TplPadraoCromatico({ pageNumber }: TplPadraoCromaticoProps) {
-  const { projeto, cores_logo } = useBrandStore()
-  const { darkColor, contentTitleColor, textColor, pageColor, pageBackgroundStyle } = usePageColors('padrao-cromatico')
+export function TplPadraoCromatico({ pageNumber, overrideAppearance, overrideContent }: TplPadraoCromaticoProps) {
+  const { projeto, cores_logo, assets_base64 } = useBrandStore()
+  const { darkColor, contentTitleColor, textColor, pageColor, pageBackgroundStyle, exibirLogoFundo } = usePageColors('padrao-cromatico', overrideAppearance)
   const { pageTitleStyle, bodyStyle, metaStyle } = usePresentationTextStyles()
-  const sensacoes = projeto.sensacoes_cores || 'as sensações e associações que fortalecem a personalidade da marca'
+  
+  const titulo = overrideContent?.title || 'Padrão Cromático'
+  const description = overrideContent?.description || `As cores escolhidas para a identidade visual da marca desempenham um papel fundamental na construção de sua personalidade. Cada tom foi selecionado para transmitir ${projeto.sensacoes_cores || 'as sensações e associações que fortalecem a personalidade da marca'}. O uso correto da paleta reforça o reconhecimento da marca e deve ser seguido em todas as aplicações.`
 
   return (
     <div
       className="pagina-pdf"
       style={{ background: pageColor, position: 'relative', overflow: 'hidden', color: textColor, ...pageBackgroundStyle }}
     >
+      {exibirLogoFundo && assets_base64.logo_simbolo && (
+        <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: 0.04, pointerEvents: 'none', zIndex: 1 }}>
+          <img src={assets_base64.logo_simbolo} style={{ width: '60%', height: '60%', objectFit: 'contain', filter: darkColor === '#FFFFFF' ? 'invert(1) brightness(2)' : 'none' }} alt="" />
+        </div>
+      )}
       <div
         style={{
           position: 'absolute',
@@ -33,13 +45,11 @@ export function TplPadraoCromatico({ pageNumber }: TplPadraoCromaticoProps) {
         }}
       >
         <h2 style={{ fontWeight: 900, color: contentTitleColor, margin: '0 0 16px 0', ...pageTitleStyle(40) }}>
-          Padrão Cromático
+          {titulo}
         </h2>
 
         <p style={{ color: textColor, margin: '0 0 32px 0', maxWidth: '92%', ...bodyStyle(13.5, { lineHeight: 1.75 }) }}>
-          &nbsp;&nbsp;As cores escolhidas para a identidade visual da marca desempenham um papel fundamental na construção de
-          sua personalidade. Cada tom foi selecionado para transmitir <span style={{ color: darkColor, fontWeight: 600 }}>{sensacoes}</span>.
-          O uso correto da paleta reforça o reconhecimento da marca e deve ser seguido em todas as aplicações.
+          &nbsp;&nbsp;{description}
         </p>
 
         <div

@@ -8,14 +8,21 @@ const LOWER = 'abcdefghijklmnopqrstuvwxyz'
 const NUMS = '0123456789'
 const SYMS = '#%$@/|&!?()*'
 
+import type { SlideAppearance } from '../../../store/useBrandStore'
+
 interface TplTipografiaProps {
   pageNumber: number
   variante: 'principal' | 'secundaria'
+  overrideAppearance?: SlideAppearance
+  overrideContent?: Record<string, any>
 }
 
-export function TplTipografia({ pageNumber, variante }: TplTipografiaProps) {
-  const { tipografia, conteudo_pdf } = useBrandStore()
-  const { darkColor, contentTitleColor, textColor, pageColor, pageBackgroundStyle } = usePageColors(variante === 'principal' ? 'tipografia-principal' : 'tipografia-secundaria')
+export function TplTipografia({ pageNumber, variante, overrideAppearance, overrideContent }: TplTipografiaProps) {
+  const { tipografia, conteudo_pdf, assets_base64 } = useBrandStore()
+  const { darkColor, contentTitleColor, textColor, pageColor, pageBackgroundStyle, exibirLogoFundo } = usePageColors(
+    variante === 'principal' ? 'tipografia-principal' : 'tipografia-secundaria',
+    overrideAppearance
+  )
   const { pageTitleStyle, bodyStyle } = usePresentationTextStyles()
 
   const isPrincipal = variante === 'principal'
@@ -23,15 +30,18 @@ export function TplTipografia({ pageNumber, variante }: TplTipografiaProps) {
     ? resolveFontName(tipografia.principal_nome, tipografia.principal_custom.file_name)
     : resolveFontName(tipografia.secundaria_nome, tipografia.secundaria_custom.file_name)
   const estilos = isPrincipal ? tipografia.principal_estilos : tipografia.secundaria_estilos
-  const titulo = isPrincipal
+  
+  const titulo = overrideContent?.title || (isPrincipal
     ? (conteudo_pdf.tipografia_principal_titulo || 'Principal')
-    : (conteudo_pdf.tipografia_secundaria_titulo || 'Secundária')
+    : (conteudo_pdf.tipografia_secundaria_titulo || 'Secundária'))
+
   const descricaoPadrao = isPrincipal
     ? `A tipografia principal da marca é ${nome || 'a fonte definida como principal'}. Moderna e versátil, ela garante legibilidade e personalidade à comunicação visual. Seu uso deve ser prioritário em títulos e peças institucionais para manter a identidade da marca consistente.`
     : `A tipografia secundária, ${nome || 'quando cadastrada'}, complementa a principal ao oferecer variações que se adaptam a diferentes contextos, como textos longos e materiais de suporte. Seu uso deve seguir as diretrizes para preservar a harmonia visual da marca.`
-  const descricao = isPrincipal
+
+  const descricao = overrideContent?.description || (isPrincipal
     ? (conteudo_pdf.tipografia_principal_descricao || descricaoPadrao)
-    : (conteudo_pdf.tipografia_secundaria_descricao || descricaoPadrao)
+    : (conteudo_pdf.tipografia_secundaria_descricao || descricaoPadrao))
 
   const fontFamily = getFontFamilyStack(nome, 'inherit')
   const weightLabels = estilos
@@ -54,6 +64,11 @@ export function TplTipografia({ pageNumber, variante }: TplTipografiaProps) {
       className="pagina-pdf"
       style={{ background: pageColor, position: 'relative', overflow: 'hidden', color: textColor, ...pageBackgroundStyle }}
     >
+      {exibirLogoFundo && assets_base64.logo_simbolo && (
+        <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: 0.04, pointerEvents: 'none', zIndex: 1 }}>
+          <img src={assets_base64.logo_simbolo} style={{ width: '60%', height: '60%', objectFit: 'contain', filter: darkColor === '#FFFFFF' ? 'invert(1) brightness(2)' : 'none' }} alt="" />
+        </div>
+      )}
       <div
         style={{
           position: 'absolute',

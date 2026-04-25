@@ -1,5 +1,6 @@
 import { useBrandStore } from '../../../store/useBrandStore'
 import { usePresentationAppearance } from '../../../hooks/usePresentationAppearance'
+import { usePresentationTypography } from '../../../hooks/usePresentationTypography'
 import tsLogo from '../../../logos/TS.svg'
 
 interface PresCapaProps {
@@ -9,11 +10,9 @@ interface PresCapaProps {
 export function PresCapa({ pageId }: PresCapaProps) {
   const { presentation_data } = useBrandStore()
   const style = usePresentationAppearance(pageId, 'capa')
-  const { brand_name, typography, subtitle } = presentation_data
+  const { titleFontFamily, bodyFontFamily } = usePresentationTypography()
+  const { brand_name, subtitle } = presentation_data
   const { cor_fundo_pagina: fundo, cor_titulo: titulo, cor_detalhes: detalhe, imagem_fundo } = style
-  
-  const titleFont = typography.titulosNome || 'inherit'
-  const textFont = typography.textosNome || 'inherit'
 
   const bgStyle: React.CSSProperties = {
     backgroundColor: fundo,
@@ -56,7 +55,7 @@ export function PresCapa({ pageId }: PresCapaProps) {
           letterSpacing: '0.12em',
           margin: 0,
           marginBottom: '24px',
-          fontFamily: titleFont,
+          fontFamily: titleFontFamily,
           maxWidth: '1000px',
           marginInline: 'auto',
           wordBreak: 'break-word',
@@ -79,7 +78,7 @@ export function PresCapa({ pageId }: PresCapaProps) {
           color: `${titulo}80`,
           textTransform: 'uppercase',
           letterSpacing: '0.4em',
-          fontFamily: textFont,
+          fontFamily: bodyFontFamily,
           maxWidth: '600px',
           marginInline: 'auto',
           wordBreak: 'break-word'

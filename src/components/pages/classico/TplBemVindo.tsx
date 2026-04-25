@@ -1,14 +1,24 @@
 import { useBrandStore } from '../../../store/useBrandStore'
+import type { SlideAppearance } from '../../../store/useBrandStore'
 import { usePageColors } from '../../../hooks/usePageColors'
 import { usePresentationTextStyles } from '../../../hooks/usePresentationTextStyles'
 
-interface TplBemVindoProps { pageNumber: number }
+interface TplBemVindoProps { 
+  pageNumber: number 
+  overrideAppearance?: SlideAppearance
+  overrideContent?: Record<string, any>
+}
 
-export function TplBemVindo({ pageNumber }: TplBemVindoProps) {
+export function TplBemVindo({ pageNumber, overrideAppearance, overrideContent }: TplBemVindoProps) {
   const { projeto, assets_base64, conteudo_pdf } = useBrandStore()
-  const { darkColor, contentTitleColor, textColor, pageColor, pageBackgroundStyle, exibirLogoFundo } = usePageColors('bem-vindo')
+  const { darkColor, contentTitleColor, textColor, pageColor, pageBackgroundStyle, exibirLogoFundo } = usePageColors('bem-vindo', overrideAppearance)
   const { pageTitleStyle, bodyStyle } = usePresentationTextStyles()
   const nomeMarca = projeto.nome_marca || 'AGÊNCIA TS'
+  
+  const title = overrideContent?.title || conteudo_pdf.boas_vindas_titulo || 'Bem Vindo!'
+  const text1 = overrideContent?.text1 || conteudo_pdf.boas_vindas_texto_1
+  const text2 = overrideContent?.text2 || conteudo_pdf.boas_vindas_texto_2
+  const text3 = overrideContent?.text3 || conteudo_pdf.boas_vindas_texto_3
 
   return (
     <div
@@ -48,19 +58,19 @@ export function TplBemVindo({ pageNumber }: TplBemVindoProps) {
       >
         <div style={{ maxWidth: '75%', display: 'flex', flexDirection: 'column', gap: 20 }}>
           <h1 style={{ fontWeight: 900, color: contentTitleColor, margin: 0, ...pageTitleStyle(42, { lineHeight: 1.1 }) }}>
-            {conteudo_pdf.boas_vindas_titulo || 'Bem Vindo!'}
+            {title}
           </h1>
 
           <p style={{ color: textColor, margin: 0, ...bodyStyle(14, { lineHeight: 1.7 }) }}>
-            &nbsp;&nbsp;{conteudo_pdf.boas_vindas_texto_1}
+            &nbsp;&nbsp;{text1}
           </p>
 
           <p style={{ color: textColor, margin: 0, ...bodyStyle(14, { lineHeight: 1.7 }) }}>
-            &nbsp;&nbsp;{conteudo_pdf.boas_vindas_texto_2.replace('Na marca', `Na ${nomeMarca}`)}
+            &nbsp;&nbsp;{text2.replace('Na marca', `Na ${nomeMarca}`)}
           </p>
 
           <p style={{ color: textColor, margin: 0, ...bodyStyle(14, { lineHeight: 1.7 }) }}>
-            &nbsp;&nbsp;{conteudo_pdf.boas_vindas_texto_3}
+            &nbsp;&nbsp;{text3}
           </p>
         </div>
       </div>

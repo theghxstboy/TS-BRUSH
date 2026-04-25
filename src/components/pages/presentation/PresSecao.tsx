@@ -1,5 +1,6 @@
 import { useBrandStore } from '../../../store/useBrandStore'
 import { usePresentationAppearance } from '../../../hooks/usePresentationAppearance'
+import { usePresentationTypography } from '../../../hooks/usePresentationTypography'
 
 interface PresSecaoProps {
   pageId: string
@@ -10,11 +11,8 @@ interface PresSecaoProps {
 export function PresSecao({ pageId, numero, titulo }: PresSecaoProps) {
   const { presentation_data } = useBrandStore()
   const style = usePresentationAppearance(pageId, 'secao')
-  const { typography } = presentation_data
+  const { titleFontFamily, bodyFontFamily } = usePresentationTypography()
   const { cor_fundo_pagina: fundo, cor_titulo: colorTitulo, cor_detalhes: detalhe, imagem_fundo } = style
-
-  const titleFont = typography.titulosNome || 'inherit'
-  const textFont = typography.textosNome || 'inherit'
 
   const bgStyle: React.CSSProperties = {
     backgroundColor: fundo,
@@ -52,7 +50,7 @@ export function PresSecao({ pageId, numero, titulo }: PresSecaoProps) {
           textTransform: 'uppercase',
           letterSpacing: '0.4em',
           marginBottom: '16px',
-          fontFamily: textFont
+          fontFamily: bodyFontFamily
         }}>
           Proposta {numero}
         </p>
@@ -63,7 +61,7 @@ export function PresSecao({ pageId, numero, titulo }: PresSecaoProps) {
           textTransform: 'uppercase',
           letterSpacing: '0.05em',
           margin: 0,
-          fontFamily: titleFont,
+          fontFamily: titleFontFamily,
           maxWidth: '1000px',
           marginInline: 'auto',
           wordBreak: 'break-word',

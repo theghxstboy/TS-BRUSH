@@ -1,25 +1,37 @@
 import { useBrandStore } from '../../../store/useBrandStore'
 import { usePageColors } from '../../../hooks/usePageColors'
 import { usePresentationTextStyles } from '../../../hooks/usePresentationTextStyles'
+import type { SlideAppearance } from '../../../store/useBrandStore'
 
-interface TplConceitoProps { pageNumber: number }
+interface TplConceitoProps { 
+  pageNumber: number 
+  overrideAppearance?: SlideAppearance
+  overrideContent?: Record<string, any>
+}
 
-export function TplConceito({ pageNumber }: TplConceitoProps) {
+export function TplConceito({ pageNumber, overrideAppearance, overrideContent }: TplConceitoProps) {
   const { projeto, assets_base64, conteudo_pdf } = useBrandStore()
-  const { darkColor, contentTitleColor, textColor, pageColor, pageBackgroundStyle } = usePageColors('conceito')
+  const { darkColor, contentTitleColor, textColor, pageColor, pageBackgroundStyle, exibirLogoFundo } = usePageColors('conceito', overrideAppearance)
   const { pageTitleStyle, bodyStyle } = usePresentationTextStyles()
 
   const caracteristicas = projeto.caracteristicas_marca || 'os principais atributos e diferenciais da marca'
   const valores = projeto.valores_marca || 'os valores centrais que orientam sua comunicação'
-  const texto1 = (conteudo_pdf.conceito_texto_1 || '').replace('da marca', `da ${projeto.nome_marca || 'marca'}`).replace('os principais atributos e diferenciais da marca', caracteristicas)
-  const texto2 = (conteudo_pdf.conceito_texto_2 || '').replace('os valores centrais que orientam sua comunicação', valores)
-  const texto3 = conteudo_pdf.conceito_texto_3
+  
+  const title = overrideContent?.title || conteudo_pdf.conceito_titulo || 'Conceito'
+  const text1 = overrideContent?.text1 || (conteudo_pdf.conceito_texto_1 || '').replace('da marca', `da ${projeto.nome_marca || 'marca'}`).replace('os principais atributos e diferenciais da marca', caracteristicas)
+  const text2 = overrideContent?.text2 || (conteudo_pdf.conceito_texto_2 || '').replace('os valores centrais que orientam sua comunicação', valores)
+  const text3 = overrideContent?.text3 || conteudo_pdf.conceito_texto_3
 
   return (
     <div
       className="pagina-pdf"
       style={{ background: pageColor, position: 'relative', overflow: 'hidden', color: textColor, ...pageBackgroundStyle }}
     >
+      {exibirLogoFundo && assets_base64.logo_simbolo && (
+        <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: 0.04, pointerEvents: 'none', zIndex: 1 }}>
+          <img src={assets_base64.logo_simbolo} style={{ width: '60%', height: '60%', objectFit: 'contain', filter: darkColor === '#FFFFFF' ? 'invert(1) brightness(2)' : 'none' }} alt="" />
+        </div>
+      )}
       <div
         style={{
           position: 'absolute',
@@ -32,19 +44,19 @@ export function TplConceito({ pageNumber }: TplConceitoProps) {
       >
         <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 20, paddingRight: 28 }}>
           <h2 style={{ fontWeight: 900, color: contentTitleColor, margin: 0, ...pageTitleStyle(40) }}>
-            {conteudo_pdf.conceito_titulo || 'Conceito'}
+            {title}
           </h2>
 
           <p style={{ color: textColor, margin: 0, ...bodyStyle(13.5, { lineHeight: 1.75 }) }}>
-            &nbsp;&nbsp;{texto1}
+            &nbsp;&nbsp;{text1}
           </p>
 
           <p style={{ color: textColor, margin: 0, ...bodyStyle(13.5, { lineHeight: 1.75 }) }}>
-            &nbsp;&nbsp;{texto2}
+            &nbsp;&nbsp;{text2}
           </p>
 
           <p style={{ color: textColor, margin: 0, ...bodyStyle(13.5, { lineHeight: 1.75 }) }}>
-            &nbsp;&nbsp;{texto3}
+            &nbsp;&nbsp;{text3}
           </p>
         </div>
 

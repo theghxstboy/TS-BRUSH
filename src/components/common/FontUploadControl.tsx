@@ -25,6 +25,7 @@ interface FontUploadControlProps {
   previewFallback: string
   previewGeneric?: 'sans-serif' | 'monospace'
   sourceHint?: string
+  compact?: boolean
 }
 
 export function FontUploadControl({
@@ -41,6 +42,7 @@ export function FontUploadControl({
   previewFallback,
   previewGeneric = 'sans-serif',
   sourceHint = 'Digite o nome da fonte para carregar via Google Fonts ou escolha um arquivo personalizado.',
+  compact = false,
 }: FontUploadControlProps) {
   const inputRef = useRef<HTMLInputElement>(null)
   const [showUpload, setShowUpload] = useState(!!customFont.data_url)
@@ -70,30 +72,40 @@ export function FontUploadControl({
 
   return (
     <div className="font-control" style={{ gap: '8px' }}>
-      <div className="font-control-header" style={{ marginBottom: '4px', height: '20px' }}>
-        <p className="form-label" style={{ margin: 0, color: 'var(--accent)', fontSize: '10px' }}>{title}</p>
-        {optional ? <span className="font-control-badge" style={{ padding: '1px 6px', fontSize: '8px' }}>opcional</span> : <div style={{height: 18}} />}
+      <div className="font-control-header" style={{ marginBottom: compact ? '2px' : '4px', height: compact ? '16px' : '20px' }}>
+        <p className="form-label" style={{ margin: 0, color: 'var(--accent)', fontSize: compact ? '9px' : '10px', fontWeight: 700 }}>{title}</p>
+        {optional ? <span className="font-control-badge" style={{ padding: '1px 6px', fontSize: '8px' }}>opcional</span> : <div style={{height: compact ? 14 : 18}} />}
       </div>
 
       <div className="form-group">
-        <label className="form-label">Nome da Fonte</label>
-        <input className="form-input" value={name} onChange={(e) => onNameChange(e.target.value)} placeholder={placeholder} />
-        <p className="font-helper-text" style={{ marginTop: 4 }}>
-          O sistema puxará do <strong>Google Fonts automaticamente</strong> (caso a fonte esteja no catálogo oficial).
-        </p>
+        {!compact && <label className="form-label">Nome da Fonte</label>}
+        <input 
+          className="form-input" 
+          style={compact ? { padding: '8px 12px', fontSize: '13px' } : {}}
+          value={name} 
+          onChange={(e) => onNameChange(e.target.value)} 
+          placeholder={placeholder} 
+        />
+        {!compact && (
+          <p className="font-helper-text" style={{ marginTop: 4 }}>
+            O sistema puxará do <strong>Google Fonts automaticamente</strong> (caso a fonte esteja no catálogo oficial).
+          </p>
+        )}
       </div>
 
       {effectiveName ? (
-        <div className="font-preview-card" style={{ padding: '8px 12px' }}>
-          <div className="font-preview-name" style={{ fontSize: '11px' }}>{effectiveName}</div>
-          <div className="font-preview-sample" style={{ fontFamily: previewFontFamily, fontSize: '15px', marginTop: '4px' }}>
-            Aa Bb Cc 0123456789
+        <div className="font-preview-card" style={{ padding: '6px 12px' }}>
+          <div className="font-preview-name" style={{ fontSize: '10px', opacity: 0.7 }}>{effectiveName}</div>
+          <div className="font-preview-sample" style={{ fontFamily: previewFontFamily, fontSize: '14px', marginTop: '2px' }}>
+            {compact ? 'Aa Bb Cc 123' : 'Aa Bb Cc 0123456789'}
           </div>
         </div>
       ) : (
-        <p className="font-helper-text" style={{ margin: '4px 0' }}>
-          Digite o nome ou carregue um arquivo para preview.
-        </p>
+        !compact && (
+          <p className="font-helper-text" style={{ margin: '4px 0' }}>
+            Digite o nome ou carregue um arquivo para preview.
+          </p>
+        )
       )}
 
       {onStylesChange ? (
@@ -103,12 +115,12 @@ export function FontUploadControl({
         </div>
       ) : null}
 
-      <label className="np-switch-wrapper" style={{ marginTop: '4px' }}>
-        <div className="np-switch">
+      <label className="np-switch-wrapper" style={{ marginTop: compact ? '2px' : '4px', gap: '8px' }}>
+        <div className="np-switch" style={compact ? { transform: 'scale(0.85)', transformOrigin: 'left' } : {}}>
           <input type="checkbox" checked={showUpload} onChange={(e) => setShowUpload(e.target.checked)} />
           <span className="np-switch-slider"></span>
         </div>
-        <span className="np-switch-label" style={{ fontSize: '10px', opacity: 0.8 }}>Anexar Arquivo (Opcional)</span>
+        <span className="np-switch-label" style={{ fontSize: compact ? '9px' : '10px', opacity: 0.8 }}>Anexar Arquivo (Opcional)</span>
       </label>
 
       {showUpload && (
@@ -128,9 +140,9 @@ export function FontUploadControl({
             }
           }}
         >
-          <p className="font-helper-text" style={{ marginBottom: '8px', fontSize: '10px' }}>{sourceHint}</p>
+          {!compact && <p className="font-helper-text" style={{ marginBottom: '8px', fontSize: '10px' }}>{sourceHint}</p>}
 
-          <div className="font-upload-actions" style={{ marginTop: 0 }}>
+          <div className="font-upload-actions" style={{ marginTop: 0, gap: '8px' }}>
             <input
               ref={inputRef}
               type="file"

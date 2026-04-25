@@ -10,7 +10,7 @@ export function SectionProjeto() {
   const isPres = screen === 'brand-presentation'
 
   return (
-    <CollapsibleSection icon={<Type size={14} />} label="Projeto & Marca" defaultOpen sectionId="projeto">
+    <CollapsibleSection icon={<Type size={14} />} label="Projeto & Marca" sectionId="projeto">
       <div className="form-group">
         <label className="form-label">Nome da Marca</label>
         <input

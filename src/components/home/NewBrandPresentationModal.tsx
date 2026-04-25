@@ -360,7 +360,7 @@ function AssetUploadCard({
 }
 
 export function NewBrandPresentationModal({ onClose }: NewBrandPresentationModalProps) {
-  const { setScreen } = useAppStore()
+  const { setScreen, showAlert } = useAppStore()
   const { setPresentationData, importJson } = useBrandStore()
   const importRef = useRef<HTMLInputElement>(null)
 
@@ -426,9 +426,14 @@ export function NewBrandPresentationModal({ onClose }: NewBrandPresentationModal
   const handleSafeClose = () => {
     const hasData = brandName || versions.some(v => v.explanation || v.logoNew || v.mockups.length > 0)
     if (hasData) {
-      if (window.confirm('Tem certeza que deseja fechar? Todo o progresso não salvo será perdido.')) {
-        onClose()
-      }
+      showAlert({
+        type: 'confirm',
+        title: 'Progresso não salvo',
+        message: 'Tem certeza que deseja fechar? Todo o progresso não salvo será perdido.',
+        confirmLabel: 'Sim, fechar',
+        cancelLabel: 'Continuar editando',
+        onConfirm: () => onClose(),
+      })
     } else {
       onClose()
     }
@@ -442,7 +447,14 @@ export function NewBrandPresentationModal({ onClose }: NewBrandPresentationModal
   }
 
   const handleAdvanceFromInfo = () => {
-    if (!brandName) return alert('Por favor, insira o nome da marca.')
+    if (!brandName) {
+      showAlert({
+        type: 'warning',
+        title: 'Nome da Marca',
+        message: 'Por favor, insira o nome da marca para continuar.',
+      })
+      return
+    }
     setView('versions')
   }
 
@@ -602,7 +614,7 @@ export function NewBrandPresentationModal({ onClose }: NewBrandPresentationModal
             <div className="np-options">
               <OptionCard
                 icon={<PlusCircle size={20} />} title="Criar projeto"
-                description="Preencha as informações da marca e use o prompt automático para gerar os textos com IA."
+                description="Preencha as informações da marca e configure as bases da sua nova apresentação."
                 badge="RECOMENDADO" onClick={() => setView('info')}
               />
               <OptionCard
@@ -810,7 +822,12 @@ export function NewBrandPresentationModal({ onClose }: NewBrandPresentationModal
                   <div className="np-editor-header">
                     <Sparkles size={16} className="vibe-icon" />
                     <span className="np-editor-tag">Conceito Criativo</span>
-                    <button type="button" className="np-ia-btn-corner" title="Gerar com IA">
+                    <button
+                      type="button"
+                      className="np-ia-btn-corner"
+                      title="Gerar com IA"
+                      onClick={() => window.open('https://gemini.google.com/gem/1L_R-KXIL0tFKiQKuIxJSgh_612FImhem?usp=sharing', '_blank')}
+                    >
                       <Sparkles size={14} />
                       <span>Gerar com IA</span>
                     </button>

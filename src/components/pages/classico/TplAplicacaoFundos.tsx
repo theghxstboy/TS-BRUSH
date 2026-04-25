@@ -1,12 +1,16 @@
 import { useBrandStore } from '../../../store/useBrandStore'
+import type { SlideAppearance } from '../../../store/useBrandStore'
 import { usePageColors } from '../../../hooks/usePageColors'
 import { usePresentationTextStyles } from '../../../hooks/usePresentationTextStyles'
 
-interface TplAplicacaoFundosProps { pageNumber: number }
+interface TplAplicacaoFundosProps { 
+  pageNumber: number 
+  overrideAppearance?: SlideAppearance
+}
 
-export function TplAplicacaoFundos({ pageNumber }: TplAplicacaoFundosProps) {
+export function TplAplicacaoFundos({ pageNumber, overrideAppearance }: TplAplicacaoFundosProps) {
   const { assets_base64 } = useBrandStore()
-  const { darkColor, contentTitleColor, textColor, pageColor, pageBackgroundStyle } = usePageColors('aplicacao-fundos')
+  const { darkColor, contentTitleColor, textColor, pageColor, pageBackgroundStyle } = usePageColors('aplicacao-fundos', overrideAppearance)
   const { pageTitleStyle, bodyStyle, metaStyle } = usePresentationTextStyles()
   const src = assets_base64.logo_principal
 

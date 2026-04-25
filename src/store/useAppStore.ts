@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 
-export type AppScreen = 'home' | 'brand-manual' | 'brand-presentation'
+export type AppScreen = 'home' | 'brand-manual' | 'brand-presentation' | 'custom-presentation'
 
 export type AlertType = 'success' | 'error' | 'warning' | 'info' | 'confirm'
 

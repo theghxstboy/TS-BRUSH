@@ -167,10 +167,10 @@ export function HomeScreen() {
 
           <PresentationCard
             icon={<Sparkles size={28} />}
-            eyebrow="03 — EM BREVE"
+            eyebrow="03 — DISPONÍVEL"
             title="Apresentação Personalizada"
             description="Monte uma apresentação do zero com total liberdade de estrutura, layout e conteúdo."
-            disabled
+            onClick={() => setScreen('custom-presentation')}
           />
         </div>
 

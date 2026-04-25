@@ -12,8 +12,8 @@ export function useCanvasScale() {
     if (!element) return
 
     const updateScale = () => {
-      const availableWidth = Math.max(320, element.clientWidth - 56)
-      const nextScale = Math.min(1, Math.max(0.34, availableWidth / PAGE_WIDTH_PX))
+      const availableWidth = Math.max(200, element.clientWidth - 56)
+      const nextScale = Math.min(1, Math.max(0.2, availableWidth / PAGE_WIDTH_PX))
       setPageScale(nextScale)
     }
 

@@ -1,14 +1,19 @@
 import { useBrandStore, DEFAULT_SLIDE_APPEARANCE } from '../store/useBrandStore'
 import type { SlideAppearance } from '../store/useBrandStore'
+import { useAppStore } from '../store/useAppStore'
 
 export type PresentationGlobalType = 'capa' | 'secao' | 'final' | 'conteudo'
 
 export function usePresentationAppearance(pageId: string, globalType: PresentationGlobalType): SlideAppearance {
   const { page_appearance, presentation_data, custom_presentation_data } = useBrandStore()
+  const { screen } = useAppStore()
+  const isCustom = screen === 'custom-presentation'
   
   // 1. Get the local override for this specific page
   // First check in page_appearance (manual mode), then in custom_presentation_data (custom mode)
-  const local = page_appearance[pageId] || custom_presentation_data.slides.find(s => s.id === pageId)?.appearance
+  const local = isCustom 
+    ? custom_presentation_data.slides.find(s => s.id === pageId)?.appearance
+    : page_appearance[pageId]
   
   // 2. Resolve global style: if we are on custom-presentation, use its global config
   const globalCustom = custom_presentation_data.appearance
@@ -28,10 +33,10 @@ export function usePresentationAppearance(pageId: string, globalType: Presentati
   
   // Use custom global config if available
   const finalGlobal = {
-    fundo: globalCustom?.fundo || globalRef.fundo || '#FFFFFF',
-    titulo: globalCustom?.titulo || globalRef.titulo || '#000000',
-    texto: globalCustom?.texto || globalRef.texto || '#1A1A1A',
-    detalhe: globalCustom?.detalhe || globalRef.detalhe || '#FFA300',
+    fundo: isCustom ? globalCustom?.fundo : (globalRef.fundo || '#FFFFFF'),
+    titulo: isCustom ? globalCustom?.titulo : (globalRef.titulo || '#000000'),
+    texto: isCustom ? globalCustom?.texto : (globalRef.texto || '#1A1A1A'),
+    detalhe: isCustom ? globalCustom?.detalhe : (globalRef.detalhe || '#FFA300'),
   }
   
   // 3. Resolve each field with priority: Local -> Global -> Project Default

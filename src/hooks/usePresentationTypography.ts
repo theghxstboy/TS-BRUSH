@@ -1,4 +1,5 @@
 import { useBrandStore } from '../store/useBrandStore'
+import { useAppStore } from '../store/useAppStore'
 import {
   DEFAULT_BODY_FONT,
   DEFAULT_MONO_FONT,
@@ -8,17 +9,22 @@ import {
 
 export function usePresentationTypography() {
   const { tipografia, presentation_data, custom_presentation_data } = useBrandStore()
+  const { screen } = useAppStore()
+  const isCustom = screen === 'custom-presentation'
+
   const { typography: brandTypography } = presentation_data
   const { typography: customTypography } = custom_presentation_data
   
   const primaryName = resolveFontName(tipografia.principal_nome, tipografia.principal_custom.file_name)
   const secondaryName = resolveFontName(tipografia.secundaria_nome, tipografia.secundaria_custom.file_name)
   
-  const presentationTitleName = resolveFontName(customTypography.titulosNome, customTypography.titulosCustom.file_name)
-    || resolveFontName(brandTypography.titulosNome, brandTypography.titulosCustom.file_name)
+  const presentationTitleName = isCustom
+    ? resolveFontName(customTypography.titulosNome, customTypography.titulosCustom.file_name)
+    : resolveFontName(brandTypography.titulosNome, brandTypography.titulosCustom.file_name)
     
-  const presentationTextName = resolveFontName(customTypography.textosNome, customTypography.textosCustom.file_name)
-    || resolveFontName(brandTypography.textosNome, brandTypography.textosCustom.file_name)
+  const presentationTextName = isCustom
+    ? resolveFontName(customTypography.textosNome, customTypography.textosCustom.file_name)
+    : resolveFontName(brandTypography.textosNome, brandTypography.textosCustom.file_name)
 
   const titleFontFamily = getFontFamilyStack(
     presentationTitleName || primaryName,

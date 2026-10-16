@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   X,
@@ -71,7 +71,7 @@ function OptionCard({ icon, title, description, badge, onClick }: {
 
 function StepIndicator({ current, total, labels }: { current: number; total: number; labels?: string[] }) {
   return (
-    <div className="np-steps" style={{ gap: '12px' }}>
+    <div className="np-steps">
       {Array.from({ length: total }).map((_, i) => (
         <div key={i} className={`np-step ${i + 1 === current ? 'active' : i + 1 < current ? 'done' : ''}`}>
           <div className="np-step-num-container">
@@ -232,6 +232,7 @@ function BgUploadRow({
     const file = e.target.files?.[0]
     if (!file) return
     onUpload(await readFileAsBase64(file))
+    e.target.value = '' // reset: re-selecting a same-named file must still fire onChange
   }
 
   const onDragOver = (e: React.DragEvent) => {
@@ -249,7 +250,7 @@ function BgUploadRow({
   }
 
   return (
-    <div 
+    <div
       className={`np-bg-row ${isDragging ? 'drag-active' : ''}`}
       onDragOver={onDragOver}
       onDragLeave={onDragLeave}
@@ -299,6 +300,7 @@ function AssetUploadCard({
     const file = e.target.files?.[0]
     if (!file) return
     onUpload(await readFileAsBase64(file))
+    e.target.value = '' // reset: re-selecting a same-named file must still fire onChange
   }
 
   const onDragOver = (e: React.DragEvent) => {
@@ -368,6 +370,21 @@ export function NewBrandPresentationModal({ onClose }: NewBrandPresentationModal
   const [view, setView] = useState<ModalView>('choose')
   const [currentVersionIndex, setCurrentVersionIndex] = useState(0)
   const [isDraggingMockup, setIsDraggingMockup] = useState(false)
+  const [previewSrc, setPreviewSrc] = useState<string | null>(null)
+
+  // Esc fecha o preview (e impede que feche o modal inteiro).
+  useEffect(() => {
+    if (!previewSrc) return
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.preventDefault()
+        e.stopPropagation()
+        setPreviewSrc(null)
+      }
+    }
+    window.addEventListener('keydown', onKey, true)
+    return () => window.removeEventListener('keydown', onKey, true)
+  }, [previewSrc])
 
 
   // Project Info State
@@ -865,8 +882,14 @@ export function NewBrandPresentationModal({ onClose }: NewBrandPresentationModal
                   <div className="np-mockup-grid-v3">
                     {versions[currentVersionIndex].mockups.map((m, i) => (
                       <div key={i} className="np-mockup-item-v2">
-                        <img src={m} alt={`Mockup ${i + 1}`} />
-                        <button type="button" className="np-mockup-del" onClick={() => removeMockup(i)}>
+                        <img
+                          src={m}
+                          alt={`Mockup ${i + 1}`}
+                          style={{ cursor: 'zoom-in' }}
+                          onClick={() => setPreviewSrc(m)}
+                          title="Clique para ampliar"
+                        />
+                        <button type="button" className="np-mockup-del" onClick={(e) => { e.stopPropagation(); removeMockup(i) }}>
                           <Trash2 size={12} />
                         </button>
                       </div>
@@ -1153,6 +1176,28 @@ export function NewBrandPresentationModal({ onClose }: NewBrandPresentationModal
           </>
         )}
       </motion.div>
+
+      {previewSrc && (
+        <div
+          onClick={(e) => { e.stopPropagation(); setPreviewSrc(null) }}
+          style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(4px)', zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 40, cursor: 'zoom-out' }}
+        >
+          <img
+            src={previewSrc}
+            alt="Preview do mockup"
+            onClick={(e) => e.stopPropagation()}
+            style={{ maxWidth: '90vw', maxHeight: '90vh', objectFit: 'contain', borderRadius: 10, boxShadow: '0 20px 60px rgba(0,0,0,0.6)', cursor: 'default' }}
+          />
+          <button
+            type="button"
+            onClick={(e) => { e.stopPropagation(); setPreviewSrc(null) }}
+            title="Fechar"
+            style={{ position: 'absolute', top: 24, right: 24, width: 38, height: 38, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', borderRadius: 10, cursor: 'pointer' }}
+          >
+            <X size={18} />
+          </button>
+        </div>
+      )}
 
       <style>{`
         .np-form-info-layout {

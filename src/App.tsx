@@ -9,6 +9,7 @@ import { useTypographyFontLoader } from './hooks/useTypographyFontLoader'
 import { usePresentationTypography } from './hooks/usePresentationTypography'
 import { DEFAULT_BACKGROUND_IMAGE_OPACITY, useBrandStore } from './store/useBrandStore'
 import { useAppStore } from './store/useAppStore'
+import { toast } from 'sonner'
 
 export default function App() {
   useTypographyFontLoader()
@@ -46,6 +47,51 @@ export default function App() {
 
     setHasUnsavedChanges(storeSnapshot !== prevStateRef.current)
   }, [screen, storeSnapshot, setHasUnsavedChanges])
+
+  // Guard global de drag-and-drop: impede o navegador de abrir a imagem quando o drop cai
+  // fora de uma zona de upload. Sem isso, um drop "errado" navega pra imagem e parece quebrado.
+  useEffect(() => {
+    const prevent = (e: DragEvent) => {
+      // Só intercepta arrasto de arquivos (deixa drag-and-drop interno, ex: reordenar, intacto).
+      if (e.dataTransfer && Array.from(e.dataTransfer.types).includes('Files')) {
+        e.preventDefault()
+      }
+    }
+    window.addEventListener('dragover', prevent)
+    window.addEventListener('drop', prevent)
+    return () => {
+      window.removeEventListener('dragover', prevent)
+      window.removeEventListener('drop', prevent)
+    }
+  }, [])
+
+  // Undo / Redo global sobre o estado do projeto (Ctrl+Z / Ctrl+Shift+Z / Ctrl+Y).
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (!(e.ctrlKey || e.metaKey)) return
+      const k = e.key.toLowerCase()
+      if (k !== 'z' && k !== 'y') return
+      // Em campos de texto, respeita o undo nativo do input/textarea.
+      const t = e.target as HTMLElement | null
+      if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable)) return
+
+      const temporal = useBrandStore.temporal.getState()
+      const isRedo = k === 'y' || (k === 'z' && e.shiftKey)
+      if (isRedo) {
+        if (temporal.futureStates.length) {
+          e.preventDefault()
+          temporal.redo()
+          toast('Refeito')
+        }
+      } else if (temporal.pastStates.length) {
+        e.preventDefault()
+        temporal.undo()
+        toast('Desfeito')
+      }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [])
 
   // Sidebar resizing
   const startResizing = useCallback(() => setIsResizing(true), [])

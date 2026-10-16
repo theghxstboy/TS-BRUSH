@@ -37,6 +37,26 @@ type AppearanceFieldKey =
 
 const LOGO_ACCEPT = 'image/svg+xml,image/png,image/webp,image/jpeg,.svg,.png,.webp,.jpg,.jpeg'
 const MOCKUP_ACCEPT = 'image/*'
+
+// mix-blend-mode nativos do CSS para o fundo do slide
+const BLEND_MODES: { value: string; label: string }[] = [
+  { value: 'normal', label: 'Normal' },
+  { value: 'multiply', label: 'Multiply' },
+  { value: 'screen', label: 'Screen' },
+  { value: 'overlay', label: 'Overlay' },
+  { value: 'darken', label: 'Darken' },
+  { value: 'lighten', label: 'Lighten' },
+  { value: 'color-dodge', label: 'Color Dodge' },
+  { value: 'color-burn', label: 'Color Burn' },
+  { value: 'hard-light', label: 'Hard Light' },
+  { value: 'soft-light', label: 'Soft Light' },
+  { value: 'difference', label: 'Difference' },
+  { value: 'exclusion', label: 'Exclusion' },
+  { value: 'hue', label: 'Hue' },
+  { value: 'saturation', label: 'Saturation' },
+  { value: 'color', label: 'Color' },
+  { value: 'luminosity', label: 'Luminosity' },
+]
 const GLOBAL_SECTION_DESCRIPTION = 'Estes controles continuam sendo globais e podem refletir em outras paginas do manual.'
 
 const STANDARD_APPEARANCE_FIELDS: Array<{ key: AppearanceFieldKey; label: string }> = [
@@ -152,6 +172,39 @@ function DrawerOpacityField({
   )
 }
 
+function DrawerRangeField({
+  label,
+  value,
+  min,
+  max,
+  step,
+  suffix = '',
+  onChange,
+}: {
+  label: string
+  value: number
+  min: number
+  max: number
+  step: number
+  suffix?: string
+  onChange: (value: number) => void
+}) {
+  return (
+    <div className="form-group">
+      <label className="form-label">{label}</label>
+      <input
+        type="range"
+        min={min}
+        max={max}
+        step={step}
+        value={value}
+        onChange={(e) => onChange(Number(e.target.value))}
+      />
+      <span style={{ fontSize: 11, color: '#71717a' }}>{value}{suffix}</span>
+    </div>
+  )
+}
+
 function DrawerToggleField({
   label,
   value,
@@ -187,7 +240,10 @@ function DrawerSection({ title, description, children }: { title: string; descri
 }
 
 function AppearanceSection({ slideType }: { slideType: SlideType }) {
-  const { page_appearance, setPageAppearance, aparencia, presentation_data } = useBrandStore()
+  const { page_appearance, setPageAppearance, setElementPosition, resetElementPositions, aparencia, presentation_data } = useBrandStore()
+  const selectedElement = useAppStore((s) => s.selectedElement)
+  const selectedKey = selectedElement?.pageId === slideType ? selectedElement.key : null
+  const selectedLs = selectedKey ? (page_appearance[slideType]?.element_positions?.[selectedKey]?.ls ?? 0) : 0
   const appearance = page_appearance[slideType] || DEFAULT_SLIDE_APPEARANCE
   
   const isPres = slideType.startsWith('pres-')
@@ -271,9 +327,61 @@ function AppearanceSection({ slideType }: { slideType: SlideType }) {
 
       <DrawerOpacityField
         label="Opacidade do Fundo deste Slide"
-        value={appearance.imagem_fundo ? appearance.imagem_fundo_opacidade : DEFAULT_BACKGROUND_IMAGE_OPACITY}
+        value={page_appearance[slideType]?.imagem_fundo_opacidade ?? (isPres ? 1 : DEFAULT_BACKGROUND_IMAGE_OPACITY)}
         onChange={(value) => setPageAppearance(slideType, { imagem_fundo_opacidade: value })}
       />
+
+      {isPres && (
+        <div className="form-group">
+          <label className="form-label">Mesclagem do Fundo (blend)</label>
+          <select
+            className="form-input"
+            value={appearance.imagem_fundo_blend || 'normal'}
+            onChange={(e) => setPageAppearance(slideType, { imagem_fundo_blend: e.target.value })}
+          >
+            {BLEND_MODES.map((m) => (
+              <option key={m.value} value={m.value}>{m.label}</option>
+            ))}
+          </select>
+        </div>
+      )}
+
+      {isPres && (
+        <>
+          {selectedKey ? (
+            <DrawerRangeField
+              label="Espaçamento das letras (elemento selecionado)"
+              value={selectedLs}
+              min={-0.05}
+              max={0.5}
+              step={0.01}
+              suffix="em"
+              onChange={(value) => setElementPosition(slideType, selectedKey, { ls: value })}
+            />
+          ) : (
+            <div className="form-group">
+              <label className="form-label">Espaçamento das letras</label>
+              <p style={{ fontSize: 11, color: 'var(--text-secondary)', lineHeight: 1.5 }}>
+                Clique num texto do slide para selecioná-lo e ajustar só o espaçamento dele.
+              </p>
+            </div>
+          )}
+          <div className="form-group">
+            <label className="form-label">Posição dos elementos</label>
+            <p style={{ fontSize: 11, color: 'var(--text-secondary)', marginBottom: 6, lineHeight: 1.5 }}>
+              Arraste os elementos direto no slide para reposicioná-los. As guias de centro ajudam a alinhar.
+            </p>
+            <button
+              type="button"
+              className="btn-secondary"
+              style={{ width: '100%' }}
+              onClick={() => resetElementPositions(slideType)}
+            >
+              Resetar posições deste slide
+            </button>
+          </div>
+        </>
+      )}
 
       <div style={{ marginTop: 8, borderTop: '1px solid var(--border)', paddingTop: 12 }}>
         <DrawerToggleField
@@ -1064,11 +1172,25 @@ function ContextBody({
       <>
         <DrawerSection title={`Conceito da Versão ${vIdx + 1}`}>
           <div className="form-group">
+            <label className="form-label">Logo desta versão</label>
+            <UploadZone
+              label="Trocar Logo (SVG, PNG...)"
+              hint="SVG, PNG, WebP ou JPG · troca a logo deste slide"
+              value={version.logoNew}
+              onChange={(val) => {
+                const newVersions = [...presentation_data.versions]
+                newVersions[vIdx] = { ...version, logoNew: val }
+                setPresentationData({ ...presentation_data, versions: newVersions })
+              }}
+              accept={LOGO_ACCEPT}
+            />
+          </div>
+          <div className="form-group">
             <label className="form-label">Explicação da Versão</label>
-            <textarea 
-              className="form-textarea" 
+            <textarea
+              className="form-textarea"
               rows={6}
-              value={version.explanation} 
+              value={version.explanation}
               onChange={(e) => {
                 const newVersions = [...presentation_data.versions]
                 newVersions[vIdx] = { ...version, explanation: e.target.value }

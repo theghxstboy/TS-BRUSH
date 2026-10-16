@@ -5,6 +5,7 @@ import { useBrandStore } from '../../store/useBrandStore'
 import { useAppStore } from '../../store/useAppStore'
 import { useCanvasScale } from './useCanvasScale'
 import { focusSidebarTarget } from '../../lib/sidebarNavigation'
+import { PresDragProvider } from './presentationDrag'
 
 // Templates Manual
 import { TplCapa } from '../pages/classico/TplCapa'
@@ -30,7 +31,7 @@ import { PresMockup } from '../pages/presentation/PresMockup'
 import { PresFinal } from '../pages/presentation/PresFinal'
 
 export function CanvasCustom() {
-  const { custom_presentation_data, addCustomSlide, removeCustomSlide } = useBrandStore()
+  const { custom_presentation_data, addCustomSlide, removeCustomSlide, updateCustomSlideContent } = useBrandStore()
   const { slides } = custom_presentation_data
   const { canvasRef, pageScale, scaledPageWidth, scaledPageHeight } = useCanvasScale()
   const { showAlert } = useAppStore()
@@ -77,7 +78,8 @@ export function CanvasCustom() {
   }
 
   return (
-    <div 
+    <PresDragProvider scale={pageScale}>
+    <div
       ref={canvasRef}
       className="canvas-area canvas-custom"
       onDragOver={handleDragOver}
@@ -206,10 +208,11 @@ export function CanvasCustom() {
                 />
               )}
               {slide.templateId === 'pres-concept-logo' && (
-                <PresConceptLogo 
-                  pageId={key} 
-                  explanation={slide.content.explanation || slide.content.text1 || ""} 
-                  logoSrc={slide.content.logo || null} 
+                <PresConceptLogo
+                  pageId={key}
+                  explanation={slide.content.explanation || slide.content.text1 || ""}
+                  logoSrc={slide.content.logo || null}
+                  onExplanationCommit={(v) => updateCustomSlideContent(slide.id, { explanation: v })}
                 />
               )}
               {slide.templateId === 'pres-color-chart' && (
@@ -241,5 +244,6 @@ export function CanvasCustom() {
         )
       })}
     </div>
+    </PresDragProvider>
   )
 }

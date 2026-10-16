@@ -4,6 +4,7 @@ import { useBrandStore } from '../../store/useBrandStore'
 import { useCanvasScale } from './useCanvasScale'
 import { EmptyCanvas } from './EmptyCanvas'
 import { focusSidebarTarget } from '../../lib/sidebarNavigation'
+import { PresDragProvider } from './presentationDrag'
 
 import { PresCapa } from '../pages/presentation/PresCapa'
 import { PresSecao } from '../pages/presentation/PresSecao'
@@ -21,7 +22,7 @@ type PresentationSlide =
   | { type: 'final' }
 
 export function CanvasPresentation() {
-  const { presentation_data } = useBrandStore()
+  const { presentation_data, setPresentationData } = useBrandStore()
   const { canvasRef, pageScale, scaledPageWidth, scaledPageHeight } = useCanvasScale()
   const [activeKey, setActiveKey] = useState<string | null>(null)
 
@@ -80,6 +81,7 @@ export function CanvasPresentation() {
   }
 
   return (
+    <PresDragProvider scale={pageScale}>
     <div ref={canvasRef} className="canvas-area">
       {slides.map((slide, i) => {
         const key = `${slide.type}-${i}`
@@ -110,7 +112,19 @@ export function CanvasPresentation() {
 
               {slide.type === 'capa' && <PresCapa pageId={pageId} />}
               {slide.type === 'secao' && <PresSecao pageId={pageId} numero={slide.numero} titulo={slide.titulo} />}
-              {slide.type === 'concept-logo' && <PresConceptLogo pageId={pageId} explanation={slide.explanation} logoSrc={slide.logoNew} />}
+              {slide.type === 'concept-logo' && (
+                <PresConceptLogo
+                  pageId={pageId}
+                  explanation={slide.explanation}
+                  logoSrc={slide.logoNew}
+                  onExplanationCommit={(v) => {
+                    const versions = [...presentation_data.versions]
+                    if (!versions[slide.versionIndex]) return
+                    versions[slide.versionIndex] = { ...versions[slide.versionIndex], explanation: v }
+                    setPresentationData({ ...presentation_data, versions })
+                  }}
+                />
+              )}
               {slide.type === 'comparison' && <PresComparison pageId={pageId} originalLogo={slide.originalLogo} newLogo={slide.logoNew} />}
               {slide.type === 'mockup' && <PresMockup pageId={pageId} mockupSrc={slide.src} index={slide.index} total={slide.total} />}
               {slide.type === 'final' && <PresFinal pageId={pageId} />}
@@ -119,5 +133,6 @@ export function CanvasPresentation() {
         )
       })}
     </div>
+    </PresDragProvider>
   )
 }

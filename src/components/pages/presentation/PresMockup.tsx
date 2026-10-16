@@ -1,5 +1,7 @@
 import { useBrandStore } from '../../../store/useBrandStore'
 import { usePresentationAppearance } from '../../../hooks/usePresentationAppearance'
+import { useElementDrag } from '../../canvas/presentationDrag'
+import { PresBgLayer } from './PresBgLayer'
 
 interface PresMockupProps {
   pageId: string
@@ -12,15 +14,13 @@ export function PresMockup({ pageId, mockupSrc, index, total }: PresMockupProps)
   const { presentation_data } = useBrandStore()
   const style = usePresentationAppearance(pageId, 'conteudo')
   const { typography } = presentation_data
-  const { cor_fundo_pagina: fundo, cor_texto: colorTexto, cor_sombra: colorSombra, imagem_fundo } = style
+  const { cor_fundo_pagina: fundo, cor_texto: colorTexto, cor_sombra: colorSombra, imagem_fundo, imagem_fundo_opacidade, imagem_fundo_blend, espacamento_letras, element_positions } = style
 
   const textFont = typography.textosNome || 'inherit'
+  const badgeDrag = useElementDrag(pageId, 'badge', element_positions.badge, '', { positioned: true })
 
   const bgStyle: React.CSSProperties = {
     backgroundColor: fundo,
-    backgroundImage: imagem_fundo ? `url(${imagem_fundo})` : 'none',
-    backgroundSize: 'cover',
-    backgroundPosition: 'center',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
@@ -29,6 +29,7 @@ export function PresMockup({ pageId, mockupSrc, index, total }: PresMockupProps)
 
   return (
     <div className="pagina-pdf" style={bgStyle}>
+      <PresBgLayer imagem_fundo={imagem_fundo} opacidade={imagem_fundo_opacidade} blend={imagem_fundo_blend} />
       <div style={{
         width: '100%',
         height: '100%',
@@ -56,7 +57,10 @@ export function PresMockup({ pageId, mockupSrc, index, total }: PresMockupProps)
         )}
 
         {/* Floating Badge */}
-        <div style={{
+        <div
+          className={badgeDrag.className}
+          onPointerDown={badgeDrag.onPointerDown}
+          style={{
           position: 'absolute',
           bottom: '30px',
           right: '30px',
@@ -69,10 +73,12 @@ export function PresMockup({ pageId, mockupSrc, index, total }: PresMockupProps)
           color: '#fff',
           fontSize: '11px',
           fontWeight: 700,
-          letterSpacing: '0.1em',
-          fontFamily: textFont
+          letterSpacing: `calc(0.1em + ${element_positions.badge?.ls ?? 0}em)`,
+          fontFamily: textFont,
+          ...badgeDrag.style
         }}>
           APLICAÇÃO {index + 1} / {total}
+          {badgeDrag.handle}
         </div>
       </div>
     </div>

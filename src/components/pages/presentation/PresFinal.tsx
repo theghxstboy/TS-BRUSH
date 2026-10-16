@@ -1,24 +1,27 @@
 import { useBrandStore } from '../../../store/useBrandStore'
 import { usePresentationAppearance } from '../../../hooks/usePresentationAppearance'
+import { useElementDrag } from '../../canvas/presentationDrag'
+import { EditableText } from '../../canvas/EditableText'
+import { PresBgLayer } from './PresBgLayer'
 
 interface PresFinalProps {
   pageId: string
 }
 
 export function PresFinal({ pageId }: PresFinalProps) {
-  const { presentation_data } = useBrandStore()
+  const { presentation_data, setPresentationData } = useBrandStore()
   const style = usePresentationAppearance(pageId, 'final')
   const { brand_name, typography } = presentation_data
-  const { cor_fundo_pagina: fundo, cor_titulo: titulo, cor_texto: texto, cor_detalhes: detalhe, imagem_fundo } = style
+  const { cor_fundo_pagina: fundo, cor_titulo: titulo, cor_texto: texto, cor_detalhes: detalhe, imagem_fundo, imagem_fundo_opacidade, imagem_fundo_blend, espacamento_letras, element_positions } = style
 
   const titleFont = typography.titulosNome || 'inherit'
   const textFont = typography.textosNome || 'inherit'
 
+  const titleDrag = useElementDrag(pageId, 'title', element_positions.title)
+  const badgeDrag = useElementDrag(pageId, 'badge', element_positions.badge)
+
   const bgStyle: React.CSSProperties = {
     backgroundColor: fundo,
-    backgroundImage: imagem_fundo ? `url(${imagem_fundo})` : 'none',
-    backgroundSize: 'cover',
-    backgroundPosition: 'center',
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
@@ -27,6 +30,7 @@ export function PresFinal({ pageId }: PresFinalProps) {
 
   return (
     <div className="pagina-pdf" style={bgStyle}>
+      <PresBgLayer imagem_fundo={imagem_fundo} opacidade={imagem_fundo_opacidade} blend={imagem_fundo_blend} />
       <div style={{
         position: 'absolute',
         top: '10%',
@@ -42,8 +46,8 @@ export function PresFinal({ pageId }: PresFinalProps) {
         }} />
       </div>
 
-      <div style={{ 
-        textAlign: 'center', 
+      <div style={{
+        textAlign: 'center',
         zIndex: 10,
         display: 'flex',
         flexDirection: 'column',
@@ -53,23 +57,31 @@ export function PresFinal({ pageId }: PresFinalProps) {
         maxHeight: 'calc(210mm - 120px)',
         overflow: 'hidden'
       }}>
-        <h2 style={{
+        <h2
+          className={titleDrag.className}
+          onPointerDown={titleDrag.onPointerDown}
+          style={{
           fontSize: '84px',
           fontWeight: 900,
           color: titulo,
           textTransform: 'uppercase',
-          letterSpacing: '-2px',
+          letterSpacing: `calc(-2px + ${element_positions.title?.ls ?? 0}em)`,
           margin: 0,
           lineHeight: 1,
           fontFamily: titleFont,
           maxWidth: '1000px',
           wordBreak: 'break-word',
-          marginBottom: '32px'
+          marginBottom: '32px',
+          ...titleDrag.style
         }}>
           Obrigado.
+          {titleDrag.handle}
         </h2>
-        
-        <div style={{
+
+        <div
+          className={badgeDrag.className}
+          onPointerDown={badgeDrag.onPointerDown}
+          style={{
           padding: '12px 32px',
           background: 'rgba(255,255,255,0.03)',
           border: '1px solid rgba(255,255,255,0.08)',
@@ -78,21 +90,31 @@ export function PresFinal({ pageId }: PresFinalProps) {
           backdropFilter: 'blur(10px)',
           WebkitBackdropFilter: 'blur(10px)',
           maxWidth: '90%',
-          overflow: 'hidden'
+          overflow: 'hidden',
+          ...badgeDrag.style
         }}>
-            <p style={{
-              fontSize: '18px',
-              fontWeight: 700,
-              color: texto,
-              letterSpacing: '0.1em',
-              textTransform: 'uppercase',
-              margin: 0,
-              fontFamily: textFont,
-              maxWidth: '600px',
-              wordBreak: 'break-word'
-            }}>
-              {brand_name || 'Projeto Concluído'}
-            </p>
+            <EditableText
+              pageId={pageId}
+              elementKey="finalBrand"
+              positions={element_positions}
+              value={brand_name}
+              placeholder="Projeto Concluído"
+              onCommit={(v) => setPresentationData({ ...presentation_data, brand_name: v })}
+              as="p"
+              draggable={false}
+              style={{
+                fontSize: '18px',
+                fontWeight: 700,
+                color: texto,
+                letterSpacing: '0.1em',
+                textTransform: 'uppercase',
+                margin: 0,
+                fontFamily: textFont,
+                maxWidth: '600px',
+                wordBreak: 'break-word'
+              }}
+            />
+            {badgeDrag.handle}
         </div>
       </div>
 

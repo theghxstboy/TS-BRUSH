@@ -1,5 +1,7 @@
 import { useBrandStore } from '../../../store/useBrandStore'
 import { usePresentationAppearance } from '../../../hooks/usePresentationAppearance'
+import { useElementDrag } from '../../canvas/presentationDrag'
+import { PresBgLayer } from './PresBgLayer'
 
 interface PresComparisonProps {
   pageId: string
@@ -11,16 +13,18 @@ export function PresComparison({ pageId, originalLogo, newLogo }: PresComparison
   const { presentation_data } = useBrandStore()
   const style = usePresentationAppearance(pageId, 'conteudo')
   const { typography } = presentation_data
-  const { cor_fundo_pagina: fundo, cor_titulo: colorTitulo, cor_texto: colorTexto, cor_detalhes: detalhe, imagem_fundo } = style
+  const { cor_fundo_pagina: fundo, cor_titulo: colorTitulo, cor_texto: colorTexto, cor_detalhes: detalhe, imagem_fundo, imagem_fundo_opacidade, imagem_fundo_blend, espacamento_letras, element_positions } = style
 
   const titleFont = typography.titulosNome || 'inherit'
   const textFont = typography.textosNome || 'inherit'
 
+  const labelOldDrag = useElementDrag(pageId, 'labelOld', element_positions.labelOld)
+  const logoOldDrag = useElementDrag(pageId, 'logoOld', element_positions.logoOld)
+  const labelNewDrag = useElementDrag(pageId, 'labelNew', element_positions.labelNew)
+  const logoNewDrag = useElementDrag(pageId, 'logoNew', element_positions.logoNew)
+
   const bgStyle: React.CSSProperties = {
     backgroundColor: fundo,
-    backgroundImage: imagem_fundo ? `url(${imagem_fundo})` : 'none',
-    backgroundSize: 'cover',
-    backgroundPosition: 'center',
     display: 'grid',
     gridTemplateColumns: '1fr 1fr',
     position: 'relative'
@@ -28,6 +32,7 @@ export function PresComparison({ pageId, originalLogo, newLogo }: PresComparison
 
   return (
     <div className="pagina-pdf" style={bgStyle}>
+      <PresBgLayer imagem_fundo={imagem_fundo} opacidade={imagem_fundo_opacidade} blend={imagem_fundo_blend} />
       {/* Vertical Divider */}
       <div style={{
         position: 'absolute',
@@ -49,24 +54,30 @@ export function PresComparison({ pageId, originalLogo, newLogo }: PresComparison
         height: '210mm',
         overflow: 'hidden'
       }}>
-        <h4 style={{
+        <h4
+          className={labelOldDrag.className}
+          onPointerDown={labelOldDrag.onPointerDown}
+          style={{
           fontSize: '11px',
           fontWeight: 800,
           color: `${colorTexto}60`,
           textTransform: 'uppercase',
-          letterSpacing: '0.4em',
+          letterSpacing: `calc(0.4em + ${element_positions.labelOld?.ls ?? 0}em)`,
           marginBottom: '40px',
           fontFamily: textFont,
-          flexShrink: 0
+          flexShrink: 0,
+          ...labelOldDrag.style
         }}>
           Versão Antiga
+          {labelOldDrag.handle}
         </h4>
-        <div style={{ width: '100%', flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+        <div className={logoOldDrag.className} onPointerDown={logoOldDrag.onPointerDown} style={{ width: '100%', flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', ...logoOldDrag.style }}>
           {originalLogo ? (
             <img src={originalLogo} alt="Original" style={{ maxWidth: '80%', maxHeight: '100%', objectFit: 'contain', opacity: 0.6 }} />
           ) : (
             <div style={{ color: `${colorTexto}20`, fontSize: '13px' }}>Sem logo original</div>
           )}
+          {logoOldDrag.handle}
         </div>
       </div>
 
@@ -81,19 +92,24 @@ export function PresComparison({ pageId, originalLogo, newLogo }: PresComparison
         height: 'calc(210mm - 120px)',
         overflow: 'hidden'
       }}>
-        <h4 style={{
+        <h4
+          className={labelNewDrag.className}
+          onPointerDown={labelNewDrag.onPointerDown}
+          style={{
           fontSize: '11px',
           fontWeight: 800,
           color: detalhe,
           textTransform: 'uppercase',
-          letterSpacing: '0.4em',
+          letterSpacing: `calc(0.4em + ${element_positions.labelNew?.ls ?? 0}em)`,
           marginBottom: '40px',
           fontFamily: titleFont,
-          flexShrink: 0
+          flexShrink: 0,
+          ...labelNewDrag.style
         }}>
           Nova Versão
+          {labelNewDrag.handle}
         </h4>
-        <div style={{ width: '100%', flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+        <div className={logoNewDrag.className} onPointerDown={logoNewDrag.onPointerDown} style={{ width: '100%', flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', ...logoNewDrag.style }}>
           {newLogo ? (
             <img
               src={newLogo}
@@ -108,6 +124,7 @@ export function PresComparison({ pageId, originalLogo, newLogo }: PresComparison
           ) : (
             <div style={{ color: `${colorTexto}20`, fontSize: '13px' }}>Logo nova não enviada</div>
           )}
+          {logoNewDrag.handle}
         </div>
       </div>
 

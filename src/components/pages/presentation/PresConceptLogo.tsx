@@ -1,26 +1,32 @@
 import { useBrandStore } from '../../../store/useBrandStore'
 import { usePresentationAppearance } from '../../../hooks/usePresentationAppearance'
+import { useElementDrag } from '../../canvas/presentationDrag'
+import { EditableText } from '../../canvas/EditableText'
+import { PresBgLayer } from './PresBgLayer'
 
 interface PresConceptLogoProps {
   pageId: string
   explanation: string
   logoSrc: string | null
+  onExplanationCommit?: (value: string) => void
 }
 
-export function PresConceptLogo({ pageId, explanation, logoSrc }: PresConceptLogoProps) {
+export function PresConceptLogo({ pageId, explanation, logoSrc, onExplanationCommit }: PresConceptLogoProps) {
   const { presentation_data } = useBrandStore()
+  const commitExplanation = onExplanationCommit ?? (() => {})
+
   const style = usePresentationAppearance(pageId, 'conteudo')
   const { typography } = presentation_data
-  const { cor_fundo_pagina: fundo, cor_titulo: colorTitulo, cor_texto: colorTexto, cor_detalhes: detalhe, imagem_fundo } = style
+  const { cor_fundo_pagina: fundo, cor_titulo: colorTitulo, cor_texto: colorTexto, cor_detalhes: detalhe, imagem_fundo, imagem_fundo_opacidade, imagem_fundo_blend, espacamento_letras, element_positions } = style
 
   const titleFont = typography.titulosNome || 'inherit'
   const textFont = typography.textosNome || 'inherit'
 
+  const conceptDrag = useElementDrag(pageId, 'concept', element_positions.concept)
+  const logoDrag = useElementDrag(pageId, 'logo', element_positions.logo)
+
   const bgStyle: React.CSSProperties = {
     backgroundColor: fundo,
-    backgroundImage: imagem_fundo ? `url(${imagem_fundo})` : 'none',
-    backgroundSize: 'cover',
-    backgroundPosition: 'center',
     display: 'grid',
     gridTemplateColumns: '1fr 1fr',
     padding: '60px',
@@ -29,14 +35,19 @@ export function PresConceptLogo({ pageId, explanation, logoSrc }: PresConceptLog
 
   return (
     <div className="pagina-pdf" style={bgStyle}>
+      <PresBgLayer imagem_fundo={imagem_fundo} opacidade={imagem_fundo_opacidade} blend={imagem_fundo_blend} />
       {/* Left Side: Concept Text */}
-      <div style={{
+      <div
+        className={conceptDrag.className}
+        onPointerDown={conceptDrag.onPointerDown}
+        style={{
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'flex-start', // Começa do topo para não sumir o início do texto longo
         paddingRight: '20px',
         maxHeight: 'calc(210mm - 120px)', // Altura total menos padding
-        overflow: 'hidden'
+        overflow: 'hidden',
+        ...conceptDrag.style
       }}>
         <div style={{
           width: '40px',
@@ -62,22 +73,34 @@ export function PresConceptLogo({ pageId, explanation, logoSrc }: PresConceptLog
           overflowY: 'auto',
           paddingRight: '10px'
         }}>
-          <p style={{
-            fontSize: explanation.length > 1500 ? '11px' : explanation.length > 1000 ? '13px' : explanation.length > 600 ? '15px' : '18px',
-            lineHeight: '1.6',
-            color: colorTexto,
-            fontWeight: 500,
-            margin: 0,
-            whiteSpace: 'pre-wrap',
-            fontFamily: textFont
-          }}>
-            {explanation || 'Nenhuma explicação fornecida para esta versão.'}
-          </p>
+          <EditableText
+            pageId={pageId}
+            elementKey="explanation"
+            positions={element_positions}
+            value={explanation}
+            placeholder="Nenhuma explicação fornecida para esta versão."
+            onCommit={commitExplanation}
+            as="p"
+            draggable={false}
+            style={{
+              fontSize: explanation.length > 1500 ? '11px' : explanation.length > 1000 ? '13px' : explanation.length > 600 ? '15px' : '18px',
+              lineHeight: '1.6',
+              color: colorTexto,
+              fontWeight: 500,
+              margin: 0,
+              whiteSpace: 'pre-wrap',
+              fontFamily: textFont
+            }}
+          />
         </div>
+        {conceptDrag.handle}
       </div>
 
       {/* Right Side: Logo Display */}
-      <div style={{
+      <div
+        className={logoDrag.className}
+        onPointerDown={logoDrag.onPointerDown}
+        style={{
         background: `${colorTexto}08`,
         border: `1px solid ${colorTexto}10`,
         borderRadius: '24px',
@@ -88,6 +111,7 @@ export function PresConceptLogo({ pageId, explanation, logoSrc }: PresConceptLog
         backdropFilter: 'blur(20px)',
         WebkitBackdropFilter: 'blur(20px)',
         position: 'relative',
+        ...logoDrag.style,
         overflow: 'hidden'
       }}>
         {/* Subtle decorative background element */}
@@ -119,6 +143,7 @@ export function PresConceptLogo({ pageId, explanation, logoSrc }: PresConceptLog
             Logo não enviada
           </div>
         )}
+        {logoDrag.handle}
       </div>
 
       <div style={{

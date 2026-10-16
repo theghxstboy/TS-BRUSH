@@ -1,6 +1,8 @@
 import { useBrandStore } from '../../../store/useBrandStore'
 import { usePresentationAppearance } from '../../../hooks/usePresentationAppearance'
 import { usePresentationTypography } from '../../../hooks/usePresentationTypography'
+import { useElementDrag } from '../../canvas/presentationDrag'
+import { PresBgLayer } from './PresBgLayer'
 
 interface PresSecaoProps {
   pageId: string
@@ -12,13 +14,12 @@ export function PresSecao({ pageId, numero, titulo }: PresSecaoProps) {
   const { presentation_data } = useBrandStore()
   const style = usePresentationAppearance(pageId, 'secao')
   const { titleFontFamily, bodyFontFamily } = usePresentationTypography()
-  const { cor_fundo_pagina: fundo, cor_titulo: colorTitulo, cor_detalhes: detalhe, imagem_fundo } = style
+  const { cor_fundo_pagina: fundo, cor_titulo: colorTitulo, cor_detalhes: detalhe, imagem_fundo, imagem_fundo_opacidade, imagem_fundo_blend, espacamento_letras, element_positions } = style
+
+  const contentDrag = useElementDrag(pageId, 'content', element_positions.content)
 
   const bgStyle: React.CSSProperties = {
     backgroundColor: fundo,
-    backgroundImage: imagem_fundo ? `url(${imagem_fundo})` : 'none',
-    backgroundSize: 'cover',
-    backgroundPosition: 'center',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center'
@@ -26,6 +27,7 @@ export function PresSecao({ pageId, numero, titulo }: PresSecaoProps) {
 
   return (
     <div className="pagina-pdf" style={bgStyle}>
+      <PresBgLayer imagem_fundo={imagem_fundo} opacidade={imagem_fundo_opacidade} blend={imagem_fundo_blend} />
       <div style={{
         position: 'absolute',
         left: '10%',
@@ -42,7 +44,7 @@ export function PresSecao({ pageId, numero, titulo }: PresSecaoProps) {
         {numero}
       </div>
 
-      <div style={{ zIndex: 10, textAlign: 'center', width: '100%', padding: '0 40px', maxHeight: 'calc(210mm - 120px)', overflow: 'hidden' }}>
+      <div className={contentDrag.className} onPointerDown={contentDrag.onPointerDown} style={{ zIndex: 10, textAlign: 'center', width: '100%', padding: '0 40px', maxHeight: 'calc(210mm - 120px)', overflow: 'hidden', display: 'flex', flexDirection: 'column', ...contentDrag.style }}>
         <p style={{
           color: detalhe,
           fontSize: '14px',
@@ -76,6 +78,7 @@ export function PresSecao({ pageId, numero, titulo }: PresSecaoProps) {
           margin: '24px auto 0',
           borderRadius: '3px'
         }} />
+        {contentDrag.handle}
       </div>
 
       <div style={{

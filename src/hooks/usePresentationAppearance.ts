@@ -47,7 +47,12 @@ export function usePresentationAppearance(pageId: string, globalType: Presentati
     cor_detalhes: local?.cor_detalhes || finalGlobal.detalhe || '#FFA300',
     cor_sombra: local?.cor_sombra || '#00000040',
     imagem_fundo: local?.imagem_fundo || (globalType === 'capa' || globalType === 'secao' ? globalBrand.fundos.capaSecao : globalBrand.fundos.conteudo),
-    imagem_fundo_opacidade: local?.imagem_fundo_opacidade ?? DEFAULT_SLIDE_APPEARANCE.imagem_fundo_opacidade,
+    // Apresentação historicamente exibia o fundo a 100%; default 1 evita regressão ao passar a aplicar a opacidade.
+    imagem_fundo_opacidade: local?.imagem_fundo_opacidade ?? 1,
+    imagem_fundo_blend: local?.imagem_fundo_blend ?? 'normal',
+    espacamento_letras: local?.espacamento_letras ?? 0,
+    espacamento_vertical: local?.espacamento_vertical ?? 0,
+    element_positions: local?.element_positions ?? {},
     exibir_logo_fundo: local?.exibir_logo_fundo ?? true,
   }
 }

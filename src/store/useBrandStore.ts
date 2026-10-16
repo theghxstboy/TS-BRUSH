@@ -1,4 +1,7 @@
 import { create } from 'zustand'
+import { persist, createJSONStorage } from 'zustand/middleware'
+import { temporal } from 'zundo'
+import { idbStorage } from '../lib/idbStorage'
 import { useAppStore } from './useAppStore'
 import { toast } from 'sonner'
 import { hexToHsl, hexToRgb, normalizeHex } from '../lib/colorUtils'
@@ -95,6 +98,11 @@ export interface SlideAppearance {
   cor_sombra: string
   imagem_fundo: string | null
   imagem_fundo_opacidade: number
+  imagem_fundo_blend: string
+  espacamento_letras: number
+  espacamento_vertical: number
+  // Por elemento: deslocamento (x/y px internos, 297mm≈1122px), escala (resize) e ls (letter-spacing em). Default {}.
+  element_positions: Record<string, { x: number; y: number; scale?: number; ls?: number }>
   exibir_logo_fundo: boolean
 }
 
@@ -237,6 +245,8 @@ export interface BrandStore {
   removeMockup: (index: number) => void
   setAparencia: (fields: Partial<Aparencia>) => void
   setPageAppearance: (slide: string, fields: Partial<SlideAppearance>) => void
+  setElementPosition: (slide: string, elementKey: string, pos: Partial<{ x: number; y: number; scale: number; ls: number }>) => void
+  resetElementPositions: (slide: string) => void
   setTemplate: (t: TemplateId) => void
   setPresentationData: (data: BrandStore['presentation_data']) => void
   movePageBlock: (template: TemplateId, blockId: string, direction: 'up' | 'down') => void
@@ -300,6 +310,10 @@ export const DEFAULT_SLIDE_APPEARANCE: SlideAppearance = {
   cor_sombra: '',
   imagem_fundo: null,
   imagem_fundo_opacidade: DEFAULT_BACKGROUND_IMAGE_OPACITY,
+  imagem_fundo_blend: 'normal',
+  espacamento_letras: 0,
+  espacamento_vertical: 0,
+  element_positions: {},
   exibir_logo_fundo: true,
 }
 
@@ -349,7 +363,7 @@ const DEFAULT_CORES: BrandColor[] = [
 function freshDefault(): Omit<BrandStore,
   | 'setProjeto' | 'setConteudoPdf' | 'setTipografia' | 'setCor' | 'addCor' | 'removeCor' | 'replaceCores'
   | 'setAsset' | 'addMockup' | 'replaceMockup' | 'removeMockup' | 'setAparencia' | 'setTemplate' | 'movePageBlock'
-  | 'setPageAppearance' | 'setPresentationData'
+  | 'setPageAppearance' | 'setElementPosition' | 'resetElementPositions' | 'setPresentationData'
   | 'addCustomSlide' | 'removeCustomSlide' | 'reorderCustomSlide' | 'updateCustomSlideContent' | 'updateCustomSlideAppearance' | 'setCustomPresentationData'
   | 'exportJson' | 'importJson' | 'reset'
 > {
@@ -562,7 +576,38 @@ function sanitizeSlideAppearanceFields(fields: Partial<SlideAppearance>, current
 
 // ─── Store Instance ───────────────────────────────────────────────────────────
 
-export const useBrandStore = create<BrandStore>((set, get) => ({
+// Campos de dados do projeto — persistidos (IndexedDB) e rastreados pelo histórico (undo). Nunca as actions.
+function persistedState(s: BrandStore) {
+  return {
+    projeto: s.projeto,
+    conteudo_pdf: s.conteudo_pdf,
+    tipografia: s.tipografia,
+    cores_logo: s.cores_logo,
+    cores_apresentacao: s.cores_apresentacao,
+    aparencia: s.aparencia,
+    page_appearance: s.page_appearance,
+    template: s.template,
+    page_order: s.page_order,
+    assets_base64: s.assets_base64,
+    presentation_data: s.presentation_data,
+    custom_presentation_data: s.custom_presentation_data,
+  }
+}
+
+// Throttle "leading": registra o 1º set de uma rajada (estado pré-rajada) e ignora o resto na janela.
+// ponytail: coalesce arrasto de slider / color picker / digitação numa única entrada de undo; janela fixa de 300ms.
+function throttleLeading<F extends (...a: any[]) => void>(fn: F, wait: number): F {
+  let last = 0
+  return ((...args: any[]) => {
+    const now = Date.now()
+    if (now - last >= wait) {
+      last = now
+      fn(...args)
+    }
+  }) as F
+}
+
+export const useBrandStore = create<BrandStore>()(persist(temporal((set, get) => ({
   ...freshDefault(),
 
   setProjeto: (fields) =>
@@ -634,6 +679,33 @@ export const useBrandStore = create<BrandStore>((set, get) => ({
             ...currentItem,
             ...sanitizeSlideAppearanceFields(fields, currentItem),
           },
+        },
+      }
+    }),
+
+  setElementPosition: (slide, elementKey, pos) =>
+    set((s) => {
+      const currentItem = s.page_appearance[slide] || { ...DEFAULT_SLIDE_APPEARANCE }
+      const prev = currentItem.element_positions?.[elementKey] || { x: 0, y: 0 }
+      return {
+        page_appearance: {
+          ...s.page_appearance,
+          [slide]: {
+            ...currentItem,
+            element_positions: { ...(currentItem.element_positions || {}), [elementKey]: { ...prev, ...pos } },
+          },
+        },
+      }
+    }),
+
+  resetElementPositions: (slide) =>
+    set((s) => {
+      const currentItem = s.page_appearance[slide]
+      if (!currentItem) return s
+      return {
+        page_appearance: {
+          ...s.page_appearance,
+          [slide]: { ...currentItem, element_positions: {} },
         },
       }
     }),
@@ -957,5 +1029,23 @@ export const useBrandStore = create<BrandStore>((set, get) => ({
     set(freshDefault())
     nextColorId = 4
     toast('Projeto resetado.')
+  },
+}), {
+  limit: 100,
+  partialize: persistedState,
+  // Agrupa rajadas (slider/cor/digitação) numa única entrada de histórico.
+  handleSet: (handleSet) => throttleLeading(handleSet, 300),
+}), {
+  name: 'ts-brush-brand',
+  storage: createJSONStorage(() => idbStorage),
+  // Só os dados do projeto (as mesmas chaves do exportJson); nunca as actions.
+  partialize: persistedState,
+  // Não deixar o "undo" voltar ao estado-default pré-hidratação.
+  onRehydrateStorage: () => () => {
+    try {
+      useBrandStore.temporal.getState().clear()
+    } catch {
+      /* noop */
+    }
   },
 }))

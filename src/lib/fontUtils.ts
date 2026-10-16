@@ -7,7 +7,7 @@ export interface UploadedFontAsset {
 }
 
 export const WINDOWS_FONTS_PATH = 'C:\\Windows\\Fonts'
-export const DEFAULT_BODY_FONT = "'Geist', system-ui, sans-serif"
+export const DEFAULT_BODY_FONT = "'Manrope', system-ui, sans-serif"
 export const DEFAULT_MONO_FONT = "'Geist Mono', monospace"
 export const EMPTY_UPLOADED_FONT: UploadedFontAsset = {
   file_name: '',

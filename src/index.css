@@ -53,7 +53,7 @@ body,
   height: 100%;
   background: var(--bg-base);
   color: var(--text-primary);
-  font-family: 'Geist', system-ui, sans-serif;
+  font-family: 'Manrope', system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
 }
 
@@ -1317,23 +1317,26 @@ body,
 .np-steps {
   display: flex;
   align-items: flex-start;
-  justify-content: space-between;
   position: relative;
   width: 520px;
   margin: 0 auto;
 }
 
+/* Linha conectora: vai do centro do 1º círculo ao centro do último (100%/2N = 12.5% com 4 steps). */
 .np-step-line {
   position: absolute;
-  top: 14px;
-  left: 16px;
-  right: 16px;
+  top: 16px;
+  left: 12.5%;
+  right: 12.5%;
   height: 1.5px;
   background: var(--border);
+  transform: translateY(-50%);
   z-index: 0;
 }
 
 .np-step {
+  flex: 1 1 0;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -3021,6 +3024,12 @@ select.form-input {
   appearance: none;
 }
 
+/* Popup nativo herda o fundo translúcido do select, deixando o texto ilegível. */
+select.form-input option {
+  background: #1e1e1e;
+  color: var(--text-primary);
+}
+
 .font-control {
   display: flex;
   flex-direction: column;
@@ -3836,6 +3845,43 @@ select.form-input {
 
 
 /* ─── PDF Pages ───────────────────────────────────────────── */
+/* Elemento arrastável da apresentação (estilo Canva): retângulo no hover e durante o arraste. */
+.pres-draggable {
+  outline: 2px solid transparent;
+  outline-offset: 3px;
+  border-radius: 2px;
+  transition: outline-color 0.1s ease;
+}
+.pres-draggable:hover {
+  outline-color: var(--accent);
+}
+.pres-draggable.is-dragging {
+  outline-color: var(--accent);
+  outline-style: dashed;
+}
+.pres-resize-handle {
+  position: absolute;
+  right: 2px;
+  bottom: 2px;
+  width: 12px;
+  height: 12px;
+  background: var(--accent);
+  border: 2px solid #fff;
+  border-radius: 3px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+  cursor: nwse-resize;
+  opacity: 0;
+  pointer-events: none;
+  transform-origin: bottom right;
+  transition: opacity 0.1s ease;
+  z-index: 20;
+}
+.pres-draggable:hover > .pres-resize-handle,
+.pres-draggable.is-dragging > .pres-resize-handle {
+  opacity: 1;
+  pointer-events: auto;
+}
+
 .pagina-pdf {
   position: relative;
   width: 297mm;

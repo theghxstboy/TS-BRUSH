@@ -1,14 +1,13 @@
 import { useEffect } from 'react'
 import { buildFontFaceCss, resolveFontName } from '../lib/fontUtils'
+import type { UploadedFontAsset } from '../lib/fontUtils'
 import { useBrandStore } from '../store/useBrandStore'
-
-type FontSlot = 'principal' | 'secundaria' | 'apresentacao-titulos' | 'apresentacao-textos'
 
 function removeElement(id: string) {
   document.getElementById(id)?.remove()
 }
 
-function syncGoogleFont(slot: FontSlot, fontName: string) {
+function syncGoogleFont(slot: string, fontName: string) {
   const id = `gfont-slot-${slot}`
   const existing = document.getElementById(id) as HTMLLinkElement | null
 
@@ -30,7 +29,7 @@ function syncGoogleFont(slot: FontSlot, fontName: string) {
   document.head.appendChild(link)
 }
 
-function syncCustomFont(slot: FontSlot, fontName: string, dataUrl: string | null, format: string) {
+function syncCustomFont(slot: string, fontName: string, dataUrl: string | null, format: string) {
   const id = `custom-font-slot-${slot}`
   const existing = document.getElementById(id) as HTMLStyleElement | null
 
@@ -56,59 +55,34 @@ function syncCustomFont(slot: FontSlot, fontName: string, dataUrl: string | null
   document.head.appendChild(style)
 }
 
+// Carrega a fonte do slot: @font-face se for upload custom, senão Google Fonts pelo nome.
+function syncSlot(slot: string, name: string, custom: UploadedFontAsset) {
+  syncCustomFont(slot, name, custom.data_url, custom.format)
+  if (custom.data_url) {
+    removeElement(`gfont-slot-${slot}`)
+  } else {
+    syncGoogleFont(slot, name)
+  }
+}
+
 export function useTypographyFontLoader() {
-  const { tipografia } = useBrandStore()
+  const { tipografia, presentation_data, custom_presentation_data } = useBrandStore()
+  const presTypography = presentation_data.typography
+  const customPresTypography = custom_presentation_data.typography
 
   useEffect(() => {
-    const primaryName = resolveFontName(tipografia.principal_nome, tipografia.principal_custom.file_name)
-    const secondaryName = resolveFontName(tipografia.secundaria_nome, tipografia.secundaria_custom.file_name)
-    const presentationTitleName = resolveFontName(tipografia.apresentacao_titulos, tipografia.apresentacao_titulos_custom.file_name)
-    const presentationTextName = resolveFontName(tipografia.apresentacao_textos, tipografia.apresentacao_textos_custom.file_name)
+    // Manual de marca
+    syncSlot('principal', resolveFontName(tipografia.principal_nome, tipografia.principal_custom.file_name), tipografia.principal_custom)
+    syncSlot('secundaria', resolveFontName(tipografia.secundaria_nome, tipografia.secundaria_custom.file_name), tipografia.secundaria_custom)
+    syncSlot('apresentacao-titulos', resolveFontName(tipografia.apresentacao_titulos, tipografia.apresentacao_titulos_custom.file_name), tipografia.apresentacao_titulos_custom)
+    syncSlot('apresentacao-textos', resolveFontName(tipografia.apresentacao_textos, tipografia.apresentacao_textos_custom.file_name), tipografia.apresentacao_textos_custom)
 
-    syncCustomFont('principal', primaryName, tipografia.principal_custom.data_url, tipografia.principal_custom.format)
-    syncCustomFont('secundaria', secondaryName, tipografia.secundaria_custom.data_url, tipografia.secundaria_custom.format)
-    syncCustomFont('apresentacao-titulos', presentationTitleName, tipografia.apresentacao_titulos_custom.data_url, tipografia.apresentacao_titulos_custom.format)
-    syncCustomFont('apresentacao-textos', presentationTextName, tipografia.apresentacao_textos_custom.data_url, tipografia.apresentacao_textos_custom.format)
+    // Apresentação de marca (campos que as páginas Pres* realmente usam)
+    syncSlot('pres-titulos', resolveFontName(presTypography.titulosNome, presTypography.titulosCustom.file_name), presTypography.titulosCustom)
+    syncSlot('pres-textos', resolveFontName(presTypography.textosNome, presTypography.textosCustom.file_name), presTypography.textosCustom)
 
-    if (tipografia.principal_custom.data_url) {
-      removeElement('gfont-slot-principal')
-    } else {
-      syncGoogleFont('principal', primaryName)
-    }
-
-    if (tipografia.secundaria_custom.data_url) {
-      removeElement('gfont-slot-secundaria')
-    } else {
-      syncGoogleFont('secundaria', secondaryName)
-    }
-
-    if (tipografia.apresentacao_titulos_custom.data_url) {
-      removeElement('gfont-slot-apresentacao-titulos')
-    } else {
-      syncGoogleFont('apresentacao-titulos', presentationTitleName)
-    }
-
-    if (tipografia.apresentacao_textos_custom.data_url) {
-      removeElement('gfont-slot-apresentacao-textos')
-    } else {
-      syncGoogleFont('apresentacao-textos', presentationTextName)
-    }
-  }, [
-    tipografia.principal_nome,
-    tipografia.principal_custom.file_name,
-    tipografia.principal_custom.data_url,
-    tipografia.principal_custom.format,
-    tipografia.secundaria_nome,
-    tipografia.secundaria_custom.file_name,
-    tipografia.secundaria_custom.data_url,
-    tipografia.secundaria_custom.format,
-    tipografia.apresentacao_titulos,
-    tipografia.apresentacao_titulos_custom.file_name,
-    tipografia.apresentacao_titulos_custom.data_url,
-    tipografia.apresentacao_titulos_custom.format,
-    tipografia.apresentacao_textos,
-    tipografia.apresentacao_textos_custom.file_name,
-    tipografia.apresentacao_textos_custom.data_url,
-    tipografia.apresentacao_textos_custom.format,
-  ])
+    // Apresentação personalizada
+    syncSlot('custom-pres-titulos', resolveFontName(customPresTypography.titulosNome, customPresTypography.titulosCustom.file_name), customPresTypography.titulosCustom)
+    syncSlot('custom-pres-textos', resolveFontName(customPresTypography.textosNome, customPresTypography.textosCustom.file_name), customPresTypography.textosCustom)
+  }, [tipografia, presTypography, customPresTypography])
 }

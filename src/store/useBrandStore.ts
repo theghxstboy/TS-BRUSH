@@ -102,7 +102,7 @@ export interface SlideAppearance {
   espacamento_letras: number
   espacamento_vertical: number
   // Por elemento: deslocamento (x/y px internos, 297mm≈1122px), escala (resize) e ls (letter-spacing em). Default {}.
-  element_positions: Record<string, { x: number; y: number; scale?: number; ls?: number }>
+  element_positions: Record<string, { x: number; y: number; scale?: number; ls?: number; color?: string; logoVariant?: 'original' | 'white' | 'black' }>
   exibir_logo_fundo: boolean
 }
 
@@ -119,6 +119,51 @@ export interface CustomSlide {
   templateId: string // The key used to identify the layout/template (e.g. 'capa', 'cores')
   content: Record<string, any>
   appearance: SlideAppearance
+}
+
+// ── Social Media (personalização de página: avatar, capa, destaques/stories, assinatura) ──
+export interface SocialMediaData {
+  company: {
+    name: string
+    logo: string | null
+    phone: string
+    email: string
+    website: string
+    instagram: string
+    facebook: string
+    services: string // texto de serviços (headline da capa)
+    logoVariant: 'original' | 'white' | 'black' // versão da logo usada nas peças (igual às do avatar)
+  }
+  theme: { primary: string; accent: string }
+  font: string // nome de fonte do Google aplicada a todas as peças ('' = padrão)
+  background: { mode: 'color' | 'image'; color: string; image: string | null } // fundo global do painel/design
+  // Design compartilhado dos destaques (botão vetorial = anéis + preenchimento + ícone, sobre fundo)
+  destaque: {
+    bgMode: 'photo' | 'color' | 'none' | 'global'
+    bgImage: string | null
+    bgColor: string
+    ringOuterColor: string
+    ringOuterWidth: number
+    ringInnerColor: string
+    ringInnerWidth: number
+    gap: number
+    discFill: 'none' | 'color'
+    discColor: string
+    iconColor: string
+    iconStrokeWidth: number
+    buttonSize: number
+    ringStyle: 'solid' | 'dashed' | 'dotted' // estilo das bordas dos anéis
+    emboss: boolean
+    embossDepth: number // 0–1: intensidade do gradiente + sombra do efeito 3D
+    showButton: boolean // mostra/oculta o botão-anel
+    accentColor: string | null // cor dos círculos nas pílulas do Contact (null = usa theme.accent)
+  }
+  destaques: { id: string; label: string; icon: string; kind?: 'button' | 'plaque' | 'contact' | 'logo'; content?: 'mission' | 'vision' | 'values' }[]
+  iconDefaults: Record<string, string> // ícones padrão por id de destaque (salvos pelo usuário)
+  mvv: { mission: string; vision: string; values: string } // textos de Missão/Visão/Valores (valores = um por linha)
+  avatar: { logoScale: number }
+  facebook_cover: { photo: string | null; side: 'left' | 'right'; textAlign: 'left' | 'center' | 'right'; layout: 'split' | 'full'; showLogo: boolean }
+  signature: { tagline: string; showAvatar: boolean; avatarPhoto: string | null; avatarShape: 'round' | 'square'; bg: { mode: 'color' | 'image'; color: string; image: string | null } }
 }
 
 export interface BrandStore {
@@ -230,6 +275,7 @@ export interface BrandStore {
       textosCustom: UploadedFontAsset
     }
   }
+  social_media_data: SocialMediaData
 
   // Actions
   setProjeto: (fields: Partial<BrandStore['projeto']>) => void
@@ -245,10 +291,11 @@ export interface BrandStore {
   removeMockup: (index: number) => void
   setAparencia: (fields: Partial<Aparencia>) => void
   setPageAppearance: (slide: string, fields: Partial<SlideAppearance>) => void
-  setElementPosition: (slide: string, elementKey: string, pos: Partial<{ x: number; y: number; scale: number; ls: number }>) => void
+  setElementPosition: (slide: string, elementKey: string, pos: Partial<{ x: number; y: number; scale: number; ls: number; color: string; logoVariant: 'original' | 'white' | 'black' }>) => void
   resetElementPositions: (slide: string) => void
   setTemplate: (t: TemplateId) => void
   setPresentationData: (data: BrandStore['presentation_data']) => void
+  setSocialMediaData: (fields: Partial<SocialMediaData>) => void
   movePageBlock: (template: TemplateId, blockId: string, direction: 'up' | 'down') => void
   
   // Custom Presentation Actions
@@ -363,7 +410,7 @@ const DEFAULT_CORES: BrandColor[] = [
 function freshDefault(): Omit<BrandStore,
   | 'setProjeto' | 'setConteudoPdf' | 'setTipografia' | 'setCor' | 'addCor' | 'removeCor' | 'replaceCores'
   | 'setAsset' | 'addMockup' | 'replaceMockup' | 'removeMockup' | 'setAparencia' | 'setTemplate' | 'movePageBlock'
-  | 'setPageAppearance' | 'setElementPosition' | 'resetElementPositions' | 'setPresentationData'
+  | 'setPageAppearance' | 'setElementPosition' | 'resetElementPositions' | 'setPresentationData' | 'setSocialMediaData'
   | 'addCustomSlide' | 'removeCustomSlide' | 'reorderCustomSlide' | 'updateCustomSlideContent' | 'updateCustomSlideAppearance' | 'setCustomPresentationData'
   | 'exportJson' | 'importJson' | 'reset'
 > {
@@ -474,7 +521,66 @@ function freshDefault(): Omit<BrandStore,
         textosNome: '',
         textosCustom: { ...EMPTY_UPLOADED_FONT },
       },
-    }
+    },
+    social_media_data: {
+      company: {
+        name: '',
+        logo: null,
+        phone: '',
+        email: '',
+        website: '',
+        instagram: '',
+        facebook: '',
+        services: '',
+        logoVariant: 'original',
+      },
+      theme: { primary: '#22316B', accent: '#E8912A' },
+      font: '',
+      background: { mode: 'color', color: '#f3f3f1', image: null },
+      destaque: {
+        bgMode: 'global',
+        bgImage: null,
+        bgColor: '#f3f3f1',
+        ringOuterColor: '#22316B',
+        ringOuterWidth: 42,
+        ringInnerColor: '#E8912A',
+        ringInnerWidth: 12,
+        gap: 14,
+        discFill: 'none',
+        discColor: '#FFFFFF',
+        iconColor: '#E8912A',
+        iconStrokeWidth: 2.3,
+        buttonSize: 560,
+        ringStyle: 'solid',
+        emboss: true,
+        embossDepth: 0.42,
+        showButton: true,
+        accentColor: null,
+      },
+      destaques: [
+        { id: 'about', label: 'About Us', icon: 'Info' },
+        { id: 'mission', label: 'Mission', icon: 'Mountain', kind: 'plaque', content: 'mission' },
+        { id: 'vision', label: 'Vision', icon: 'Eye', kind: 'plaque', content: 'vision' },
+        { id: 'values', label: 'Values', icon: 'Gem', kind: 'plaque', content: 'values' },
+        { id: 'mvv', label: 'MVV', icon: 'Compass' },
+        { id: 'contact', label: 'Contact', icon: 'PhoneCall' },
+        { id: 'contact-globais', label: 'Contact Globais', icon: 'Contact', kind: 'contact' },
+        { id: 'jobs', label: 'Jobs Done', icon: 'Handshake' },
+        { id: 'before-after', label: 'Before & After', icon: 'Images' },
+        { id: 'feedback', label: 'Feedback', icon: 'MessageSquare' },
+        { id: 'review', label: 'Review', icon: 'Star' },
+        { id: 'reviews', label: 'Reviews', icon: 'Star', kind: 'logo' },
+      ],
+      iconDefaults: {},
+      avatar: { logoScale: 0.6 },
+      facebook_cover: { photo: null, side: 'right', textAlign: 'left', layout: 'split', showLogo: true },
+      signature: { tagline: '', showAvatar: true, avatarPhoto: null, avatarShape: 'round', bg: { mode: 'color', color: '#FFFFFF', image: null } },
+      mvv: {
+        mission: 'Descreva aqui a missão da empresa: o propósito central e o compromisso com os clientes.',
+        vision: 'Descreva aqui a visão da empresa: onde quer chegar e como quer ser reconhecida.',
+        values: 'Qualidade em primeiro lugar\nComunicação clara\nPontualidade\nRespeito ao cliente\nTrabalho honesto',
+      },
+    },
   }
 }
 
@@ -576,6 +682,19 @@ function sanitizeSlideAppearanceFields(fields: Partial<SlideAppearance>, current
 
 // ─── Store Instance ───────────────────────────────────────────────────────────
 
+// Deep-merge pra rehidratação: preenche campos novos (ausentes no estado persistido antigo) com os defaults.
+function isPlainObj(v: unknown): v is Record<string, unknown> {
+  return !!v && typeof v === 'object' && !Array.isArray(v)
+}
+function deepMergeDefaults<T>(base: T, override: unknown): T {
+  if (!isPlainObj(base) || !isPlainObj(override)) return (override === undefined ? base : (override as T))
+  const out: Record<string, unknown> = { ...(base as Record<string, unknown>) }
+  for (const k of Object.keys(override)) {
+    out[k] = deepMergeDefaults((base as Record<string, unknown>)[k], override[k])
+  }
+  return out as T
+}
+
 // Campos de dados do projeto — persistidos (IndexedDB) e rastreados pelo histórico (undo). Nunca as actions.
 function persistedState(s: BrandStore) {
   return {
@@ -591,6 +710,7 @@ function persistedState(s: BrandStore) {
     assets_base64: s.assets_base64,
     presentation_data: s.presentation_data,
     custom_presentation_data: s.custom_presentation_data,
+    social_media_data: s.social_media_data,
   }
 }
 
@@ -714,6 +834,8 @@ export const useBrandStore = create<BrandStore>()(persist(temporal((set, get) =>
 
   setPresentationData: (data) => set(() => ({ presentation_data: data })),
 
+  setSocialMediaData: (fields) => set((s) => ({ social_media_data: { ...s.social_media_data, ...fields } })),
+
   movePageBlock: (template, blockId, direction) =>
     set((s) => {
       const current = [...s.page_order[template]]
@@ -818,6 +940,7 @@ export const useBrandStore = create<BrandStore>()(persist(temporal((set, get) =>
       assets_base64: s.assets_base64,
       presentation_data: s.presentation_data,
       custom_presentation_data: s.custom_presentation_data,
+      social_media_data: s.social_media_data,
     }
     const blob = new Blob([JSON.stringify(stateData, null, 2)], { type: 'application/json' })
     const url = URL.createObjectURL(blob)
@@ -825,9 +948,10 @@ export const useBrandStore = create<BrandStore>()(persist(temporal((set, get) =>
     a.href = url
 
     const isPresentation = screen === 'brand-presentation'
-    const rawName = isPresentation ? s.presentation_data.brand_name : s.projeto.nome_marca
+    const isSocial = screen === 'social-media'
+    const rawName = isSocial ? s.social_media_data.company.name : isPresentation ? s.presentation_data.brand_name : s.projeto.nome_marca
     const slug = rawName ? rawName.replace(/\s+/g, '-').toLowerCase() : 'sem-nome'
-    const prefix = isPresentation ? 'apresentacao-logo' : 'manual-de-marca'
+    const prefix = isSocial ? 'redes-sociais' : isPresentation ? 'apresentacao-logo' : 'manual-de-marca'
 
     a.download = `${prefix}-${slug}.json`
     a.click()
@@ -1010,6 +1134,18 @@ export const useBrandStore = create<BrandStore>()(persist(temporal((set, get) =>
             ...fallback.custom_presentation_data,
             ...(p.custom_presentation_data ?? { slides: [] }),
           },
+          social_media_data: {
+            ...fallback.social_media_data,
+            ...(p.social_media_data ?? {}),
+            company: { ...fallback.social_media_data.company, ...(p.social_media_data?.company ?? {}) },
+            theme: { ...fallback.social_media_data.theme, ...(p.social_media_data?.theme ?? {}) },
+            mvv: { ...fallback.social_media_data.mvv, ...(p.social_media_data?.mvv ?? {}) },
+            destaque: { ...fallback.social_media_data.destaque, ...(p.social_media_data?.destaque ?? {}) },
+            avatar: { ...fallback.social_media_data.avatar, ...(p.social_media_data?.avatar ?? {}) },
+            facebook_cover: { ...fallback.social_media_data.facebook_cover, ...(p.social_media_data?.facebook_cover ?? {}) },
+            signature: { ...fallback.social_media_data.signature, ...(p.social_media_data?.signature ?? {}) },
+            destaques: p.social_media_data?.destaques ?? fallback.social_media_data.destaques,
+          },
         }))
         nextColorId = Math.max(
           4,
@@ -1040,6 +1176,8 @@ export const useBrandStore = create<BrandStore>()(persist(temporal((set, get) =>
   storage: createJSONStorage(() => idbStorage),
   // Só os dados do projeto (as mesmas chaves do exportJson); nunca as actions.
   partialize: persistedState,
+  // Deep-merge: estado persistido antigo recebe os campos novos a partir dos defaults (evita undefined/crash).
+  merge: (persisted, current) => deepMergeDefaults(current as BrandStore, persisted),
   // Não deixar o "undo" voltar ao estado-default pré-hidratação.
   onRehydrateStorage: () => () => {
     try {

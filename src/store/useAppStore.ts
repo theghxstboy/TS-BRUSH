@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import { persist, createJSONStorage } from 'zustand/middleware'
 
-export type AppScreen = 'home' | 'brand-manual' | 'brand-presentation' | 'custom-presentation' | 'social-media'
+export type AppScreen = 'home' | 'brand-manual' | 'brand-presentation' | 'custom-presentation' | 'social-media' | 'social-preview'
 
 export type AlertType = 'success' | 'error' | 'warning' | 'info' | 'confirm'
 

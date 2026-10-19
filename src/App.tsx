@@ -5,6 +5,7 @@ import { Canvas } from './components/canvas/Canvas'
 import { ContextDrawer } from './components/context/ContextDrawer'
 import { HomeScreen } from './components/home/HomeScreen'
 import { SocialMediaEditor } from './components/social/SocialMediaEditor'
+import { SocialPreview } from './components/social/SocialPreview'
 import { EditorNav } from './components/common/EditorNav'
 import { useTypographyFontLoader } from './hooks/useTypographyFontLoader'
 import { usePresentationTypography } from './hooks/usePresentationTypography'
@@ -149,6 +150,10 @@ export default function App() {
 
   if (screen === 'social-media') {
     return <SocialMediaEditor />
+  }
+
+  if (screen === 'social-preview') {
+    return <SocialPreview />
   }
 
   return (

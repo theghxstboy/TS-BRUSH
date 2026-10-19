@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { motion, Variants } from 'framer-motion'
-import { BookOpen, Image, Sparkles, Share2, ArrowRight, Lock } from 'lucide-react'
+import { BookOpen, Image, Sparkles, Share2, ArrowRight, Lock, MonitorSmartphone } from 'lucide-react'
 import { useAppStore } from '../../store/useAppStore'
 import { NewProjectModal } from './NewProjectModal'
 import { NewBrandPresentationModal } from './NewBrandPresentationModal'
@@ -181,6 +181,14 @@ export function HomeScreen() {
             title="Redes Sociais"
             description="Personalize a página: avatar, capa, destaques (stories) e assinatura de e-mail. Baixe cada peça em PNG."
             onClick={() => setShowNewSocialMediaModal(true)}
+          />
+
+          <PresentationCard
+            icon={<MonitorSmartphone size={28} />}
+            eyebrow="05 — INTERNO"
+            title="Teste Redes Sociais"
+            description="Veja os elementos da marca dentro de uma réplica do perfil do Instagram e Facebook, no desktop e no celular."
+            onClick={() => setScreen('social-preview')}
           />
         </div>
 

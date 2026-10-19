@@ -158,7 +158,7 @@ export interface SocialMediaData {
     showButton: boolean // mostra/oculta o botão-anel
     accentColor: string | null // cor dos círculos nas pílulas do Contact (null = usa theme.accent)
   }
-  destaques: { id: string; label: string; icon: string; kind?: 'button' | 'plaque' | 'contact' | 'logo'; content?: 'mission' | 'vision' | 'values' }[]
+  destaques: { id: string; label: string; icon: string; kind?: 'button' | 'plaque' | 'contact' | 'logo'; content?: 'mission' | 'vision' | 'values'; image?: string | null }[]
   iconDefaults: Record<string, string> // ícones padrão por id de destaque (salvos pelo usuário)
   mvv: { mission: string; vision: string; values: string } // textos de Missão/Visão/Valores (valores = um por linha)
   avatar: { logoScale: number }

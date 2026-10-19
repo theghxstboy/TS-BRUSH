@@ -1,9 +1,10 @@
 import React, { useState } from 'react'
 import { motion, Variants } from 'framer-motion'
-import { BookOpen, Image, Sparkles, ArrowRight, Lock } from 'lucide-react'
+import { BookOpen, Image, Sparkles, Share2, ArrowRight, Lock } from 'lucide-react'
 import { useAppStore } from '../../store/useAppStore'
 import { NewProjectModal } from './NewProjectModal'
 import { NewBrandPresentationModal } from './NewBrandPresentationModal'
+import { NewSocialMediaModal } from './NewSocialMediaModal'
 import brushLogo from '../../logos/TS-BRUSH-PEN-WHITE.svg'
 import tssLogo from '../../logos/TSS.svg'
 
@@ -108,6 +109,7 @@ export function HomeScreen() {
   const { setScreen } = useAppStore()
   const [showNewProjectModal, setShowNewProjectModal] = useState(false)
   const [showNewBrandPresentationModal, setShowNewBrandPresentationModal] = useState(false)
+  const [showNewSocialMediaModal, setShowNewSocialMediaModal] = useState(false)
 
   return (
     <motion.div 
@@ -172,6 +174,14 @@ export function HomeScreen() {
             description="Monte uma apresentação do zero com total liberdade de estrutura, layout e conteúdo."
             onClick={() => setScreen('custom-presentation')}
           />
+
+          <PresentationCard
+            icon={<Share2 size={28} />}
+            eyebrow="04 — DISPONÍVEL"
+            title="Redes Sociais"
+            description="Personalize a página: avatar, capa, destaques (stories) e assinatura de e-mail. Baixe cada peça em PNG."
+            onClick={() => setShowNewSocialMediaModal(true)}
+          />
         </div>
 
         {/* Footer */}
@@ -189,6 +199,9 @@ export function HomeScreen() {
       )}
       {showNewBrandPresentationModal && (
         <NewBrandPresentationModal onClose={() => setShowNewBrandPresentationModal(false)} />
+      )}
+      {showNewSocialMediaModal && (
+        <NewSocialMediaModal onClose={() => setShowNewSocialMediaModal(false)} />
       )}
     </motion.div>
   )

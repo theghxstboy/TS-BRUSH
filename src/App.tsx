@@ -4,6 +4,7 @@ import { Sidebar } from './components/sidebar/Sidebar'
 import { Canvas } from './components/canvas/Canvas'
 import { ContextDrawer } from './components/context/ContextDrawer'
 import { HomeScreen } from './components/home/HomeScreen'
+import { SocialMediaEditor } from './components/social/SocialMediaEditor'
 import { EditorNav } from './components/common/EditorNav'
 import { useTypographyFontLoader } from './hooks/useTypographyFontLoader'
 import { usePresentationTypography } from './hooks/usePresentationTypography'
@@ -144,6 +145,10 @@ export default function App() {
 
   if (screen === 'home') {
     return <HomeScreen />
+  }
+
+  if (screen === 'social-media') {
+    return <SocialMediaEditor />
   }
 
   return (

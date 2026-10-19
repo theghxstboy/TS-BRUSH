@@ -373,7 +373,7 @@ function AppearanceSection({ slideType }: { slideType: SlideType }) {
             </p>
             <button
               type="button"
-              className="btn-secondary"
+              className="btn btn-secondary"
               style={{ width: '100%' }}
               onClick={() => resetElementPositions(slideType)}
             >

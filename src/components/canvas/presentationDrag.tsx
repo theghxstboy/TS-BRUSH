@@ -8,9 +8,14 @@ export interface DragGuideState {
   hy: number | null // posição Y (px de tela) da linha-guia horizontal de centro
 }
 
+// Arraste em grupo: enquanto um elemento é movido, os demais selecionados recebem o mesmo deslocamento (px de página).
+interface GroupDragState { keys: string[]; dx: number; dy: number }
+
 interface PresDragContextValue {
   scale: number
   setGuides: (g: DragGuideState | null) => void
+  group: GroupDragState | null
+  setGroup: (g: GroupDragState | null) => void
 }
 
 const PresDragCtx = createContext<PresDragContextValue | null>(null)
@@ -18,10 +23,12 @@ const PresDragCtx = createContext<PresDragContextValue | null>(null)
 // Provider: fica no canvas da apresentação, guarda a escala e desenha as guias de centro.
 export function PresDragProvider({ scale, children }: { scale: number; children: ReactNode }) {
   const [guides, setGuides] = useState<DragGuideState | null>(null)
+  const [group, setGroupState] = useState<GroupDragState | null>(null)
   const set = useCallback((g: DragGuideState | null) => setGuides(g), [])
+  const setGroup = useCallback((g: GroupDragState | null) => setGroupState(g), [])
 
   return (
-    <PresDragCtx.Provider value={{ scale, setGuides: set }}>
+    <PresDragCtx.Provider value={{ scale, setGuides: set, group, setGroup }}>
       {children}
       {guides?.vx != null && (
         <div style={{ position: 'fixed', left: guides.vx, top: 0, bottom: 0, width: 1, background: 'var(--accent)', zIndex: 9999, pointerEvents: 'none' }} />
@@ -40,6 +47,7 @@ type Pos = { x: number; y: number; scale?: number }
 // Torna um elemento arrastável e redimensionável. Retorna style, className, handlers e o handle de resize (canto).
 // `pos` = deslocamento+escala salvos; `baseTransform` preserva transforms próprios (ex: translate(-50%,-50%)).
 // `opts.positioned` = true quando o elemento já tem position própria (ex: absolute) — evita sobrescrever com relative.
+// Ctrl/Cmd+clique adiciona/remove da seleção; arrastar qualquer selecionado move todos juntos; Shift trava no eixo.
 export function useElementDrag(
   pageId: string,
   elKey: string,
@@ -49,22 +57,53 @@ export function useElementDrag(
 ) {
   const ctx = useContext(PresDragCtx)
   const setElementPosition = useBrandStore((s) => s.setElementPosition)
+  const isSelected = useAppStore((s) => s.selectedElements.some((e) => e.pageId === pageId && e.key === elKey))
   const [live, setLive] = useState<Pos | null>(null)
 
   const cur = live ?? pos ?? { x: 0, y: 0 }
   const scale = cur.scale ?? 1
 
+  // Enquanto o grupo é arrastado por outro elemento, este (parado) segue o mesmo deslocamento.
+  let renderX = cur.x
+  let renderY = cur.y
+  if (!live && ctx?.group && ctx.group.keys.includes(`${pageId}::${elKey}`)) {
+    renderX += ctx.group.dx
+    renderY += ctx.group.dy
+  }
+
   const onPointerDown = (e: ReactPointerEvent) => {
     if (e.button !== 0) return
     e.preventDefault()
-    useAppStore.getState().setSelectedElement({ pageId, key: elKey })
+
+    // Ctrl/Cmd+clique: alterna este elemento na seleção, sem iniciar arraste.
+    if (e.ctrlKey || e.metaKey) {
+      useAppStore.getState().toggleSelectedElement({ pageId, key: elKey })
+      return
+    }
+
+    // Se já faz parte de uma seleção múltipla, preserva-a (arraste em grupo); senão, seleciona só este.
+    const selection = useAppStore.getState().selectedElements
+    const inSel = selection.some((s) => s.pageId === pageId && s.key === elKey)
+    if (!inSel) useAppStore.getState().setSelectedElement({ pageId, key: elKey })
+    const members = inSel ? selection : [{ pageId, key: elKey }]
+    const others = members.filter((m) => !(m.pageId === pageId && m.key === elKey))
+    const isGroup = others.length > 0
+    const pa = useBrandStore.getState().page_appearance
+    const otherStarts = others.map((m) => {
+      const p = pa[m.pageId]?.element_positions?.[m.key]
+      return { pageId: m.pageId, key: m.key, x: p?.x ?? 0, y: p?.y ?? 0, scale: p?.scale }
+    })
+    const otherKeys = otherStarts.map((o) => `${o.pageId}::${o.key}`)
+
     const vScale = ctx?.scale ?? 1
     const startX = e.clientX
     const startY = e.clientY
     const startPos = { ...cur }
+    let gdx = 0
+    let gdy = 0
 
     const el = e.currentTarget as HTMLElement
-    const pageEl = el.closest('.pagina-pdf') as HTMLElement | null
+    const pageEl = el.closest('.pagina-pdf, .sm-piece') as HTMLElement | null
     const er0 = el.getBoundingClientRect()
     const startCenterX = er0.left + er0.width / 2
     const startCenterY = er0.top + er0.height / 2
@@ -81,7 +120,11 @@ export function useElementDrag(
       let dY = ev.clientY - startY
       let vx: number | null = null
       let hy: number | null = null
-      if (pageEl) {
+      if (ev.shiftKey) {
+        // Trava no eixo dominante: movimento reto na direção do gesto.
+        if (Math.abs(dX) >= Math.abs(dY)) dY = 0
+        else dX = 0
+      } else if (pageEl) {
         if (Math.abs(startCenterX + dX - pCenterX) < SNAP_PX) {
           dX = pCenterX - startCenterX
           vx = pCenterX
@@ -92,13 +135,20 @@ export function useElementDrag(
         }
       }
       ctx?.setGuides(vx != null || hy != null ? { vx, hy } : null)
-      setLive({ x: startPos.x + dX / vScale, y: startPos.y + dY / vScale, scale: startPos.scale })
+      gdx = dX / vScale
+      gdy = dY / vScale
+      setLive({ x: startPos.x + gdx, y: startPos.y + gdy, scale: startPos.scale })
+      if (isGroup) ctx?.setGroup({ keys: otherKeys, dx: gdx, dy: gdy })
     }
 
     const up = () => {
       window.removeEventListener('pointermove', move)
       window.removeEventListener('pointerup', up)
       ctx?.setGuides(null)
+      if (isGroup) {
+        otherStarts.forEach((o) => setElementPosition(o.pageId, o.key, { x: o.x + gdx, y: o.y + gdy, scale: o.scale }))
+        ctx?.setGroup(null)
+      }
       setLive((prev) => {
         if (prev) setElementPosition(pageId, elKey, prev)
         return null
@@ -141,14 +191,14 @@ export function useElementDrag(
     window.addEventListener('pointerup', up)
   }
 
-  const transform = `${baseTransform} translate(${cur.x}px, ${cur.y}px) scale(${scale})`.trim()
+  const transform = `${baseTransform} translate(${renderX}px, ${renderY}px) scale(${scale})`.trim()
   const style: CSSProperties = {
     transform,
     cursor: live ? 'grabbing' : 'move',
     touchAction: 'none',
     ...(opts.positioned ? {} : { position: 'relative' as const }),
   }
-  const className = `pres-draggable${live ? ' is-dragging' : ''}`
+  const className = `pres-draggable${live ? ' is-dragging' : ''}${isSelected ? ' is-selected' : ''}`
 
   // Handle de resize no canto inferior-direito (contra-escalado para manter tamanho visual constante).
   const handle = (

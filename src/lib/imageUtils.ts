@@ -212,4 +212,25 @@ export async function extractColorsFromDataUrl(dataUrl: string, maxColors = 4) {
     return []
   }
 }
+
+// Deriva tema da logo: primária = cor mais escura (ex: navy), destaque = mais saturada (ex: laranja).
+export async function extractBrandTheme(dataUrl: string): Promise<{ primary: string; accent: string } | null> {
+  const palette = await extractColorsFromDataUrl(dataUrl, 6)
+  const parse = (h: string) => {
+    const c = h.replace('#', '')
+    const n = parseInt(c.length === 3 ? c.split('').map((x) => x + x).join('') : c, 16)
+    return { r: (n >> 16) & 255, g: (n >> 8) & 255, b: n & 255 }
+  }
+  const lum = (h: string) => { const { r, g, b } = parse(h); return 0.2126 * r + 0.7152 * g + 0.0722 * b }
+  const sat = (h: string) => { const { r, g, b } = parse(h); const mx = Math.max(r, g, b), mn = Math.min(r, g, b); return mx === 0 ? 0 : (mx - mn) / mx }
+
+  const hexes = (palette as { hex: string }[]).map((c) => c.hex).filter((h) => { const l = lum(h); return l > 14 && l < 244 })
+  if (!hexes.length) return null
+
+  const primary = [...hexes].sort((a, b) => lum(a) - lum(b))[0]
+  const bySat = [...hexes].sort((a, b) => sat(b) - sat(a))
+  const accent = bySat[0] === primary && bySat[1] ? bySat[1] : bySat[0]
+  return { primary, accent }
+}
+
 import { buildColorMeta, hexToRgb } from './colorUtils'

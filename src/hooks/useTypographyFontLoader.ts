@@ -11,7 +11,7 @@ function syncGoogleFont(slot: string, fontName: string) {
   const id = `gfont-slot-${slot}`
   const existing = document.getElementById(id) as HTMLLinkElement | null
 
-  if (!fontName.trim()) {
+  if (!fontName || !fontName.trim()) {
     removeElement(id)
     return
   }
@@ -66,9 +66,15 @@ function syncSlot(slot: string, name: string, custom: UploadedFontAsset) {
 }
 
 export function useTypographyFontLoader() {
-  const { tipografia, presentation_data, custom_presentation_data } = useBrandStore()
+  const { tipografia, presentation_data, custom_presentation_data, social_media_data } = useBrandStore()
   const presTypography = presentation_data.typography
   const customPresTypography = custom_presentation_data.typography
+  const socialFont = social_media_data.font ?? ''
+
+  useEffect(() => {
+    // Fonte global das peças de redes sociais (só nome do Google)
+    syncGoogleFont('social', socialFont)
+  }, [socialFont])
 
   useEffect(() => {
     // Manual de marca

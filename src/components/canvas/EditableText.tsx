@@ -3,7 +3,7 @@ import type { CSSProperties } from 'react'
 import { useElementDrag } from './presentationDrag'
 import { useAppStore } from '../../store/useAppStore'
 
-type ElementPositions = Record<string, { x: number; y: number; scale?: number; ls?: number }>
+type ElementPositions = Record<string, { x: number; y: number; scale?: number; ls?: number; color?: string }>
 
 interface EditableTextProps {
   pageId: string
@@ -38,8 +38,9 @@ export function EditableText({
   const drag = useElementDrag(pageId, elementKey, positions[elementKey], baseTransform, { positioned })
   const [editing, setEditing] = useState(false)
   const ref = useRef<HTMLElement>(null)
-  // Letter-spacing é por-elemento (não por-slide): só o elemento afetado muda.
+  // Letter-spacing e cor são por-elemento (não por-slide): só o elemento afetado muda.
   const lsOffset = positions[elementKey]?.ls ?? 0
+  const colorOverride = positions[elementKey]?.color
 
   useEffect(() => {
     if (!editing || !ref.current) return
@@ -62,7 +63,7 @@ export function EditableText({
   const lsBase = (style.letterSpacing as string | undefined) ?? '0em'
   const letterSpacing = lsOffset ? `calc(${lsBase} + ${lsOffset}em)` : style.letterSpacing
   // pre-wrap preserva as quebras de linha digitadas, tanto editando quanto exibindo.
-  const baseStyle: CSSProperties = { ...style, letterSpacing, whiteSpace: style.whiteSpace ?? 'pre-wrap' }
+  const baseStyle: CSSProperties = { ...style, letterSpacing, whiteSpace: style.whiteSpace ?? 'pre-wrap', color: colorOverride ?? style.color }
 
   if (editing) {
     return (

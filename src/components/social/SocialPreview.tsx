@@ -1,16 +1,19 @@
-import { useState, useRef, createContext, useContext } from 'react'
+import { useState, useRef, useEffect, createContext, useContext } from 'react'
+import { get, set, del } from 'idb-keyval'
 import type { CSSProperties, ReactNode, DragEvent, PointerEvent as ReactPointerEvent } from 'react'
 import {
-  ChevronLeft, Search, Home, Compass, Film, Send, PlusSquare, Heart, Menu, ChevronDown,
-  Grid3x3, Clapperboard, Bookmark, Contact as TagIcon, MoreHorizontal, Settings, UserPlus, Camera, Image as ImageIcon,
+  ChevronLeft, Search, Home, Menu, ChevronDown,
+  MoreHorizontal, Settings, UserPlus, Camera, Image as ImageIcon,
   Video, MessageCircle, Bell, Globe, Phone, Mail, Plus, X, RotateCcw, Download,
+  ThumbsUp, Share2,
 } from 'lucide-react'
+import { IgInstagram, IgHome, IgReels, IgDirect, IgSearch, IgHeart, IgCreate, IgDashboard, IgMenu, IgApps, IgVerified, IgPosts, IgTagged, IgLink } from './igIcons'
 import { useAppStore } from '../../store/useAppStore'
 import { useBrandStore } from '../../store/useBrandStore'
 import { getSimpleIcon } from '../../lib/socialIcons'
 import { fileToBase64 } from '../../lib/imageUtils'
 import { downloadPng } from '../../lib/exportPng'
-import { SmCover } from './SmCover'
+import { globalBgStyle } from './controls'
 
 // Pré-visualização interna + editável: réplica dos perfis Instagram/Facebook (desktop+mobile, claro+escuro),
 // com visão de Dono (edita) e Público. Clica/arrasta imagens, edita textos e números. Uso interno.
@@ -21,7 +24,9 @@ interface Post { url: string; aspect: number }
 interface Highlight { id: string; label: string; image: string | null }
 interface Stats { posts: number | null; followers: number; following: number; likes: number }
 
-const FONT = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif"
+// Stacks oficiais de cada rede na web (self-host-friendly; cai pro sistema, sem CDN).
+const IG_FONT = "'Instagram Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif"
+const FB_FONT = "'Optimistic Display', 'Segoe UI Historic', 'Segoe UI', Helvetica, Arial, sans-serif"
 const DEFAULT_ASPECT = 1080 / 1350 // padrão do post (4:5)
 const slug = (s: string) => s.trim().toLowerCase().replace(/[^a-z0-9._]+/g, '').slice(0, 30)
 
@@ -48,18 +53,26 @@ const dropHandlers = (onFiles: (files: File[]) => void) => ({
   onDragOver: (e: DragEvent) => e.preventDefault(),
   onDrop: (e: DragEvent) => { e.preventDefault(); const fs = imgFiles(e); if (fs.length) onFiles(fs) },
 })
+// Reordena um array (arrastar pra mudar a posição).
+function reorder<T>(arr: T[], from: number, to: number): T[] {
+  if (from === to || from < 0 || to < 0 || from >= arr.length || to >= arr.length) return arr
+  const a = arr.slice(); const [x] = a.splice(from, 1); a.splice(to, 0, x); return a
+}
 
 interface Preview {
   editable: boolean
-  posts: Post[]; addPost: () => void; addFiles: (files: File[]) => void; removePost: (i: number) => void
-  highlights: Highlight[]; addHighlight: () => void; updateHighlight: (id: string, patch: Partial<Highlight>) => void; removeHighlight: (id: string) => void
+  posts: Post[]; addPost: () => void; addFiles: (files: File[]) => void; removePost: (i: number) => void; movePost: (from: number, to: number) => void
+  highlights: Highlight[]; addHighlight: () => void; updateHighlight: (id: string, patch: Partial<Highlight>) => void; removeHighlight: (id: string) => void; moveHighlight: (from: number, to: number) => void
   stats: Stats; setStat: (k: keyof Stats, v: number) => void
   followed: boolean; toggleFollow: () => void
+  verified: boolean
+  showPosts: boolean
 }
 const Ctx = createContext<Preview>({
-  editable: true, posts: [], addPost: () => {}, addFiles: () => {}, removePost: () => {},
-  highlights: [], addHighlight: () => {}, updateHighlight: () => {}, removeHighlight: () => {},
+  editable: true, posts: [], addPost: () => {}, addFiles: () => {}, removePost: () => {}, movePost: () => {},
+  highlights: [], addHighlight: () => {}, updateHighlight: () => {}, removeHighlight: () => {}, moveHighlight: () => {},
   stats: { posts: null, followers: 0, following: 0, likes: 0 }, setStat: () => {}, followed: false, toggleFollow: () => {},
+  verified: false, showPosts: true,
 })
 const usePreview = () => useContext(Ctx)
 
@@ -72,10 +85,11 @@ function useProfile() {
   const setCompany = (k: keyof typeof c, v: string) => setSocialMediaData({ company: { ...c, [k]: v } })
   const setMvv = (k: 'mission' | 'vision' | 'values', v: string) => setSocialMediaData({ mvv: { ...sm.mvv, [k]: v } })
   const setCover = (photo: string) => setSocialMediaData({ facebook_cover: { ...sm.facebook_cover, photo, layout: 'split' } })
+  const setBackground = (image: string) => setSocialMediaData({ background: { ...sm.background, mode: 'image', image } })
   const updateDestaque = (id: string, patch: Partial<typeof sm.destaques[number]>) => setSocialMediaData({ destaques: sm.destaques.map((d) => (d.id === id ? { ...d, ...patch } : d)) })
   const addDestaque = () => setSocialMediaData({ destaques: [...sm.destaques, { id: `d${Date.now()}`, label: 'Novo', icon: 'Star' }] })
   const removeDestaque = (id: string) => setSocialMediaData({ destaques: sm.destaques.filter((d) => d.id !== id) })
-  return { c, bio, about, highlights, sm, setCompany, setMvv, setCover, updateDestaque, addDestaque, removeDestaque }
+  return { c, bio, about, highlights, sm, setCompany, setMvv, setCover, setBackground, updateDestaque, addDestaque, removeDestaque }
 }
 
 // Texto editável inline (só no modo Dono).
@@ -85,7 +99,7 @@ function Editable({ value, onCommit, multiline, placeholder, style, accent = '#f
   const { editable } = usePreview()
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState(value)
-  if (!editable) return <span style={style}>{value || <span style={{ opacity: 0.5 }}>{placeholder}</span>}</span>
+  if (!editable) return <span style={{ display: multiline ? 'inline-block' : undefined, whiteSpace: multiline ? 'pre-wrap' : undefined, wordBreak: 'break-word', ...style }}>{value || <span style={{ opacity: 0.5 }}>{placeholder}</span>}</span>
   const common = {
     autoFocus: true, value: draft,
     onChange: (e: { target: { value: string } }) => setDraft(e.target.value),
@@ -94,7 +108,7 @@ function Editable({ value, onCommit, multiline, placeholder, style, accent = '#f
   }
   if (editing) return multiline ? <textarea {...common} rows={3} /> : <input {...common} onKeyDown={(e) => { if (e.key === 'Enter') e.currentTarget.blur() }} />
   return (
-    <span onClick={() => { setDraft(value); setEditing(true) }} title="Clique para editar" style={{ cursor: 'text', whiteSpace: multiline ? 'pre-wrap' : undefined, borderRadius: 4, ...style }}>
+    <span onClick={() => { setDraft(value); setEditing(true) }} title="Clique para editar" style={{ cursor: 'text', display: multiline ? 'inline-block' : undefined, whiteSpace: multiline ? 'pre-wrap' : undefined, wordBreak: 'break-word', borderRadius: 4, ...style }}>
       {value || <span style={{ opacity: 0.45 }}>{placeholder}</span>}
     </span>
   )
@@ -123,21 +137,6 @@ function CamBadge({ size = 18, pos = 3 }: { size?: number; pos?: number }) {
   )
 }
 
-function IgLogo({ size }: { size: number }) {
-  const si = getSimpleIcon('siInstagram')
-  if (!si) return null
-  return (
-    <svg viewBox="0 0 24 24" width={size} height={size} aria-label="Instagram">
-      <defs>
-        <linearGradient id="igGrad" x1="0" y1="1" x2="1" y2="0">
-          <stop offset="0" stopColor="#feda75" /><stop offset=".25" stopColor="#fa7e1e" />
-          <stop offset=".5" stopColor="#d62976" /><stop offset=".75" stopColor="#962fbf" /><stop offset="1" stopColor="#4f5bd5" />
-        </linearGradient>
-      </defs>
-      <path d={si.path} fill="url(#igGrad)" />
-    </svg>
-  )
-}
 function FbLogo({ size }: { size: number }) {
   const si = getSimpleIcon('siFacebook')
   if (!si) return null
@@ -169,20 +168,16 @@ function Avatar({ size, ring, ringColor = '#fff', editUpload }: { size: number; 
   )
 }
 
-// Capa real (SmCover) escalada. No modo Dono: botão de câmera ou arrastar imagem troca a foto.
+// Capa = fundo global da marca ("capa global"). No modo Dono: botão/arrastar troca o fundo global.
 function FbCover({ width, editable }: { width: number; editable: boolean }) {
-  const { setCover } = useProfile()
+  const { sm, setBackground } = useProfile()
   const ref = useRef<HTMLInputElement>(null)
-  const scale = width / 1640
-  const set = async (files: File[]) => { if (files[0]) setCover(await fileToBase64(files[0], 3200, 0.92)) }
+  const set = async (files: File[]) => { if (files[0]) setBackground(await fileToBase64(files[0], 3200, 0.92)) }
   return (
-    <div style={{ width, height: 624 * scale, overflow: 'hidden', position: 'relative' }} {...(editable ? dropHandlers(set) : {})}>
-      <div style={{ width: 1640, height: 624, transform: `scale(${scale})`, transformOrigin: 'top left', pointerEvents: 'none' }}>
-        <SmCover pageId="sm-cover-facebook" w={1640} h={624} />
-      </div>
+    <div style={{ width, height: Math.round(width * 624 / 1640), position: 'relative', ...globalBgStyle(sm.background) }} {...(editable ? dropHandlers(set) : {})}>
       {editable && (
         <>
-          <button onClick={() => ref.current?.click()} title="Editar foto da capa (ou arraste uma imagem)" style={{ position: 'absolute', right: 12, bottom: 12, display: 'flex', alignItems: 'center', gap: 6, background: 'rgba(255,255,255,0.92)', color: '#050505', border: 'none', borderRadius: 7, padding: '7px 12px', fontSize: 13, fontWeight: 600, cursor: 'pointer', boxShadow: '0 1px 4px rgba(0,0,0,0.3)' }}><Camera size={16} /> Editar capa</button>
+          <button onClick={() => ref.current?.click()} title="Editar capa (fundo global) — ou arraste uma imagem" style={{ position: 'absolute', right: 12, bottom: 12, display: 'flex', alignItems: 'center', gap: 6, background: 'rgba(255,255,255,0.92)', color: '#050505', border: 'none', borderRadius: 7, padding: '7px 12px', fontSize: 13, fontWeight: 600, cursor: 'pointer', boxShadow: '0 1px 4px rgba(0,0,0,0.3)' }}><Camera size={16} /> Editar capa</button>
           <input ref={ref} type="file" accept="image/*" style={{ display: 'none' }} onChange={async (e) => { const f = e.target.files?.[0]; if (f) await set([f]); e.target.value = '' }} />
         </>
       )}
@@ -191,14 +186,22 @@ function FbCover({ width, editable }: { width: number; editable: boolean }) {
 }
 
 function Highlights({ mobile, t, dark }: { mobile: boolean; t: { text: string; sec: string; border: string }; dark: boolean }) {
-  const { editable, highlights, addHighlight, updateHighlight, removeHighlight } = usePreview()
+  const { editable, highlights, addHighlight, updateHighlight, removeHighlight, moveHighlight } = usePreview()
   const fileRef = useRef<HTMLInputElement>(null)
   const pendingId = useRef<string | null>(null)
   const scrollRef = useRef<HTMLDivElement>(null)
   const moved = useRef(false)
   const d = mobile ? 56 : 78
   const onPick = (id: string) => { pendingId.current = id; fileRef.current?.click() }
-  const setImg = async (id: string, files: File[]) => { if (files[0]) updateHighlight(id, { image: await fileToBase64(files[0]) }) }
+  const setImg = async (id: string, files: File[]) => {
+    if (!files[0]) return
+    const name = files[0].name.replace(/\.[^.]+$/, '').trim().slice(0, 30)
+    const url = await fileToBase64(files[0])
+    const cur = highlights.find((x) => x.id === id)
+    // Nomeia pelo arquivo só quando ainda está no padrão — depois o usuário pode renomear à vontade.
+    const patch: Partial<Highlight> = (!cur || !cur.label || cur.label === 'Novo') ? { image: url, label: name } : { image: url }
+    updateHighlight(id, patch)
+  }
 
   // Arrastar na horizontal pra rolar (como no Instagram). Limiar: clique sem mover não rola nem bloqueia o clique.
   const onPointerDown = (e: ReactPointerEvent<HTMLDivElement>) => {
@@ -218,20 +221,28 @@ function Highlights({ mobile, t, dark }: { mobile: boolean; t: { text: string; s
 
   return (
     <div ref={scrollRef} onPointerDown={onPointerDown} className="sp-scroll" style={{ display: 'flex', gap: mobile ? 16 : 22, padding: mobile ? '14px 14px 10px' : '28px 2px 14px', overflowX: 'auto', alignItems: 'flex-start', cursor: 'grab' }}>
-      {highlights.map((h) => (
-        <div key={h.id} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 7, flexShrink: 0, position: 'relative' }}>
+      {highlights.map((h, i) => (
+        <div
+          key={h.id}
+          draggable={editable}
+          onDragStart={editable ? (e) => { e.dataTransfer.setData('hl-from', String(i)); e.dataTransfer.effectAllowed = 'move' } : undefined}
+          onDragOver={editable ? (e) => e.preventDefault() : undefined}
+          onDrop={editable ? (e) => { e.preventDefault(); const from = e.dataTransfer.getData('hl-from'); if (from !== '') moveHighlight(Number(from), i); else { const fs = imgFiles(e); if (fs.length) setImg(h.id, fs) } } : undefined}
+          style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 7, flexShrink: 0, position: 'relative', cursor: editable ? 'grab' : undefined }}
+        >
           {editable && <button onClick={guard(() => removeHighlight(h.id))} title="Remover destaque" style={{ position: 'absolute', top: -3, right: 4, width: 18, height: 18, borderRadius: '50%', background: 'rgba(0,0,0,0.65)', color: '#fff', border: '1px solid rgba(255,255,255,0.6)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 3, padding: 0 }}><X size={11} /></button>}
           <div
             onClick={editable ? guard(() => onPick(h.id)) : undefined}
-            title={editable ? 'Clique ou arraste pra colocar a imagem' : h.label}
-            {...(editable ? dropHandlers((fs) => setImg(h.id, fs)) : {})}
-            style={{ width: d, height: d, borderRadius: '50%', border: `1px solid ${t.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', background: dark ? '#121212' : '#fafafa', overflow: 'hidden', position: 'relative', cursor: editable ? 'pointer' : 'default' }}
+            title={editable ? 'Clique pra trocar a imagem · arraste pra reordenar' : h.label}
+            style={{ width: d, height: d, borderRadius: '50%', border: `1px solid ${t.border}`, padding: 3, boxSizing: 'border-box', background: dark ? '#000' : '#fff', cursor: editable ? 'pointer' : 'default' }}
           >
-            {h.image
-              ? <div style={{ position: 'absolute', inset: 0, backgroundImage: `url("${h.image}")`, backgroundSize: 'cover', backgroundPosition: 'center' }} />
-              : <ImageIcon size={mobile ? 20 : 26} color={t.sec} strokeWidth={1.6} />}
+            <div style={{ width: '100%', height: '100%', borderRadius: '50%', overflow: 'hidden', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', background: dark ? '#121212' : '#fafafa' }}>
+              {h.image
+                ? <div style={{ position: 'absolute', inset: 0, backgroundImage: `url("${h.image}")`, backgroundSize: 'cover', backgroundPosition: 'center' }} />
+                : <ImageIcon size={mobile ? 20 : 26} color={t.sec} strokeWidth={1.6} />}
+            </div>
           </div>
-          <Editable value={h.label} onCommit={(v) => updateHighlight(h.id, { label: v })} placeholder="Título" style={{ fontSize: 12, color: t.text, maxWidth: mobile ? 66 : 82, textAlign: 'center' }} />
+          <Editable value={h.label} onCommit={(v) => updateHighlight(h.id, { label: v })} placeholder="Título" style={{ fontSize: 12, color: t.text, maxWidth: mobile ? 66 : 82, textAlign: 'center', display: 'block', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} />
         </div>
       ))}
       {editable && (
@@ -247,7 +258,7 @@ function Highlights({ mobile, t, dark }: { mobile: boolean; t: { text: string; s
 
 // Grade de posts do Instagram (mock local). Clique ou solte várias imagens; grade sempre quadrada (padrão IG).
 function IgGrid({ t, mobile }: { t: { text: string; sec: string; border: string }; mobile: boolean }) {
-  const { editable, posts, addPost, addFiles, removePost } = usePreview()
+  const { editable, posts, addPost, addFiles, removePost, movePost } = usePreview()
   const drop = editable ? dropHandlers(addFiles) : {}
   if (posts.length === 0) {
     return (
@@ -255,14 +266,19 @@ function IgGrid({ t, mobile }: { t: { text: string; sec: string; border: string 
         <div style={{ width: mobile ? 62 : 72, height: mobile ? 62 : 72, borderRadius: '50%', border: `2px solid ${t.text}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Camera size={mobile ? 30 : 36} color={t.text} /></div>
         <div style={{ fontSize: mobile ? 22 : 30, fontWeight: 800, color: t.text }}>Compartilhe fotos</div>
         <div style={{ fontSize: 14, color: t.sec, maxWidth: 360 }}>{editable ? 'Clique no botão ou arraste imagens aqui (várias de uma vez).' : 'Quando você compartilhar fotos, elas aparecerão no seu perfil.'}</div>
-        {editable && <button onClick={addPost} style={{ marginTop: 4, background: '#0095f6', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 16px', fontSize: 14, fontWeight: 600, cursor: 'pointer' }}>Adicionar publicações</button>}
+        {editable && <button onClick={addPost} style={{ marginTop: 2, background: 'none', border: 'none', color: '#0095f6', fontSize: 14, fontWeight: 600, cursor: 'pointer', padding: 0 }}>Compartilhar primeira foto</button>}
       </div>
     )
   }
   return (
     <div {...drop} style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: mobile ? 2 : 4, marginTop: mobile ? 2 : 4 }}>
       {posts.map((p, i) => (
-        <div key={i} style={{ aspectRatio: '1080 / 1350', background: `url("${p.url}") center/cover`, position: 'relative' }}>
+        <div key={i}
+          draggable={editable}
+          onDragStart={editable ? (e) => { e.dataTransfer.setData('post-from', String(i)); e.dataTransfer.effectAllowed = 'move' } : undefined}
+          onDragOver={editable ? (e) => e.preventDefault() : undefined}
+          onDrop={editable ? (e) => { e.preventDefault(); e.stopPropagation(); const from = e.dataTransfer.getData('post-from'); if (from !== '') movePost(Number(from), i); else { const fs = imgFiles(e); if (fs.length) addFiles(fs) } } : undefined}
+          style={{ aspectRatio: '1080 / 1350', background: `url("${p.url}") center/cover`, position: 'relative', cursor: editable ? 'grab' : undefined }}>
           {editable && <button onClick={() => removePost(i)} title="Remover" style={{ position: 'absolute', top: 4, right: 4, width: 22, height: 22, borderRadius: '50%', background: 'rgba(0,0,0,0.6)', color: '#fff', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><X size={13} /></button>}
         </div>
       ))}
@@ -274,9 +290,9 @@ function IgGrid({ t, mobile }: { t: { text: string; sec: string; border: string 
 // ───────────────────────────── Instagram ─────────────────────────────
 function Instagram({ device, dark }: { device: Device; dark: boolean }) {
   const { c, bio, setCompany } = useProfile()
-  const { editable, posts, stats, setStat, followed, toggleFollow } = usePreview()
+  const { editable, posts, stats, setStat, followed, toggleFollow, verified, showPosts } = usePreview()
   const mobile = device === 'mobile'
-  const link = c.website?.replace(/^https?:\/\//, '')
+  const [notif, setNotif] = useState(true)
   const t = dark
     ? { bg: '#000', text: '#fafafa', sec: '#a8a8a8', border: '#262626', chip: '#363636', link: '#e0f1ff' }
     : { bg: '#fff', text: '#262626', sec: '#737373', border: '#dbdbdb', chip: '#efefef', link: '#00376b' }
@@ -287,45 +303,51 @@ function Instagram({ device, dark }: { device: Device; dark: boolean }) {
       <EditNum value={statVal[k]} onChange={(v) => setStat(k, v)} />{mobile ? <><br /><span style={{ color: t.sec }}>{l}</span></> : <span> {l}</span>}
     </div>
   )
-  const chip: CSSProperties = { background: t.chip, border: 'none', borderRadius: 8, padding: mobile ? '7px 10px' : '7px 16px', fontSize: mobile ? 13 : 14, fontWeight: 600, color: t.text, cursor: 'default', whiteSpace: 'nowrap' }
-  const blue: CSSProperties = { background: '#0095f6', color: '#fff', border: 'none', borderRadius: 8, padding: mobile ? '7px 10px' : '7px 20px', fontSize: mobile ? 13 : 14, fontWeight: 600, cursor: 'default', whiteSpace: 'nowrap' }
+  const chip: CSSProperties = { background: t.chip, border: 'none', borderRadius: 10, padding: mobile ? '7px 10px' : '9px 20px', fontSize: mobile ? 13 : 14, fontWeight: 600, color: t.text, cursor: 'default', whiteSpace: 'nowrap' }
+  const blue: CSSProperties = { background: '#4f5bf2', color: '#fff', border: 'none', borderRadius: 10, padding: mobile ? '7px 10px' : '9px 20px', fontSize: mobile ? 13 : 14, fontWeight: 600, cursor: 'default', whiteSpace: 'nowrap' }
   const username = <Editable value={c.instagram} onCommit={(v) => setCompany('instagram', v)} placeholder={slug(c.name) || 'usuario'} />
+  const LinkRow = () => (!editable && !c.website) ? null : (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 4, color: t.link, fontWeight: 600, fontSize: mobile ? 14 : undefined }}>
+      <span style={{ display: 'flex', flexShrink: 0 }}><IgLink size={16} /></span>
+      <Editable value={(c.website || '').replace(/^https?:\/\//, '')} onCommit={(v) => setCompany('website', v.replace(/^https?:\/\//, ''))} placeholder="adicionar link" style={{ color: t.link, fontWeight: 600 }} />
+    </div>
+  )
 
   const Buttons = () => editable ? (
     <>
-      <button style={{ ...chip, flex: mobile ? 1 : undefined, minWidth: 0 }}>Editar perfil</button>
-      <button style={{ ...chip, flex: mobile ? 1 : undefined, minWidth: 0 }}>Compartilhar</button>
+      <button style={{ ...chip, flex: 1, minWidth: 0, justifyContent: 'center', display: 'flex' }}>Editar perfil</button>
+      <button style={{ ...chip, flex: 1, minWidth: 0, justifyContent: 'center', display: 'flex' }}>{mobile ? 'Compartilhar' : 'Ver arquivo'}</button>
       {mobile && <button style={{ ...chip, padding: 8, display: 'flex' }}><UserPlus size={18} color={t.text} /></button>}
     </>
   ) : (
     <>
-      <button onClick={toggleFollow} style={{ ...(followed ? chip : blue), flex: mobile ? 1 : undefined, cursor: 'pointer' }}>{followed ? 'Seguindo' : 'Seguir'}</button>
-      <button style={{ ...chip, flex: mobile ? 1 : undefined }}>Mensagem</button>
-      {mobile && <button style={{ ...chip, padding: 8, display: 'flex' }}><ChevronDown size={18} color={t.text} /></button>}
+      <button onClick={toggleFollow} style={{ ...(followed ? chip : blue), flex: 1, cursor: 'pointer', justifyContent: 'center', display: 'flex' }}>{followed ? 'Seguindo' : 'Seguir'}</button>
+      <button style={{ ...chip, flex: 1, justifyContent: 'center', display: 'flex' }}>Mensagem</button>
+      <button style={{ ...chip, padding: 8, display: 'flex' }}><UserPlus size={18} color={t.text} /></button>
     </>
   )
 
   if (mobile) {
     return (
-      <div style={{ fontFamily: FONT, color: t.text, background: t.bg, minHeight: '100%' }}>
+      <div style={{ fontFamily: IG_FONT, color: t.text, background: t.bg, minHeight: '100%' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 14px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 20, fontWeight: 700 }}>{username} <ChevronDown size={16} /></div>
-          <div style={{ display: 'flex', gap: 20 }}><PlusSquare size={24} color={t.text} /><Menu size={24} color={t.text} /></div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 20, fontWeight: 700 }}>{username}{verified && <IgVerified size={15} />} <ChevronDown size={16} /></div>
+          <div style={{ display: 'flex', gap: 20 }}><IgCreate size={24} /><IgMenu size={24} /></div>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 24, padding: '8px 16px 6px' }}>
           <Avatar size={86} editUpload />
-          <div style={{ display: 'flex', flex: 1, justifyContent: 'space-around' }}><Stat k="posts" l="posts" /><Stat k="followers" l="seguidores" /><Stat k="following" l="seguindo" /></div>
+          <div style={{ display: 'flex', flex: 1, justifyContent: 'space-around' }}>{showPosts && <Stat k="posts" l="posts" />}<Stat k="followers" l="seguidores" /><Stat k="following" l="seguindo" /></div>
         </div>
         <div style={{ padding: '0 16px' }}>
           <div style={{ fontWeight: 600, fontSize: 14 }}><Editable value={c.name} onCommit={(v) => setCompany('name', v)} placeholder="Sua Marca" /></div>
           <div style={{ fontSize: 14, lineHeight: 1.4 }}><Editable value={bio} multiline onCommit={(v) => setCompany('services', v)} placeholder="Escreva a bio…" /></div>
-          {link && <div style={{ fontSize: 14, color: t.link, fontWeight: 600 }}>{link}</div>}
+          <LinkRow />
         </div>
         <div style={{ display: 'flex', gap: 8, padding: '12px 16px', alignItems: 'stretch' }}><Buttons /></div>
         <Highlights mobile t={t} dark={dark} />
-        <div style={{ display: 'flex', borderTop: `1px solid ${t.border}`, marginTop: 4 }}>
-          {[Grid3x3, Clapperboard, TagIcon].map((Ic, i) => (
-            <div key={i} style={{ flex: 1, display: 'flex', justifyContent: 'center', padding: '11px 0', borderTop: i === 0 ? `1px solid ${t.text}` : 'none', marginTop: -1, color: i === 0 ? t.text : t.sec }}><Ic size={24} /></div>
+        <div style={{ display: 'flex', borderBottom: `1px solid ${t.border}`, marginTop: 4 }}>
+          {[IgPosts, IgReels, IgTagged].map((Ic, i) => (
+            <div key={i} style={{ flex: 1, display: 'flex', justifyContent: 'center', padding: '11px 0', borderBottom: i === 0 ? `1px solid ${t.text}` : 'none', marginBottom: -1, color: i === 0 ? t.text : t.sec }}><Ic size={24} /></div>
           ))}
         </div>
         <IgGrid t={t} mobile />
@@ -333,35 +355,62 @@ function Instagram({ device, dark }: { device: Device; dark: boolean }) {
     )
   }
 
+  const sideIcon = (node: ReactNode) => <div style={{ display: 'flex', width: '100%', justifyContent: 'center', cursor: 'default' }}>{node}</div>
   return (
-    <div style={{ fontFamily: FONT, color: t.text, background: t.bg, minHeight: '100%' }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 24px', borderBottom: `1px solid ${t.border}`, position: 'sticky', top: 0, background: t.bg, zIndex: 2 }}>
-        <IgLogo size={29} />
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: t.chip, borderRadius: 8, padding: '8px 14px', width: 268, color: t.sec }}><Search size={16} /> <span style={{ fontSize: 14 }}>Pesquisar</span></div>
-        <div style={{ display: 'flex', gap: 18, alignItems: 'center', color: t.text }}><Home size={24} /><Send size={24} /><PlusSquare size={24} /><Compass size={24} /><Film size={24} /><Heart size={24} /><Avatar size={26} /></div>
-      </div>
-      <div style={{ maxWidth: 935, margin: '0 auto', padding: '30px 20px 60px' }}>
-        <div style={{ display: 'flex', gap: 90, paddingLeft: 30, marginBottom: 10 }}>
-          <div style={{ flex: '0 0 150px', display: 'flex', justifyContent: 'center' }}><Avatar size={150} editUpload /></div>
-          <div style={{ flex: 1 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 20 }}>
-              <span style={{ fontSize: 20 }}>{username}</span>
-              <Buttons />
-              {editable && <Settings size={22} color={t.text} />}
-            </div>
-            <div style={{ display: 'flex', gap: 40, marginBottom: 18 }}><Stat k="posts" l="publicações" /><Stat k="followers" l="seguidores" /><Stat k="following" l="seguindo" /></div>
-            <div style={{ fontWeight: 600 }}><Editable value={c.name} onCommit={(v) => setCompany('name', v)} placeholder="Sua Marca" /></div>
-            <div style={{ lineHeight: 1.4 }}><Editable value={bio} multiline onCommit={(v) => setCompany('services', v)} placeholder="Escreva a bio…" /></div>
-            {link && <div style={{ color: t.link, fontWeight: 600 }}>{link}</div>}
+    <div style={{ display: 'flex', fontFamily: IG_FONT, color: t.text, background: t.bg, minHeight: '100%' }}>
+      {/* HUD lateral esquerda (novo layout do IG desktop) */}
+      <div style={{ width: 76, flexShrink: 0, borderRight: `1px solid ${t.border}`, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '20px 0', color: t.text, position: 'sticky', top: 24, alignSelf: 'flex-start', height: 'calc(100vh - 110px)' }}>
+        <IgInstagram size={26} />
+        <div style={{ flex: 1, display: 'flex', alignItems: 'center', width: '100%' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 24, width: '100%' }}>
+          {sideIcon(<IgHome size={24} />)}
+          {sideIcon(<IgReels size={24} />)}
+          {sideIcon(<IgDirect size={24} />)}
+          {sideIcon(<IgSearch size={24} />)}
+          {sideIcon(<div onClick={() => setNotif((n) => !n)} title="Notificações" style={{ position: 'relative', display: 'flex', cursor: 'pointer' }}><IgHeart size={24} />{notif && <span style={{ position: 'absolute', top: -1, right: -2, width: 8, height: 8, borderRadius: '50%', background: '#ff3040', border: `1.5px solid ${t.bg}` }} />}</div>)}
+          {sideIcon(<IgCreate size={24} />)}
+          {sideIcon(<IgDashboard size={24} />)}
+          {sideIcon(<Avatar size={24} />)}
           </div>
         </div>
-        <Highlights mobile={false} t={t} dark={dark} />
-        <div style={{ display: 'flex', justifyContent: 'center', gap: 60, borderTop: `1px solid ${t.border}`, marginTop: 12 }}>
-          {([[Grid3x3, 'PUBLICAÇÕES'], [Clapperboard, 'REELS'], [Bookmark, 'SALVOS'], [TagIcon, 'MARCAÇÕES']] as [typeof Grid3x3, string][]).map(([Ic, label], i) => (
-            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '16px 0', fontSize: 12, fontWeight: 600, letterSpacing: 1, color: i === 0 ? t.text : t.sec, borderTop: i === 0 ? `1px solid ${t.text}` : 'none', marginTop: -1 }}><Ic size={12} /> {label}</div>
-          ))}
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 22 }}>
+          {sideIcon(<IgMenu size={24} />)}
+          {sideIcon(<IgApps size={24} />)}
         </div>
-        <IgGrid t={t} mobile={false} />
+      </div>
+
+      {/* Conteúdo */}
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ maxWidth: 935, margin: '0 auto', padding: '34px 20px 60px' }}>
+          <div style={{ display: 'flex', gap: 70, alignItems: 'flex-start', paddingLeft: 10, marginBottom: 20 }}>
+            <div style={{ position: 'relative', flexShrink: 0 }}>
+              {editable && <div style={{ position: 'absolute', top: -20, left: '50%', transform: 'translateX(-50%)', background: t.chip, color: t.text, fontSize: 11, padding: '4px 11px', borderRadius: 14, whiteSpace: 'nowrap', zIndex: 2 }}>Nota…</div>}
+              <Avatar size={150} editUpload />
+            </div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 18 }}>
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 20 }}>{username}{verified && <IgVerified size={18} />}</span>
+                {editable ? <Settings size={22} /> : <MoreHorizontal size={22} />}
+              </div>
+              <div style={{ display: 'flex', gap: 40, marginBottom: 16 }}>{showPosts && <Stat k="posts" l="publicações" />}<Stat k="followers" l="seguidores" /><Stat k="following" l="seguindo" /></div>
+              <div style={{ fontWeight: 600 }}><Editable value={c.name} onCommit={(v) => setCompany('name', v)} placeholder="Sua Marca" /></div>
+              <div style={{ lineHeight: 1.4 }}><Editable value={bio} multiline onCommit={(v) => setCompany('services', v)} placeholder="Escreva a bio…" /></div>
+              <LinkRow />
+            </div>
+          </div>
+          <div style={{ display: 'flex', gap: 8, maxWidth: 680, width: '100%', margin: '0 auto 8px' }}><Buttons /></div>
+          <Highlights mobile={false} t={t} dark={dark} />
+          <div style={{ display: 'flex', justifyContent: 'center', gap: 60, borderBottom: `1px solid ${t.border}`, marginTop: 12 }}>
+            {[IgPosts, IgReels, IgTagged].map((Ic, i) => (
+              <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '15px 0', width: 48, color: i === 0 ? t.text : t.sec, borderBottom: i === 0 ? `1px solid ${t.text}` : 'none', marginBottom: -1 }}><Ic size={22} /></div>
+            ))}
+          </div>
+          <IgGrid t={t} mobile={false} />
+          <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '10px 14px', marginTop: 46, fontSize: 12, color: t.sec }}>
+            {['Meta', 'Sobre', 'Blog', 'Carreiras', 'Ajuda', 'API', 'Privacidade', 'Termos', 'Localizações', 'Instagram Lite', 'Meta AI', 'Threads', 'Contatos'].map((x) => <span key={x}>{x}</span>)}
+            <span style={{ width: '100%', textAlign: 'center', marginTop: 10 }}>Português (Brasil) · © 2026 Instagram da Meta</span>
+          </div>
+        </div>
       </div>
     </div>
   )
@@ -370,7 +419,7 @@ function Instagram({ device, dark }: { device: Device; dark: boolean }) {
 // ───────────────────────────── Facebook ─────────────────────────────
 function Facebook({ device, dark }: { device: Device; dark: boolean }) {
   const { c, about, setCompany, setMvv } = useProfile()
-  const { editable, posts, addPost, addFiles, removePost, stats, setStat, followed, toggleFollow } = usePreview()
+  const { editable, posts, addPost, addFiles, removePost, stats, setStat, followed, toggleFollow, verified } = usePreview()
   const mobile = device === 'mobile'
   const coverW = mobile ? 368 : 940
   const avSize = mobile ? 88 : 168
@@ -420,13 +469,26 @@ function Facebook({ device, dark }: { device: Device; dark: boolean }) {
               {editable && <button onClick={() => removePost(i)} title="Remover" style={{ background: 'transparent', border: 'none', color: t.sec, cursor: 'pointer', display: 'flex' }}><X size={18} /></button>}
             </div>
             <div style={{ width: '100%', aspectRatio: String(p.aspect), background: `url("${p.url}") center/cover` }} />
+            <div style={{ display: 'flex', borderTop: `1px solid ${t.border}`, padding: '4px 12px' }}>
+              {([
+                [ThumbsUp, 'Curtir'],
+                [MessageCircle, 'Comentar'],
+                [Share2, 'Compartilhar'],
+              ] as [typeof ThumbsUp, string][]).map(([Ic, label]) => (
+                <button key={label} style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, background: 'transparent', border: 'none', borderRadius: 8, padding: '8px 0', fontSize: 15, fontWeight: 600, color: t.sec, cursor: 'pointer' }}
+                  onMouseEnter={(e) => (e.currentTarget.style.background = t.chip)}
+                  onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}>
+                  <Ic size={20} />{label}
+                </button>
+              ))}
+            </div>
           </div>
         ))}
     </div>
   )
 
   return (
-    <div style={{ fontFamily: FONT, background: t.app, minHeight: '100%', color: t.text }}>
+    <div style={{ fontFamily: FB_FONT, background: t.app, minHeight: '100%', color: t.text }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 16px', background: t.nav, borderBottom: `1px solid ${t.border}`, position: 'sticky', top: 0, zIndex: 3 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <FbLogo size={40} />
@@ -440,8 +502,10 @@ function Facebook({ device, dark }: { device: Device; dark: boolean }) {
       </div>
 
       <div style={{ background: t.card }}>
-        <div style={{ position: 'relative', margin: '0 auto', maxWidth: coverW, borderRadius: mobile ? 0 : '0 0 8px 8px', overflow: 'hidden' }}>
-          <FbCover width={coverW} editable={editable} />
+        <div style={{ position: 'relative', margin: '0 auto', maxWidth: coverW }}>
+          <div style={{ borderRadius: mobile ? 0 : '0 0 8px 8px', overflow: 'hidden' }}>
+            <FbCover width={coverW} editable={editable} />
+          </div>
           <div style={{ position: 'absolute', left: mobile ? '50%' : 24, bottom: mobile ? -avSize / 2 : -22, transform: mobile ? 'translateX(-50%)' : undefined }}>
             <Avatar size={avSize} ring ringColor={t.card} editUpload />
           </div>
@@ -449,7 +513,7 @@ function Facebook({ device, dark }: { device: Device; dark: boolean }) {
         <div style={{ maxWidth: coverW, margin: '0 auto', padding: mobile ? `${avSize / 2 + 12}px 16px 0` : '14px 24px 0' }}>
           <div style={{ display: 'flex', flexDirection: mobile ? 'column' : 'row', alignItems: mobile ? 'center' : 'flex-end', justifyContent: 'space-between', gap: 12, paddingLeft: mobile ? 0 : avSize + 20, textAlign: mobile ? 'center' : 'left' }}>
             <div>
-              <div style={{ fontSize: mobile ? 24 : 32, fontWeight: 800, color: t.text }}><Editable value={c.name} onCommit={(v) => setCompany('name', v)} placeholder="Sua Marca" /></div>
+              <div style={{ fontSize: mobile ? 24 : 32, fontWeight: 800, color: t.text, display: 'flex', alignItems: 'center', gap: 8, justifyContent: mobile ? 'center' : 'flex-start' }}><Editable value={c.name} onCommit={(v) => setCompany('name', v)} placeholder="Sua Marca" />{verified && <IgVerified size={mobile ? 20 : 26} />}</div>
               <div style={{ fontSize: 15, color: t.sec, marginTop: 2 }}><EditNum value={stats.likes} onChange={(v) => setStat('likes', v)} /> curtidas · <EditNum value={stats.followers} onChange={(v) => setStat('followers', v)} /> seguidores</div>
             </div>
             <div style={{ display: 'flex', gap: 8 }}>
@@ -481,10 +545,33 @@ export function SocialPreview() {
   const [highlights, setHighlights] = useState<Highlight[]>([])
   const [stats, setStats] = useState<Stats>({ posts: null, followers: 0, following: 0, likes: 0 })
   const [followed, setFollowed] = useState(false)
+  const [verified, setVerified] = useState(false)
+  const [showPosts, setShowPosts] = useState(true)
   const postRef = useRef<HTMLInputElement>(null)
   const mockRef = useRef<HTMLDivElement>(null)
   // Snapshot do estado ao abrir o preview. "Resetar" restaura tudo pra cá (desfaz edições da sessão + cache).
   const snapshot = useRef(useBrandStore.getState().social_media_data)
+  const hydrated = useRef(false)
+
+  // Persistência local do teste (posts/destaques/números) — sobrevive ao recarregar (IndexedDB).
+  useEffect(() => {
+    get<{ posts?: Post[]; highlights?: Highlight[]; stats?: Stats; verified?: boolean; showPosts?: boolean; followed?: boolean }>('sm-preview')
+      .then((s) => {
+        if (s) {
+          if (Array.isArray(s.posts)) setPosts(s.posts)
+          if (Array.isArray(s.highlights)) setHighlights(s.highlights)
+          if (s.stats) setStats(s.stats)
+          if (typeof s.verified === 'boolean') setVerified(s.verified)
+          if (typeof s.showPosts === 'boolean') setShowPosts(s.showPosts)
+          if (typeof s.followed === 'boolean') setFollowed(s.followed)
+        }
+        hydrated.current = true
+      })
+      .catch(() => { hydrated.current = true })
+  }, [])
+  useEffect(() => {
+    if (hydrated.current) set('sm-preview', { posts, highlights, stats, verified, showPosts, followed }).catch(() => {})
+  }, [posts, highlights, stats, verified, showPosts, followed])
 
   const addPost = () => postRef.current?.click()
   const addFiles = async (files: File[]) => {
@@ -492,14 +579,18 @@ export function SocialPreview() {
     if (items.length) setPosts((p) => [...items, ...p])
   }
   const removePost = (i: number) => setPosts((p) => p.filter((_, j) => j !== i))
+  const movePost = (from: number, to: number) => setPosts((p) => reorder(p, from, to))
   const addHighlight = () => setHighlights((h) => [...h, { id: `h${Date.now()}`, label: 'Novo', image: null }])
   const updateHighlight = (id: string, patch: Partial<Highlight>) => setHighlights((h) => h.map((x) => (x.id === id ? { ...x, ...patch } : x)))
   const removeHighlight = (id: string) => setHighlights((h) => h.filter((x) => x.id !== id))
+  const moveHighlight = (from: number, to: number) => setHighlights((h) => reorder(h, from, to))
   const setStat = (k: keyof Stats, v: number) => setStats((s) => ({ ...s, [k]: v }))
-  const reset = () => {
-    setPosts([]); setHighlights([]); setStats({ posts: null, followers: 0, following: 0, likes: 0 }); setFollowed(false)
-    useBrandStore.getState().setSocialMediaData(snapshot.current)
+  const clearLocal = () => {
+    setPosts([]); setHighlights([]); setStats({ posts: null, followers: 0, following: 0, likes: 0 }); setFollowed(false); setVerified(false); setShowPosts(true)
+    del('sm-preview').catch(() => {})
   }
+  const reset = () => { clearLocal(); useBrandStore.getState().setSocialMediaData(snapshot.current) }
+  const goMenu = () => { if (window.confirm('Voltar ao menu? Isso vai limpar os posts, destaques e números do teste.')) { clearLocal(); setScreen('home') } }
   const print = () => { if (mockRef.current) downloadPng(mockRef.current, `preview-${platform}-${device}`) }
 
   const seg = (active: boolean): CSSProperties => ({
@@ -507,12 +598,20 @@ export function SocialPreview() {
     background: active ? 'var(--accent)' : 'transparent', color: active ? '#fff' : 'var(--text-secondary)',
   })
   const tool: CSSProperties = { display: 'flex', alignItems: 'center', gap: 6, padding: '7px 12px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--bg-input)', color: 'var(--text-primary)', fontSize: 13, fontWeight: 600, cursor: 'pointer' }
+  const renderSwitch = (on: boolean, onToggle: () => void, label: string, icon?: ReactNode) => (
+    <button type="button" role="switch" aria-checked={on} onClick={onToggle} title={label} style={tool}>
+      <span style={{ width: 30, height: 17, borderRadius: 999, background: on ? 'var(--accent)' : 'var(--border)', position: 'relative', flexShrink: 0, display: 'inline-block' }}>
+        <span style={{ position: 'absolute', top: 2, left: on ? 15 : 2, width: 13, height: 13, borderRadius: '50%', background: '#fff', transition: 'left .15s' }} />
+      </span>
+      {icon}{label}
+    </button>
+  )
 
   return (
-    <Ctx.Provider value={{ editable: owner, posts, addPost, addFiles, removePost, highlights, addHighlight, updateHighlight, removeHighlight, stats, setStat, followed, toggleFollow: () => setFollowed((f) => !f) }}>
+    <Ctx.Provider value={{ editable: owner, posts, addPost, addFiles, removePost, movePost, highlights, addHighlight, updateHighlight, removeHighlight, moveHighlight, stats, setStat, followed, toggleFollow: () => setFollowed((f) => !f), verified, showPosts }}>
       <div style={{ height: '100vh', display: 'flex', flexDirection: 'column', background: 'var(--bg-base, #0d0d0d)' }}>
         <div className="sm-topbar" style={{ flexWrap: 'wrap', gap: 10 }}>
-          <button type="button" className="editor-nav-back" onClick={() => setScreen('home')}><ChevronLeft size={16} /><span>Menu</span></button>
+          <button type="button" className="editor-nav-back" onClick={goMenu}><ChevronLeft size={16} /><span>Menu</span></button>
           <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', justifyContent: 'center', alignItems: 'center' }}>
             <div className="sm-tabs">
               <button type="button" style={seg(platform === 'instagram')} onClick={() => setPlatform('instagram')}>Instagram</button>
@@ -532,6 +631,8 @@ export function SocialPreview() {
             </div>
           </div>
           <div style={{ display: 'flex', gap: 8 }}>
+            {renderSwitch(verified, () => setVerified((v) => !v), 'Verificado', <IgVerified size={15} />)}
+            {renderSwitch(showPosts, () => setShowPosts((v) => !v), 'Nº posts')}
             <button type="button" style={tool} onClick={reset} title="Desfazer edições da sessão e limpar posts/números"><RotateCcw size={15} /> Resetar</button>
             <button type="button" style={tool} onClick={print} title="Baixar print da tela (PNG)"><Download size={15} /> Printar</button>
           </div>
@@ -539,14 +640,18 @@ export function SocialPreview() {
 
         <div className="sp-scroll" style={{ flex: 1, overflow: 'auto', display: 'flex', justifyContent: 'center', alignItems: 'flex-start', padding: device === 'mobile' ? '32px 16px' : '24px 16px' }}>
           {device === 'mobile' ? (
-            <div ref={mockRef} style={{ width: 390, height: 788, borderRadius: 44, border: '11px solid #111', overflow: 'hidden', background: dark ? '#000' : '#fff', boxShadow: '0 24px 70px rgba(0,0,0,0.6)', flexShrink: 0 }}>
+            <div style={{ width: 390, height: 788, borderRadius: 8, border: '11px solid #111', overflow: 'hidden', background: dark ? '#000' : '#fff', boxShadow: '0 24px 70px rgba(0,0,0,0.6)', flexShrink: 0 }}>
               <div className="sp-scroll" style={{ height: '100%', overflowY: 'auto' }}>
-                {platform === 'instagram' ? <Instagram device="mobile" dark={dark} /> : <Facebook device="mobile" dark={dark} />}
+                <div ref={mockRef}>
+                  {platform === 'instagram' ? <Instagram device="mobile" dark={dark} /> : <Facebook device="mobile" dark={dark} />}
+                </div>
               </div>
             </div>
           ) : (
-            <div ref={mockRef} style={{ width: '100%', maxWidth: 1180, borderRadius: 10, overflow: 'hidden', boxShadow: '0 20px 60px rgba(0,0,0,0.5)' }}>
-              {platform === 'instagram' ? <Instagram device="desktop" dark={dark} /> : <Facebook device="desktop" dark={dark} />}
+            <div style={{ width: '100%', maxWidth: 1180, borderRadius: 10, boxShadow: '0 20px 60px rgba(0,0,0,0.5)' }}>
+              <div ref={mockRef}>
+                {platform === 'instagram' ? <Instagram device="desktop" dark={dark} /> : <Facebook device="desktop" dark={dark} />}
+              </div>
             </div>
           )}
         </div>

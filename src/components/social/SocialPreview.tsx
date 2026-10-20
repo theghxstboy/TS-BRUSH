@@ -104,14 +104,15 @@ function Editable({ value, onCommit, multiline, placeholder, style, accent = '#f
 function EditNum({ value, onChange }: { value: number; onChange: (n: number) => void }) {
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState('')
+  const start = useRef(value)
   if (editing) return (
     <input autoFocus value={draft}
       onChange={(e) => setDraft(e.target.value.replace(/[^\d]/g, ''))}
-      onBlur={() => { setEditing(false); onChange(Number(draft) || 0) }}
+      onBlur={() => { setEditing(false); const n = Number(draft) || 0; if (n !== start.current) onChange(n) }}
       onKeyDown={(e) => { if (e.key === 'Enter') e.currentTarget.blur() }}
       style={{ width: 62, font: 'inherit', fontWeight: 700, color: 'inherit', background: 'rgba(127,127,127,0.16)', border: '1px solid #f0a500', borderRadius: 4, padding: '0 4px', outline: 'none' }} />
   )
-  return <b onClick={() => { setDraft(String(value)); setEditing(true) }} title="Clique para editar o número" style={{ cursor: 'pointer' }}>{fmt(value)}</b>
+  return <b onClick={() => { start.current = value; setDraft(String(value)); setEditing(true) }} title="Clique para editar o número" style={{ cursor: 'pointer' }}>{fmt(value)}</b>
 }
 
 function CamBadge({ size = 18, pos = 3 }: { size?: number; pos?: number }) {
@@ -261,11 +262,11 @@ function IgGrid({ t, mobile }: { t: { text: string; sec: string; border: string 
   return (
     <div {...drop} style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: mobile ? 2 : 4, marginTop: mobile ? 2 : 4 }}>
       {posts.map((p, i) => (
-        <div key={i} style={{ aspectRatio: '1', background: `url("${p.url}") center/cover`, position: 'relative' }}>
+        <div key={i} style={{ aspectRatio: '1080 / 1350', background: `url("${p.url}") center/cover`, position: 'relative' }}>
           {editable && <button onClick={() => removePost(i)} title="Remover" style={{ position: 'absolute', top: 4, right: 4, width: 22, height: 22, borderRadius: '50%', background: 'rgba(0,0,0,0.6)', color: '#fff', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><X size={13} /></button>}
         </div>
       ))}
-      {editable && <button onClick={addPost} title="Adicionar publicações (várias de uma vez)" style={{ aspectRatio: '1', border: `1px dashed ${t.sec}`, background: 'transparent', color: t.sec, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Plus size={30} /></button>}
+      {editable && <button onClick={addPost} title="Adicionar publicações (várias de uma vez)" style={{ aspectRatio: '1080 / 1350', border: `1px dashed ${t.sec}`, background: 'transparent', color: t.sec, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Plus size={30} /></button>}
     </div>
   )
 }

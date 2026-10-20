@@ -4794,6 +4794,9 @@ body.export-mode .pres-resize-handle { display: none !important; }
 /* Rola normalmente, mas sem barra de rolagem visível (usado na pré-visualização de redes). */
 .sp-scroll { scrollbar-width: none; -ms-overflow-style: none; }
 .sp-scroll::-webkit-scrollbar { width: 0; height: 0; display: none; }
+/* Demonstrativo de "editável" no preview de redes (modo Dono): anel sutil (acompanha o raio) + realce no hover. */
+.sp-edit { box-shadow: 0 0 0 1px rgba(240, 165, 0, 0.4); transition: box-shadow 0.12s, background 0.12s; }
+.sp-edit:hover { box-shadow: 0 0 0 1.5px rgba(240, 165, 0, 0.95); background: rgba(240, 165, 0, 0.12); }
 .sm-drawer { width: 340px; flex-shrink: 0; overflow-y: auto; padding: 16px; border-left: 1px solid var(--border); background: var(--bg-sidebar); }
 .sm-cover-chips { display: flex; flex-wrap: wrap; gap: 6px; max-width: 920px; }
 .sm-chip { padding: 6px 12px; border-radius: 999px; border: 1px solid var(--border); background: var(--bg-input); color: var(--text-secondary); font-size: 12px; cursor: pointer; display: inline-flex; gap: 6px; align-items: center; transition: all 0.15s; }

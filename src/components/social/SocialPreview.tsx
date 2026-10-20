@@ -108,7 +108,7 @@ function Editable({ value, onCommit, multiline, placeholder, style, accent = '#f
   }
   if (editing) return multiline ? <textarea {...common} rows={3} /> : <input {...common} onKeyDown={(e) => { if (e.key === 'Enter') e.currentTarget.blur() }} />
   return (
-    <span onClick={() => { setDraft(value); setEditing(true) }} title="Clique para editar" style={{ cursor: 'text', display: multiline ? 'inline-block' : undefined, whiteSpace: multiline ? 'pre-wrap' : undefined, wordBreak: 'break-word', borderRadius: 4, ...style }}>
+    <span className="sp-edit" onClick={() => { setDraft(value); setEditing(true) }} title="Clique para editar" style={{ cursor: 'text', display: multiline ? 'inline-block' : undefined, whiteSpace: multiline ? 'pre-wrap' : undefined, wordBreak: 'break-word', borderRadius: 4, ...style }}>
       {value || <span style={{ opacity: 0.45 }}>{placeholder}</span>}
     </span>
   )
@@ -126,7 +126,7 @@ function EditNum({ value, onChange }: { value: number; onChange: (n: number) => 
       onKeyDown={(e) => { if (e.key === 'Enter') e.currentTarget.blur() }}
       style={{ width: 62, font: 'inherit', fontWeight: 700, color: 'inherit', background: 'rgba(127,127,127,0.16)', border: '1px solid #f0a500', borderRadius: 4, padding: '0 4px', outline: 'none' }} />
   )
-  return <b onClick={() => { start.current = value; setDraft(String(value)); setEditing(true) }} title="Clique para editar o número" style={{ cursor: 'pointer' }}>{fmt(value)}</b>
+  return <b className="sp-edit" onClick={() => { start.current = value; setDraft(String(value)); setEditing(true) }} title="Clique para editar o número" style={{ cursor: 'pointer', borderRadius: 3 }}>{fmt(value)}</b>
 }
 
 function CamBadge({ size = 18, pos = 3 }: { size?: number; pos?: number }) {
@@ -152,10 +152,11 @@ function Avatar({ size, ring, ringColor = '#fff', editUpload }: { size: number; 
   const setLogo = async (files: File[]) => { if (files[0]) setCompany('logo', await fileToBase64(files[0])) }
   return (
     <div
+      className={canEdit ? 'sp-edit' : undefined}
       onClick={canEdit ? () => ref.current?.click() : undefined}
       title={canEdit ? 'Clique ou arraste pra trocar a foto' : undefined}
       {...(canEdit ? dropHandlers(setLogo) : {})}
-      style={{ position: 'relative', width: size, height: size, flexShrink: 0, cursor: canEdit ? 'pointer' : undefined }}
+      style={{ position: 'relative', width: size, height: size, flexShrink: 0, cursor: canEdit ? 'pointer' : undefined, borderRadius: canEdit ? '50%' : undefined }}
     >
       <div style={{ position: 'relative', width: size, height: size, boxSizing: 'border-box', borderRadius: '50%', background: '#fff', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', border: ring ? `4px solid ${ringColor}` : '1px solid rgba(0,0,0,0.1)' }}>
         {c.logo
@@ -232,6 +233,7 @@ function Highlights({ mobile, t, dark }: { mobile: boolean; t: { text: string; s
         >
           {editable && <button onClick={guard(() => removeHighlight(h.id))} title="Remover destaque" style={{ position: 'absolute', top: -3, right: 4, width: 18, height: 18, borderRadius: '50%', background: 'rgba(0,0,0,0.65)', color: '#fff', border: '1px solid rgba(255,255,255,0.6)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 3, padding: 0 }}><X size={11} /></button>}
           <div
+            className={editable ? 'sp-edit' : undefined}
             onClick={editable ? guard(() => onPick(h.id)) : undefined}
             title={editable ? 'Clique pra trocar a imagem · arraste pra reordenar' : h.label}
             style={{ width: d, height: d, borderRadius: '50%', border: `1px solid ${t.border}`, padding: 3, boxSizing: 'border-box', background: dark ? '#000' : '#fff', cursor: editable ? 'pointer' : 'default' }}
@@ -274,6 +276,7 @@ function IgGrid({ t, mobile }: { t: { text: string; sec: string; border: string 
     <div {...drop} style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: mobile ? 2 : 4, marginTop: mobile ? 2 : 4 }}>
       {posts.map((p, i) => (
         <div key={i}
+          className={editable ? 'sp-edit' : undefined}
           draggable={editable}
           onDragStart={editable ? (e) => { e.dataTransfer.setData('post-from', String(i)); e.dataTransfer.effectAllowed = 'move' } : undefined}
           onDragOver={editable ? (e) => e.preventDefault() : undefined}

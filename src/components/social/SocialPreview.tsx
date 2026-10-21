@@ -114,11 +114,13 @@ function Editable({ value, onCommit, multiline, placeholder, style, accent = '#f
   )
 }
 
-// Número editável SEMPRE (inclusive no modo Público). Mostra formatado (1,2k), edita cru.
+// Número editável só no modo Dono. Mostra formatado (1,2k), edita cru.
 function EditNum({ value, onChange }: { value: number; onChange: (n: number) => void }) {
+  const { editable } = usePreview()
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState('')
   const start = useRef(value)
+  if (!editable) return <b>{fmt(value)}</b>
   if (editing) return (
     <input autoFocus value={draft}
       onChange={(e) => setDraft(e.target.value.replace(/[^\d]/g, ''))}

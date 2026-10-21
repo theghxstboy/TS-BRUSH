@@ -23,7 +23,23 @@ export function SectionAssets() {
   } = useBrandStore()
   
   const mockupRef = useRef<HTMLInputElement>(null)
+  const logoRef = useRef<HTMLInputElement>(null)
   const isPres = screen === 'brand-presentation'
+
+  // Remove uma logo (versão) da apresentação — os slides derivados dela somem junto.
+  const removeVersion = (i: number) =>
+    setPresentationData({ ...presentation_data, versions: presentation_data.versions.filter((_, j) => j !== i) })
+
+  // Aplicações (mockups) por logo — cada uma vira um slide de aplicação.
+  const addMockupsToVersion = async (vi: number, files: File[]) => {
+    const b64s: string[] = []
+    for (const f of files) { try { b64s.push(await fileToBase64(f, 1800, 0.82)) } catch { toast.error(`Erro ao processar "${f.name}".`) } }
+    if (!b64s.length) return
+    setPresentationData({ ...presentation_data, versions: presentation_data.versions.map((v, j) => (j === vi ? { ...v, mockups: [...v.mockups, ...b64s] } : v)) })
+    toast.success(`${b64s.length} aplicação(ões) adicionada(s).`)
+  }
+  const removeMockupFromVersion = (vi: number, mi: number) =>
+    setPresentationData({ ...presentation_data, versions: presentation_data.versions.map((v, j) => (j === vi ? { ...v, mockups: v.mockups.filter((_, k) => k !== mi) } : v)) })
 
   const handleLogoPrincipalChange = async (value: string | null) => {
     if (isPres) {
@@ -103,6 +119,81 @@ export function SectionAssets() {
             onChange={(e) => setPresentationData({ ...presentation_data, show_comparison: e.target.checked })}
             style={{ width: 16, height: 16, cursor: 'pointer' }}
           />
+        </div>
+      )}
+
+      {isPres && (
+        <div className="form-group">
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+            <label className="form-label" style={{ margin: 0 }}>
+              Logos da apresentação <span style={{ color: 'var(--accent)', fontWeight: 700 }}>({presentation_data.versions.length})</span>
+            </label>
+            <span style={{ fontSize: 10, color: '#71717a' }}>1 logo = 1 slide</span>
+          </div>
+
+          {presentation_data.versions.length > 0 && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 8 }}>
+              {presentation_data.versions.map((v, i) => (
+                <div key={i} style={{ padding: 8, borderRadius: 8, border: '1px solid var(--border)', background: 'rgba(255,255,255,0.02)', display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <div style={{ width: 40, height: 40, borderRadius: 6, background: '#fff', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+                      {v.logoNew
+                        ? <img src={v.logoNew} alt={`Logo ${i + 1}`} style={{ maxWidth: '85%', maxHeight: '85%', objectFit: 'contain' }} />
+                        : <ImageIcon size={16} color="#bbb" />}
+                    </div>
+                    <span style={{ fontSize: 12, fontWeight: 600, flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      Logo {i + 1} <span style={{ color: '#71717a', fontWeight: 500 }}>· {v.mockups.length} aplic.</span>
+                    </span>
+                    {presentation_data.versions.length > 1 && (
+                      <button className="upload-remove" style={{ position: 'static', flexShrink: 0 }} onClick={() => removeVersion(i)} title={`Remover logo ${i + 1}`}>
+                        <X size={11} />
+                      </button>
+                    )}
+                  </div>
+
+                  {v.mockups.length > 0 && (
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 5 }}>
+                      {v.mockups.map((src, mi) => (
+                        <div key={mi} style={{ position: 'relative', borderRadius: 6, overflow: 'hidden', border: '1px solid var(--border)' }}>
+                          <img src={src} alt={`Aplicação ${mi + 1}`} style={{ width: '100%', height: 42, objectFit: 'cover', display: 'block' }} />
+                          <button className="upload-remove" style={{ top: 3, right: 3 }} onClick={() => removeMockupFromVersion(i, mi)} title={`Remover aplicação ${mi + 1}`}>
+                            <X size={10} />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  <input id={`add-aplic-${i}`} type="file" accept={MOCKUP_ACCEPT} multiple style={{ display: 'none' }} onChange={async (e) => { const files = Array.from(e.target.files ?? []); e.target.value = ''; if (files.length) await addMockupsToVersion(i, files) }} />
+                  <button className="btn-add" style={{ padding: '7px 10px', fontSize: 11 }} onClick={() => document.getElementById(`add-aplic-${i}`)?.click()}>
+                    <ImageIcon size={12} /> Adicionar aplicação
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+
+          <input
+            ref={logoRef}
+            type="file"
+            accept={LOGO_ACCEPT}
+            style={{ display: 'none' }}
+            onChange={async (e) => {
+              const file = e.target.files?.[0]
+              e.target.value = ''
+              if (!file) return
+              try {
+                const b64 = await fileToBase64(file, 1800, 0.9)
+                setPresentationData({ ...presentation_data, versions: [...presentation_data.versions, { explanation: '', logoNew: b64, mockups: [] }] })
+                toast.success('Logo adicionada à apresentação.')
+              } catch {
+                toast.error('Erro ao processar a logo.')
+              }
+            }}
+          />
+          <button className="btn-add" onClick={() => logoRef.current?.click()}>
+            <ImageIcon size={13} /> Adicionar logo
+          </button>
         </div>
       )}
 

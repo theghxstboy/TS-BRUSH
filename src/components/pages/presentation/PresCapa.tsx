@@ -63,7 +63,7 @@ export function PresCapa({ pageId }: PresCapaProps) {
           value={brand_name}
           placeholder="Sua Marca"
           onCommit={(v) => setPresentationData({ ...presentation_data, brand_name: v })}
-          as="h1"
+          as="h1"
           style={{
             fontSize: '52px',
             fontWeight: 900,
@@ -94,7 +94,7 @@ export function PresCapa({ pageId }: PresCapaProps) {
           value={subtitle}
           placeholder="Apresentação de Identidade Visual"
           onCommit={(v) => setPresentationData({ ...presentation_data, subtitle: v })}
-          as="p"
+          as="p"
           style={{
             marginTop: '32px',
             fontSize: '12px',

@@ -1,11 +1,12 @@
 import { useState } from 'react'
-import { ChevronLeft, AlertTriangle, Download } from 'lucide-react'
+import { ChevronLeft, AlertTriangle, Download, Sparkles } from 'lucide-react'
 import { useAppStore } from '../../store/useAppStore'
-import { useBrandStore } from '../../store/useBrandStore'
+import { useBrandStore, PRESENTATION_TEMPLATES } from '../../store/useBrandStore'
+import type { PresentationTemplate } from '../../store/useBrandStore'
 
 export function EditorNav() {
   const { setScreen, hasUnsavedChanges, screen } = useAppStore()
-  const { exportJson, projeto, presentation_data } = useBrandStore()
+  const { exportJson, projeto, presentation_data, setPresentationData } = useBrandStore()
   const [showExitModal, setShowExitModal] = useState(false)
 
   const isPresentation = screen === 'brand-presentation'
@@ -73,6 +74,26 @@ export function EditorNav() {
           <span className="editor-nav-crumb-sep">/</span>
           {getBreadcrumbs()}
         </div>
+
+        {isPresentation && (
+          <label
+            className="editor-nav-template-toggle"
+            data-active={(presentation_data.template ?? 'classico') !== 'classico'}
+            style={{ marginLeft: 'auto' }}
+            title="Padrão visual da apresentação"
+          >
+            <Sparkles size={14} />
+            <select
+              value={presentation_data.template ?? 'classico'}
+              onChange={(e) => setPresentationData({ ...presentation_data, template: e.target.value as PresentationTemplate })}
+              aria-label="Padrão visual da apresentação"
+            >
+              {PRESENTATION_TEMPLATES.map((t) => (
+                <option key={t.id} value={t.id}>{t.label}</option>
+              ))}
+            </select>
+          </label>
+        )}
       </nav>
 
       {/* Exit confirmation modal */}

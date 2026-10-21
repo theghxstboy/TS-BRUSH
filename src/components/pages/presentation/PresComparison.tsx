@@ -73,7 +73,7 @@ export function PresComparison({ pageId, originalLogo, newLogo }: PresComparison
         </h4>
         <div className={logoOldDrag.className} onPointerDown={logoOldDrag.onPointerDown} style={{ width: '100%', flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', ...logoOldDrag.style }}>
           {originalLogo ? (
-            <img src={originalLogo} alt="Original" style={{ maxWidth: '80%', maxHeight: '100%', objectFit: 'contain', opacity: 0.6 }} />
+            <img src={originalLogo} alt="Original" style={{ maxWidth: '80%', maxHeight: '100%', objectFit: 'contain' }} />
           ) : (
             <div style={{ color: `${colorTexto}20`, fontSize: '13px' }}>Sem logo original</div>
           )}

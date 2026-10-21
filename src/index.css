@@ -145,6 +145,51 @@ body,
   min-width: 0;
 }
 
+.editor-nav-template-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text-secondary);
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 5px 12px;
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.editor-nav-template-toggle:hover {
+  color: var(--text-primary);
+  border-color: rgba(255, 255, 255, 0.2);
+  background: var(--bg-elevated);
+}
+
+.editor-nav-template-toggle[data-active='true'] {
+  color: #f0a500;
+  border-color: rgba(240, 165, 0, 0.5);
+  background: rgba(240, 165, 0, 0.1);
+}
+
+.editor-nav-template-toggle select {
+  background: transparent;
+  border: 0;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  outline: none;
+  padding: 0;
+}
+
+.editor-nav-template-toggle select option {
+  background: #1a1a1a;
+  color: #fff;
+}
+
 .editor-nav-crumb-parent {
   font-size: 12px;
   font-weight: 700;
@@ -4795,8 +4840,10 @@ body.export-mode .pres-resize-handle { display: none !important; }
 .sp-scroll { scrollbar-width: none; -ms-overflow-style: none; }
 .sp-scroll::-webkit-scrollbar { width: 0; height: 0; display: none; }
 /* Demonstrativo de "editável" no preview de redes (modo Dono): anel sutil (acompanha o raio) + realce no hover. */
-.sp-edit { box-shadow: 0 0 0 1px rgba(240, 165, 0, 0.4); transition: box-shadow 0.12s, background 0.12s; }
+.sp-edit { transition: box-shadow 0.12s, background 0.12s; }
 .sp-edit:hover { box-shadow: 0 0 0 1.5px rgba(240, 165, 0, 0.95); background: rgba(240, 165, 0, 0.12); }
+/* No print nunca mostra o indicador de "editável" (sem :hover durante o export, + trava explícita). */
+body.export-mode .sp-edit { box-shadow: none !important; background: transparent !important; }
 .sm-drawer { width: 340px; flex-shrink: 0; overflow-y: auto; padding: 16px; border-left: 1px solid var(--border); background: var(--bg-sidebar); }
 .sm-cover-chips { display: flex; flex-wrap: wrap; gap: 6px; max-width: 920px; }
 .sm-chip { padding: 6px 12px; border-radius: 999px; border: 1px solid var(--border); background: var(--bg-input); color: var(--text-secondary); font-size: 12px; cursor: pointer; display: inline-flex; gap: 6px; align-items: center; transition: all 0.15s; }

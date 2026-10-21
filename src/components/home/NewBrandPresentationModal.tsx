@@ -504,6 +504,7 @@ export function NewBrandPresentationModal({ onClose }: NewBrandPresentationModal
       subtitle: subtitle,
       responsible_name: responsibleName,
       project_type: projectType,
+      template: 'classico',
       show_comparison: showComparison,
       original_logo: logoAntigaGlobal,
       versions: versions.slice(0, qtdVersions).map((v, idx) => ({
@@ -648,6 +649,7 @@ export function NewBrandPresentationModal({ onClose }: NewBrandPresentationModal
                     subtitle: '',
                     responsible_name: '',
                     project_type: 'new',
+                    template: 'classico',
                     show_comparison: false,
                     original_logo: null,
                     versions: [{ explanation: TEXT_NEW, logoNew: null, mockups: [] }],

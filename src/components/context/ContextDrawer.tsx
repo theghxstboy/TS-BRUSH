@@ -98,6 +98,11 @@ const TITLES: Record<SlideType, string> = {
   'pres-typography': 'Tipografia Complementar',
   'pres-mockup': 'Mockup da Proposta',
   'pres-final': 'Encerramento da Proposta',
+  'pres-secao': 'Divisória da Proposta',
+  'pres-clear-space': 'Área de Proteção',
+  'pres-variations': 'Variações da Logo',
+  'pres-palette': 'Paleta de Cores',
+  'pres-board': 'Brand Board',
 }
 
 function DrawerColorField({
@@ -1282,7 +1287,8 @@ export function ContextDrawer() {
       let baseType = detail.slideType
       
       if (isPres) {
-        baseType = detail.slideType.replace(/-[0-9]+$/, '')
+        // sufixo "-mod" = slide do padrão moderno (posições/aparência separadas do clássico)
+        baseType = detail.slideType.replace(/-[0-9]+(-mod)?$/, '')
       } else if (isCustom) {
         baseType = detail.slideType.replace('custom-', '')
       }
@@ -1311,7 +1317,7 @@ export function ContextDrawer() {
       return TITLES[tpl as SlideType] || `Slide (${tpl})`
     }
 
-    const baseType = isPres ? slideType.replace(/-[0-9]+$/, '') : slideType
+    const baseType = isPres ? slideType.replace(/-[0-9]+(-mod)?$/, '') : slideType
     return TITLES[baseType as SlideType] || 'Pagina'
   }, [slideType])
 

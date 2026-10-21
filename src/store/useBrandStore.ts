@@ -10,6 +10,17 @@ import type { UploadedFontAsset } from '../lib/fontUtils'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
+// Padrões visuais da Apresentação de Logo. 'classico' = slides Pres*; os demais usam o conjunto
+// moderno (src/components/pages/presentation/modern) com temas diferentes.
+export const PRESENTATION_TEMPLATES = [
+  { id: 'classico', label: 'Clássico' },
+  { id: 'moderno', label: 'Moderno · Glow' },
+  { id: 'editorial', label: 'Editorial · Swiss' },
+  { id: 'bold', label: 'Bold · Blocos de cor' },
+  { id: 'minimal', label: 'Minimal · Clean' },
+] as const
+export type PresentationTemplate = (typeof PRESENTATION_TEMPLATES)[number]['id']
+
 export interface BrandColor {
   id: number
   hex: string
@@ -89,6 +100,11 @@ export type SlideAppearanceKey =
   | 'pres-typography'
   | 'pres-mockup'
   | 'pres-final'
+  | 'pres-secao'
+  | 'pres-clear-space'
+  | 'pres-variations'
+  | 'pres-palette'
+  | 'pres-board'
 
 export interface SlideAppearance {
   cor_fundo_pagina: string
@@ -239,6 +255,7 @@ export interface BrandStore {
     subtitle: string
     responsible_name: string
     project_type: 'new' | 'rebranding'
+    template: PresentationTemplate
     show_comparison: boolean
     original_logo: string | null
     versions: Array<{
@@ -395,6 +412,11 @@ function buildDefaultPageAppearance(): SlideAppearanceState {
     'pres-typography',
     'pres-mockup',
     'pres-final',
+    'pres-secao',
+    'pres-clear-space',
+    'pres-variations',
+    'pres-palette',
+    'pres-board',
   ]
 
   return Object.fromEntries(keys.map((key) => [key, { ...DEFAULT_SLIDE_APPEARANCE }])) as SlideAppearanceState
@@ -490,6 +512,7 @@ function freshDefault(): Omit<BrandStore,
       subtitle: '',
       responsible_name: 'Agência TS',
       project_type: 'new',
+      template: 'classico',
       show_comparison: false,
       original_logo: null,
       versions: [{ explanation: '', logoNew: null, mockups: [] }],
